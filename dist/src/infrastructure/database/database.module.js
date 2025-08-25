@@ -47,10 +47,12 @@ let DatabaseModule = DatabaseModule_1 = class DatabaseModule {
                 typeorm_1.TypeOrmModule.forRootAsync({
                     imports: [config_1.ConfigModule],
                     useFactory: (configService) => {
-                        if (configService.get('DATABASE_TYPE', 'postgresql') === 'mongodb') {
+                        if (configService.get('DATABASE_TYPE', 'postgresql') ===
+                            'mongodb') {
                             throw new Error('TypeORM configuration requested but MongoDB is configured. Use Mongoose instead.');
                         }
-                        const isProduction = configService.get('NODE_ENV', 'development') === 'production';
+                        const isProduction = configService.get('NODE_ENV', 'development') ===
+                            'production';
                         return {
                             type: 'postgres',
                             host: configService.get('DATABASE_HOST', 'localhost'),

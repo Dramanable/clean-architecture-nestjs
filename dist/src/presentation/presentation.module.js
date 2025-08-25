@@ -9,9 +9,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PresentationModule = void 0;
 const common_1 = require("@nestjs/common");
 const infrastructure_module_1 = require("../infrastructure/infrastructure.module");
+const pino_logger_module_1 = require("../infrastructure/logging/pino-logger.module");
 const injection_tokens_1 = require("../shared/constants/injection-tokens");
 const user_controller_1 = require("./controllers/user.controller");
-const pino_logger_module_1 = require("../infrastructure/logging/pino-logger.module");
 class TemporaryI18nService {
     t(key, params) {
         const translations = {

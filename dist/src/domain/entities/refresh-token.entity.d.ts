@@ -24,4 +24,9 @@ export declare class RefreshToken {
     private generateId;
     equals(other: RefreshToken): boolean;
     toString(): string;
+    static reconstruct(id: string, userId: string, tokenHash: string, expiresAt: Date, metadata: {
+        deviceId?: string;
+        userAgent?: string;
+        ipAddress?: string;
+    }, isRevoked?: boolean, revokedAt?: Date, createdAt?: Date, _updatedAt?: Date): RefreshToken;
 }

@@ -16,13 +16,13 @@ ENV NODE_ENV=production
 
 # Installation des outils système nécessaires
 RUN apk add --no-cache \
-    dumb-init \
-    curl \
-    tzdata
+  dumb-init \
+  curl \
+  tzdata
 
 # Création d'un utilisateur non-root pour la sécurité
 RUN addgroup -g 1001 -S nodejs \
-    && adduser -S nestjs -u 1001
+  && adduser -S nestjs -u 1001
 
 # Définition du répertoire de travail
 WORKDIR /app
@@ -32,7 +32,7 @@ COPY package*.json ./
 
 # Installation des dépendances avec cache optimisé
 RUN --mount=type=cache,id=npm,target=~/.npm \
-    npm ci --only=production=false
+  npm ci --only=production=false
 
 # ========================================
 # 🔨 Stage 2: Build Application
@@ -59,13 +59,13 @@ ENV PORT=3000
 
 # Installation des outils nécessaires pour la production
 RUN apk add --no-cache \
-    dumb-init \
-    curl \
-    tzdata
+  dumb-init \
+  curl \
+  tzdata
 
 # Création de l'utilisateur non-root
 RUN addgroup -g 1001 -S nodejs \
-    && adduser -S nestjs -u 1001
+  && adduser -S nestjs -u 1001
 
 # Définition du répertoire de travail
 WORKDIR /app
@@ -91,7 +91,7 @@ EXPOSE $PORT
 
 # Configuration du health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:$PORT/health || exit 1
+  CMD curl -f http://localhost:$PORT/health || exit 1
 
 # Point d'entrée avec dumb-init pour une gestion correcte des signaux
 ENTRYPOINT ["dumb-init", "--"]
@@ -110,13 +110,13 @@ ENV DEBUG=*
 
 # Installation des outils système nécessaires
 RUN apk add --no-cache \
-    dumb-init \
-    curl \
-    tzdata
+  dumb-init \
+  curl \
+  tzdata
 
 # Création d'un utilisateur non-root pour la sécurité
 RUN addgroup -g 1001 -S nodejs \
-    && adduser -S nestjs -u 1001
+  && adduser -S nestjs -u 1001
 
 # Définition du répertoire de travail
 WORKDIR /app
@@ -126,18 +126,18 @@ COPY package*.json ./
 
 # Installation de TOUTES les dépendances (dev + prod) pour le développement
 RUN --mount=type=cache,id=npm,target=~/.npm \
-    npm ci
+  npm ci
 
 # Installation des outils de développement et debugging
 RUN apk add --no-cache \
-    git \
-    bash \
-    vim \
-    nano \
-    curl \
-    wget \
-    htop \
-    procps
+  git \
+  bash \
+  vim \
+  nano \
+  curl \
+  wget \
+  htop \
+  procps
 
 # Installation de nodemon et nest CLI globalement pour le hot reload
 RUN npm install -g nodemon @nestjs/cli
@@ -147,8 +147,8 @@ COPY --chown=nestjs:nodejs . .
 
 # Création des répertoires nécessaires et ajustement des permissions
 RUN mkdir -p logs dist && \
-    chown -R nestjs:nodejs /app && \
-    chmod -R 755 /app
+  chown -R nestjs:nodejs /app && \
+  chmod -R 755 /app
 
 # Changement vers l'utilisateur non-root
 USER nestjs
@@ -158,7 +158,7 @@ EXPOSE 3000 9229 24678
 
 # Configuration du health check pour le développement
 HEALTHCHECK --interval=60s --timeout=15s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+  CMD curl -f http://localhost:3000/health || exit 1
 
 # Point d'entrée pour le développement
 ENTRYPOINT ["dumb-init", "--"]

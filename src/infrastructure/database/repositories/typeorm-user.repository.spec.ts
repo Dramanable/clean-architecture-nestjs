@@ -6,12 +6,14 @@
  */
 
 import { Repository } from 'typeorm';
+import { I18nService } from '../../../application/ports/i18n.port';
+import { Logger } from '../../../application/ports/logger.port';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { UserRole } from '../../../shared/enums/user-role.enum';
 import { UserOrmEntity } from '../entities/typeorm/user.entity';
 import { UserMapper } from '../mappers/typeorm-user.mapper';
-import { TypeOrmUserRepository } from './typeorm-user.repository';
+import { TypeOrmUserRepository } from './typeorm-user.repository-simple';
 
 describe('TypeOrmUserRepository avec i18n', () => {
   let repository: TypeOrmUserRepository;
@@ -27,14 +29,19 @@ describe('TypeOrmUserRepository avec i18n', () => {
   );
 
   const mockOrmEntity: UserOrmEntity = {
-    id: 'user-123',
+    id: 'test-id',
     email: 'test@example.com',
-    name: 'John Doe',
+    name: 'Test User',
     role: UserRole.USER,
     password: 'hashedPassword123',
+    passwordChangeRequired: false,
+    isActive: true,
+    loginAttempts: 0,
+    emailVerified: false,
+    version: 1,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
+  } as UserOrmEntity;
 
   beforeEach(() => {
     // Mock TypeORM Repository
@@ -78,8 +85,8 @@ describe('TypeOrmUserRepository avec i18n', () => {
     repository = new TypeOrmUserRepository(
       mockOrmRepository,
       mockMapper,
-      mockLogger,
-      mockI18n,
+      mockLogger as Logger,
+      mockI18n as I18nService,
     );
   });
 

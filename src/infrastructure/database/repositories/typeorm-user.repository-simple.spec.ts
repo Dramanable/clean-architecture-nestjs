@@ -8,10 +8,11 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
+import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { UserRole } from '../../../shared/enums/user-role.enum';
 import { UserOrmEntity } from '../entities/typeorm/user.entity';
 import { UserMapper } from '../mappers/typeorm-user.mapper';
-import { TypeOrmUserRepository } from './typeorm-user.repository';
+import { TypeOrmUserRepository } from './typeorm-user.repository-simple';
 
 describe('TypeOrmUserRepository - Simplified Tests', () => {
   let repository: TypeOrmUserRepository;
@@ -78,11 +79,11 @@ describe('TypeOrmUserRepository - Simplified Tests', () => {
           useValue: mapper,
         },
         {
-          provide: 'Logger',
+          provide: TOKENS.LOGGER,
           useValue: mockLogger,
         },
         {
-          provide: 'I18nService',
+          provide: TOKENS.I18N_SERVICE,
           useValue: mockI18n,
         },
       ],

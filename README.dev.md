@@ -3,6 +3,7 @@
 ## 🎯 Démarrage Rapide
 
 ### 📋 Prérequis
+
 - **Node.js** 22.17+
 - **Docker** & **Docker Compose**
 - **pnpm** (gestionnaire de paquets)
@@ -24,6 +25,7 @@ pnpm install
 ## 🐳 Environnement Docker (Recommandé)
 
 ### 🚀 Configuration Complète
+
 ```bash
 # Démarrer tout l'environnement
 make start-build
@@ -38,6 +40,7 @@ make start-build
 ```
 
 ### 🔧 Commandes Docker Utiles
+
 ```bash
 # Voir les logs
 make logs              # Tous les logs
@@ -60,6 +63,7 @@ make clean-all         # Nettoyage complet
 ## 🛠️ Développement Local (Sans Docker)
 
 ### 📊 Bases de Données Requises
+
 ```bash
 # Démarrer seulement les BD
 make start-db
@@ -82,6 +86,7 @@ docker run -d --name redis \
 ```
 
 ### 🚀 Démarrage de l'Application
+
 ```bash
 # Mode développement avec hot reload
 npm run start:dev
@@ -96,6 +101,7 @@ npm run start:debug
 ## 🧪 Tests
 
 ### 🔬 Types de Tests
+
 ```bash
 # Tous les tests
 npm test
@@ -119,6 +125,7 @@ npm run test:coverage
 ```
 
 ### 🎯 Tests TDD
+
 ```bash
 # Mode TDD avec auto-refresh
 npm run test:tdd
@@ -127,6 +134,7 @@ npm run test:tdd
 ## 🗄️ Gestion des Données
 
 ### 📊 Migrations SQL (TypeORM)
+
 ```bash
 # Créer une nouvelle migration
 npm run migration:generate -- src/infrastructure/database/migrations/sql/AddNewColumn
@@ -141,6 +149,7 @@ make rollback-sql
 ```
 
 ### 🍃 Migrations NoSQL (MongoDB)
+
 ```bash
 # Exécuter les migrations MongoDB
 npm run migration:mongo:up
@@ -157,6 +166,7 @@ make rollback-nosql
 ## 🔧 Outils de Développement
 
 ### 📝 Linting & Formatage
+
 ```bash
 # Linter automatique
 npm run lint
@@ -167,6 +177,7 @@ npm run format
 ```
 
 ### 🏗️ Build & Production
+
 ```bash
 # Build de l'application
 npm run build
@@ -179,11 +190,13 @@ npm run start:prod
 ## 🌍 Variables d'Environnement
 
 ### 📋 Fichiers de Configuration
+
 - `.env.development` - Configuration de développement
 - `.env.test` - Configuration pour les tests
 - `.env.production` - Configuration de production
 
 ### 🔐 Variables Importantes (Développement)
+
 ```bash
 NODE_ENV=development
 DB_HOST=localhost
@@ -196,16 +209,19 @@ REDIS_PASSWORD=dev_password123
 ## 🎯 Fonctionnalités de Développement
 
 ### 🔍 Debug
+
 - **Port Debug**: `9229` (attaché automatiquement)
 - **VSCode Debug**: Configuration disponible dans `.vscode/launch.json`
 - **Chrome DevTools**: `chrome://inspect`
 
 ### 📊 Monitoring
+
 - **Health Check**: `http://localhost:3000/health`
 - **Swagger API**: `http://localhost:3000/api` (si activé)
 - **Métriques**: Intégrées dans l'application
 
 ### 🔄 Hot Reload
+
 - **Frontend**: Auto-refresh activé
 - **Backend**: Nodemon configuré
 - **Tests**: Mode watch disponible
@@ -213,6 +229,7 @@ REDIS_PASSWORD=dev_password123
 ## 🚨 Dépannage
 
 ### ❗ Problèmes Courants
+
 ```bash
 # Port déjà utilisé
 sudo lsof -i :3000
@@ -226,6 +243,7 @@ sudo chown -R $USER:$USER ~/.docker
 ```
 
 ### 🔍 Logs & Debug
+
 ```bash
 # Logs détaillés
 DEBUG=* npm run start:dev
@@ -240,11 +258,13 @@ docker-compose -f docker-compose.dev.yml logs -f
 ## 📚 Documentation
 
 ### 🔗 Liens Utiles
+
 - **Architecture**: `docs/ARCHITECTURE.md`
 - **API Documentation**: `http://localhost:3000/api`
 - **Database Schema**: `docs/DATABASE.md`
 
 ### 🎨 Structure du Projet
+
 ```
 src/
 ├── domain/              # Entités et logique métier

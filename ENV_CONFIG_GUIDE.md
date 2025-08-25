@@ -6,7 +6,7 @@ Le projet utilise un système de configuration multi-environnement avec `@nestjs
 
 ```
 ├── .env                 # 🔧 Configuration par défaut/fallback
-├── .env.development     # 🚀 Configuration développement  
+├── .env.development     # 🚀 Configuration développement
 ├── .env.production      # 🔒 Configuration production
 └── .env.example         # 📋 Template avec toutes les variables
 ```
@@ -27,7 +27,7 @@ ConfigModule.forRoot({
 ### 📝 Ordre de priorité
 
 1. **`.env.development`** (quand `NODE_ENV=development`)
-2. **`.env.production`** (quand `NODE_ENV=production`) 
+2. **`.env.production`** (quand `NODE_ENV=production`)
 3. **`.env`** (fichier de fallback)
 4. **Variables d'environnement système** (priorité absolue)
 
@@ -37,11 +37,12 @@ ConfigModule.forRoot({
 # Automatiquement en mode development
 npm run start:dev
 
-# Explicitement 
+# Explicitement
 NODE_ENV=development npm run start:dev
 ```
 
 Variables chargées depuis `.env.development` :
+
 - `DATABASE_NAME=cleanarchi_dev`
 - `DATABASE_USERNAME=dev_user`
 - `LOG_LEVEL=debug`
@@ -53,6 +54,7 @@ NODE_ENV=production npm run start:prod
 ```
 
 Variables chargées depuis `.env.production` avec substitution :
+
 - `DATABASE_HOST=${DB_HOST}` → utilise la variable d'environnement système
 - `ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}` → sécurisé via env système
 
@@ -77,12 +79,14 @@ getDatabasePassword(): string {
 ## 🌍 Variables par environnement
 
 ### Development
+
 - Base de données : `cleanarchi_dev`
 - Logs : `debug`
 - Sécurité : relâchée pour faciliter le dev
 - Pool de connexions : 10
 
-### Production  
+### Production
+
 - Base de données : via variables système
 - Logs : `warn` (moins verbeux)
 - Sécurité : stricte (bcrypt rounds élevés)
@@ -103,7 +107,7 @@ constructor(private configService: ConfigService) {
 ## 📋 Checklist déploiement
 
 - [ ] Créer `.env.production` avec variables système
-- [ ] Définir toutes les variables `${VAR}` dans l'environnement  
+- [ ] Définir toutes les variables `${VAR}` dans l'environnement
 - [ ] Tester avec `NODE_ENV=production`
 - [ ] Vérifier les valeurs sensibles (secrets, mots de passe)
 - [ ] Confirmer les pools de connexion et timeouts

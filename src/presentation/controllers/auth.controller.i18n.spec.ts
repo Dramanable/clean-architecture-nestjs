@@ -2,7 +2,6 @@
  * 🧪 Test simple pour l'i18n du contrôleur Auth
  */
 
-import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 import { AuthController } from './auth.controller';
@@ -81,7 +80,7 @@ describe('AuthController I18n Tests', () => {
           useValue: mockI18nService,
         },
         {
-          provide: ConfigService,
+          provide: TOKENS.CONFIG_SERVICE,
           useValue: mockConfigService,
         },
       ],

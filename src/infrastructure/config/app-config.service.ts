@@ -81,18 +81,26 @@ export class AppConfigService implements IConfigService {
   getBcryptRounds(): number {
     const rounds = this.configService.get<number>('BCRYPT_ROUNDS', 12);
     if (rounds < 10 || rounds > 20) {
-      throw new Error('BCRYPT_ROUNDS must be between 10 and 20 for security and performance balance.');
+      throw new Error(
+        'BCRYPT_ROUNDS must be between 10 and 20 for security and performance balance.',
+      );
     }
     return rounds;
   }
 
   // 🌍 Environment Configuration
   getEnvironment(): 'development' | 'test' | 'production' {
-    return this.configService.get<string>('NODE_ENV', 'development') as 'development' | 'test' | 'production';
+    return this.configService.get<string>('NODE_ENV', 'development') as
+      | 'development'
+      | 'test'
+      | 'production';
   }
 
   getDatabaseType(): 'postgresql' | 'mongodb' | 'mysql' | 'sqlite' {
-    const dbType = this.configService.get<string>('DATABASE_TYPE', 'postgresql');
+    const dbType = this.configService.get<string>(
+      'DATABASE_TYPE',
+      'postgresql',
+    );
     if (!['postgresql', 'mongodb', 'mysql', 'sqlite'].includes(dbType)) {
       throw new Error(
         `Unsupported DATABASE_TYPE: ${dbType}. Supported: postgresql, mongodb, mysql, sqlite`,
@@ -160,7 +168,10 @@ export class AppConfigService implements IConfigService {
     const port = this.configService.get<number>('MONGO_PORT', 27017);
     const username = this.configService.get<string>('MONGO_USERNAME', '');
     const password = this.configService.get<string>('MONGO_PASSWORD', '');
-    const database = this.configService.get<string>('MONGO_DATABASE', 'cleanarchi');
+    const database = this.configService.get<string>(
+      'MONGO_DATABASE',
+      'cleanarchi',
+    );
 
     if (username && password) {
       return `mongodb://${username}:${password}@${host}:${port}/${database}`;
@@ -252,7 +263,10 @@ export class AppConfigService implements IConfigService {
 
   // 🎯 Feature Flags
   isFeatureEnabled(featureName: string): boolean {
-    return this.configService.get<boolean>(`FEATURE_${featureName.toUpperCase()}`, false);
+    return this.configService.get<boolean>(
+      `FEATURE_${featureName.toUpperCase()}`,
+      false,
+    );
   }
 
   // 📧 Email Configuration (future)

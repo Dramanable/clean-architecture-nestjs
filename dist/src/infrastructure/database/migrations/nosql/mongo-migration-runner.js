@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongoMigrationRunner = void 0;
-const mongoose_1 = require("mongoose");
 const dotenv_1 = require("dotenv");
+const mongoose_1 = require("mongoose");
 (0, dotenv_1.config)();
 class MongoMigrationRunner {
     connectionString;

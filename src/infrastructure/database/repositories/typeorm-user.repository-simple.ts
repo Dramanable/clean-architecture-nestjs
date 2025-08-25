@@ -5,7 +5,7 @@
  * Version initiale pour démarrer rapidement
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { I18nService } from '../../../application/ports/i18n.port';
@@ -13,6 +13,7 @@ import type { Logger } from '../../../application/ports/logger.port';
 import { User } from '../../../domain/entities/user.entity';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
+import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { UserRole } from '../../../shared/enums/user-role.enum';
 import { PaginatedResult } from '../../../shared/types/pagination.types';
 import { UserQueryParams } from '../../../shared/types/user-query.types';
@@ -25,7 +26,9 @@ export class TypeOrmUserRepository implements UserRepository {
     @InjectRepository(UserOrmEntity)
     private readonly userOrmRepository: Repository<UserOrmEntity>,
     private readonly userMapper: UserMapper,
+    @Inject(TOKENS.LOGGER)
     private readonly logger: Logger,
+    @Inject(TOKENS.I18N_SERVICE)
     private readonly i18n: I18nService,
   ) {}
 

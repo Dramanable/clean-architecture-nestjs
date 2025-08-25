@@ -113,6 +113,16 @@ class RefreshToken {
     toString() {
         return `RefreshToken(id=${this.id}, userId=${this.userId}, valid=${this.isValid()})`;
     }
+    static reconstruct(id, userId, tokenHash, expiresAt, metadata, isRevoked = false, revokedAt, createdAt, _updatedAt) {
+        const tempToken = 'temp-reconstruction-token-32chars-min';
+        const instance = new RefreshToken(userId, tempToken, expiresAt, metadata.deviceId, metadata.userAgent, metadata.ipAddress, true);
+        instance.id = id;
+        instance.tokenHash = tokenHash;
+        instance.isRevoked = isRevoked;
+        instance.revokedAt = revokedAt;
+        instance.createdAt = createdAt || new Date();
+        return instance;
+    }
 }
 exports.RefreshToken = RefreshToken;
 //# sourceMappingURL=refresh-token.entity.js.map

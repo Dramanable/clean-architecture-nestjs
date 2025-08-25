@@ -5,8 +5,8 @@
  * Gère les changements de schéma et les transformations de données NoSQL
  */
 
-import { connect } from 'mongoose';
 import { config } from 'dotenv';
+import { connect } from 'mongoose';
 
 // Charger les variables d'environnement
 config();
@@ -80,16 +80,16 @@ export class MongoMigrationRunner {
       )) {
         if (!appliedVersions.has(migration.version)) {
           console.log(`🔄 Applying migration: ${migration.name}`);
-          
+
           try {
             await migration.up();
-            
+
             // Enregistrer la migration comme appliquée
             await MigrationModel.create({
               version: migration.version,
               name: migration.name,
             });
-            
+
             console.log(`✅ Migration ${migration.name} applied successfully`);
           } catch (error) {
             console.error(`❌ Migration ${migration.name} failed:`, error);
@@ -142,13 +142,13 @@ export class MongoMigrationRunner {
       }
 
       console.log(`🔄 Reverting migration: ${migration.name}`);
-      
+
       try {
         await migration.down();
-        
+
         // Supprimer l'entrée de la migration
         await MigrationModel.deleteOne({ version: migration.version });
-        
+
         console.log(`✅ Migration ${migration.name} reverted successfully`);
       } catch (error) {
         console.error(`❌ Migration ${migration.name} revert failed:`, error);

@@ -64,14 +64,18 @@ export class DatabaseModule {
         TypeOrmModule.forRootAsync({
           imports: [ConfigModule],
           useFactory: (configService: ConfigService) => {
-            if (configService.get<string>('DATABASE_TYPE', 'postgresql') === 'mongodb') {
+            if (
+              configService.get<string>('DATABASE_TYPE', 'postgresql') ===
+              'mongodb'
+            ) {
               throw new Error(
                 'TypeORM configuration requested but MongoDB is configured. Use Mongoose instead.',
               );
             }
 
             const isProduction =
-              configService.get<string>('NODE_ENV', 'development') === 'production';
+              configService.get<string>('NODE_ENV', 'development') ===
+              'production';
 
             return {
               type: 'postgres',
@@ -79,7 +83,10 @@ export class DatabaseModule {
               port: configService.get<number>('DATABASE_PORT', 5432),
               username: configService.get<string>('DATABASE_USERNAME', 'admin'),
               password: configService.get<string>('DATABASE_PASSWORD'),
-              database: configService.get<string>('DATABASE_NAME', 'cleanarchi'),
+              database: configService.get<string>(
+                'DATABASE_NAME',
+                'cleanarchi',
+              ),
 
               // Entités SQL
               entities: [UserOrmEntity, RefreshTokenOrmEntity],

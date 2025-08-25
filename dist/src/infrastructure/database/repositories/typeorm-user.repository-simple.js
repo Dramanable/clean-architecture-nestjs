@@ -16,6 +16,7 @@ exports.TypeOrmUserRepository = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const injection_tokens_1 = require("../../../shared/constants/injection-tokens");
 const user_role_enum_1 = require("../../../shared/enums/user-role.enum");
 const user_entity_1 = require("../entities/typeorm/user.entity");
 const typeorm_user_mapper_1 = require("../mappers/typeorm-user.mapper");
@@ -264,6 +265,8 @@ exports.TypeOrmUserRepository = TypeOrmUserRepository;
 exports.TypeOrmUserRepository = TypeOrmUserRepository = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(user_entity_1.UserOrmEntity)),
+    __param(2, (0, common_1.Inject)(injection_tokens_1.TOKENS.LOGGER)),
+    __param(3, (0, common_1.Inject)(injection_tokens_1.TOKENS.I18N_SERVICE)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_user_mapper_1.UserMapper, Object, Object])
 ], TypeOrmUserRepository);

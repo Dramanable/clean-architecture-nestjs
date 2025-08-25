@@ -8,9 +8,9 @@
 import { Module } from '@nestjs/common';
 import type { I18nService } from '../application/ports/i18n.port';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
+import { PinoLoggerModule } from '../infrastructure/logging/pino-logger.module';
 import { TOKENS } from '../shared/constants/injection-tokens';
 import { UserController } from './controllers/user.controller';
-import { PinoLoggerModule } from '../infrastructure/logging/pino-logger.module';
 
 /**
  * 🎭 Mock I18n Service temporaire

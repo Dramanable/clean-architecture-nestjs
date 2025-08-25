@@ -7,18 +7,21 @@ Votre environnement de développement Docker est maintenant **entièrement confi
 ## 📁 Fichiers Créés/Modifiés
 
 ### 🐳 Configuration Docker
+
 - ✅ **Dockerfile** - Multi-stage avec target `development` optimisé
 - ✅ **docker-compose.yml** - Configuration originale (mode production)
 - ✅ **docker-compose.dev.yml** - Configuration développement complète
 - ✅ **.dockerignore** - Optimisation du contexte de build
 
 ### 🗄️ Migrations Séparées
+
 - ✅ **src/infrastructure/database/migrations/sql/** - Migrations PostgreSQL
 - ✅ **src/infrastructure/database/migrations/nosql/** - Migrations MongoDB
 - ✅ **mongo-migration-runner.ts** - Runner personnalisé pour MongoDB
 - ✅ **1692970800000-CreateInitialCollections.ts** - Migration MongoDB d'exemple
 
 ### ⚙️ Configuration & Scripts
+
 - ✅ **.env.development** - Variables d'environnement développement
 - ✅ **Makefile** - Commandes Docker automatisées
 - ✅ **dev.sh** - Script interactif de développement
@@ -26,19 +29,22 @@ Votre environnement de développement Docker est maintenant **entièrement confi
 - ✅ **DOCKER_DEV_CONFIG.md** - Documentation configuration Docker
 
 ### 🔧 VSCode Integration
+
 - ✅ **.vscode/launch.json** - Configuration debug (ajout Docker)
 - ✅ **.vscode/tasks.json** - Tâches développement (ajout Docker)
 
 ## 🚀 Services Configurés
 
 ### 📊 Base de Données (Mode Dev)
+
 ```bash
 PostgreSQL:  localhost:5432  (dev_user/dev_password123)
-MongoDB:     localhost:27017 (dev_user/dev_password123)  
+MongoDB:     localhost:27017 (dev_user/dev_password123)
 Redis:       localhost:6379  (dev_password123)
 ```
 
 ### 🌐 Interfaces Web
+
 ```bash
 Application:      http://localhost:3000
 pgAdmin:         http://localhost:5050  (dev@cleanarchi.com/dev123)
@@ -47,6 +53,7 @@ Redis Commander: http://localhost:8082
 ```
 
 ### 🐳 Docker Containers
+
 ```bash
 cleanarchi_app_dev           - Application NestJS
 cleanarchi_postgres_dev      - PostgreSQL 15
@@ -60,6 +67,7 @@ cleanarchi_redis_commander_dev - Redis Commander
 ## 🎮 Commandes Principales
 
 ### 🚀 Démarrage Rapide
+
 ```bash
 # Démarrage complet avec Docker
 ./dev.sh docker
@@ -68,16 +76,17 @@ make start-build
 
 # Démarrage sans Docker (DB uniquement)
 ./dev.sh start
-# ou  
+# ou
 make start-db && npm run start:dev
 ```
 
 ### 🔍 Monitoring & Debug
+
 ```bash
 # Voir les logs
 ./dev.sh logs [service]
 
-# Statut des services  
+# Statut des services
 ./dev.sh status
 
 # Shell dans le conteneur
@@ -88,6 +97,7 @@ make start-db && npm run start:dev
 ```
 
 ### 🧪 Tests & Development
+
 ```bash
 # Tests
 ./dev.sh test [unit|e2e|watch|coverage]
@@ -103,6 +113,7 @@ make start-db && npm run start:dev
 ```
 
 ### 🧹 Maintenance
+
 ```bash
 # Arrêt
 ./dev.sh stop
@@ -117,32 +128,37 @@ make start-db && npm run start:dev
 ## 🎯 Fonctionnalités Développement
 
 ### 🔄 Hot Reload
+
 - ✅ Code source monté dans `/app`
 - ✅ `node_modules` en volume anonyme
 - ✅ Redémarrage automatique sur changement
 - ✅ Debug port 9229 exposé
 
 ### 🐛 Debug
+
 - ✅ Port 9229 pour Chrome DevTools
-- ✅ Port 24678 pour VSCode debugger  
+- ✅ Port 24678 pour VSCode debugger
 - ✅ Configuration VSCode prête
 - ✅ Source maps activées
 
 ### 📊 Performance Dev
+
 - ✅ BCRYPT_ROUNDS=4 (vs 12 prod)
 - ✅ Health checks adaptés (60s vs 30s)
 - ✅ Cache Docker optimisé
-- ✅ Logs détaillés (DEBUG=*)
+- ✅ Logs détaillés (DEBUG=\*)
 
 ### 🛡️ Sécurité Relaxée (Dev Only)
+
 - ⚠️ Mots de passe prévisibles
-- ⚠️ CORS permissif  
+- ⚠️ CORS permissif
 - ⚠️ Rate limiting désactivé
 - ⚠️ Logs verbeux
 
 ## 🎨 VSCode Integration
 
 ### 🚀 Tâches Disponibles
+
 ```
 🐳 Start Docker Development  - Démarrage complet
 🛑 Stop Docker Services      - Arrêt des services
@@ -150,6 +166,7 @@ make start-db && npm run start:dev
 ```
 
 ### 🐛 Configurations Debug
+
 ```
 🚀 Debug NestJS App          - Debug local
 🐳 Debug NestJS (Docker)     - Debug Docker attach
@@ -161,7 +178,7 @@ make start-db && npm run start:dev
 
 1. **Démarrage** : `./dev.sh docker`
 2. **Développement** : Code avec hot reload actif
-3. **Tests** : `./dev.sh test watch` 
+3. **Tests** : `./dev.sh test watch`
 4. **Debug** : Attach VSCode sur port 9229
 5. **Logs** : `./dev.sh logs app`
 6. **Arrêt** : `./dev.sh stop`
@@ -169,16 +186,19 @@ make start-db && npm run start:dev
 ## 🚨 Points Importants
 
 ### ⚠️ Sécurité
+
 - **NE PAS utiliser** en production
 - Credentials de développement uniquement
 - Ports exposés pour faciliter le debug
 
 ### 🔧 Migrations
+
 - **SQL** : TypeORM dans `/sql/`
 - **NoSQL** : Runner custom dans `/nosql/`
 - Commandes séparées pour chaque type
 
 ### 🐳 Docker
+
 - **Target development** pour le Dockerfile
 - **Volumes montés** pour hot reload
 - **User nestjs** non-root pour sécurité
@@ -201,6 +221,6 @@ Votre environnement de développement Docker est **opérationnel** avec :
 ✅ **Hot reload** & **debugging**  
 ✅ **Scripts automatisés** pour toutes les tâches  
 ✅ **Intégration VSCode** optimisée  
-✅ **Clean Architecture** respectée  
+✅ **Clean Architecture** respectée
 
 **🚀 Commencez à développer avec : `./dev.sh docker`**

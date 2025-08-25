@@ -209,4 +209,45 @@ export class RefreshToken {
   toString(): string {
     return `RefreshToken(id=${this.id}, userId=${this.userId}, valid=${this.isValid()})`;
   }
+
+  /**
+   * 🔄 Méthode de reconstruction pour les repositories
+   * Permet de recréer une entité depuis les données persistées
+   */
+  static reconstruct(
+    id: string,
+    userId: string,
+    tokenHash: string,
+    expiresAt: Date,
+    metadata: {
+      deviceId?: string;
+      userAgent?: string;
+      ipAddress?: string;
+    },
+    isRevoked: boolean = false,
+    revokedAt?: Date,
+    createdAt?: Date,
+    _updatedAt?: Date,
+  ): RefreshToken {
+    // Créer un token temporaire pour la reconstruction
+    const tempToken = 'temp-reconstruction-token-32chars-min';
+    const instance = new RefreshToken(
+      userId, 
+      tempToken, 
+      expiresAt,
+      metadata.deviceId,
+      metadata.userAgent,
+      metadata.ipAddress,
+      true // Skip validation pour reconstruction
+    );
+    
+    // Override les propriétés avec les vraies valeurs
+    (instance as any).id = id;
+    (instance as any).tokenHash = tokenHash;
+    (instance as any).isRevoked = isRevoked;
+    (instance as any).revokedAt = revokedAt;
+    (instance as any).createdAt = createdAt || new Date();
+    
+    return instance;
+  }
 }

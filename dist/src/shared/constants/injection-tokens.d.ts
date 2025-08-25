@@ -11,6 +11,8 @@ export declare const APPLICATION_TOKENS: {
     readonly UPDATE_USER_USE_CASE: "UpdateUserUseCase";
     readonly DELETE_USER_USE_CASE: "DeleteUserUseCase";
     readonly LOGIN_USE_CASE: "LoginUseCase";
+    readonly REFRESH_TOKEN_USE_CASE: "RefreshTokenUseCase";
+    readonly LOGOUT_USE_CASE: "LogoutUseCase";
     readonly USER_ONBOARDING_SERVICE: "UserOnboardingApplicationService";
     readonly AUTH_TOKEN_SERVICE: "AuthTokenService";
     readonly AUTH_SERVICE: "AuthService";
@@ -85,6 +87,8 @@ export declare const TOKENS: {
     readonly UPDATE_USER_USE_CASE: "UpdateUserUseCase";
     readonly DELETE_USER_USE_CASE: "DeleteUserUseCase";
     readonly LOGIN_USE_CASE: "LoginUseCase";
+    readonly REFRESH_TOKEN_USE_CASE: "RefreshTokenUseCase";
+    readonly LOGOUT_USE_CASE: "LogoutUseCase";
     readonly USER_ONBOARDING_SERVICE: "UserOnboardingApplicationService";
     readonly AUTH_TOKEN_SERVICE: "AuthTokenService";
     readonly AUTH_SERVICE: "AuthService";
@@ -109,6 +113,8 @@ export declare function getTokensByLayer(layer: 'application' | 'domain' | 'infr
     readonly UPDATE_USER_USE_CASE: "UpdateUserUseCase";
     readonly DELETE_USER_USE_CASE: "DeleteUserUseCase";
     readonly LOGIN_USE_CASE: "LoginUseCase";
+    readonly REFRESH_TOKEN_USE_CASE: "RefreshTokenUseCase";
+    readonly LOGOUT_USE_CASE: "LogoutUseCase";
     readonly USER_ONBOARDING_SERVICE: "UserOnboardingApplicationService";
     readonly AUTH_TOKEN_SERVICE: "AuthTokenService";
     readonly AUTH_SERVICE: "AuthService";
