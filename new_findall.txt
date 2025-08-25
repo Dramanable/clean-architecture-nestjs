@@ -1,0 +1,58 @@
+  async findAll(params?: UserQueryParams): Promise<PaginatedResult<User>> {
+    try {
+      const page = params?.page || 1;
+      const limit = params?.limit || 10;
+      const skip = (page - 1) * limit;
+
+      this.logger.debug(
+        this.i18n.t('operations.user.find_all_attempt', { page, limit }),
+        { operation: 'UserRepository.findAll', page, limit },
+      );
+
+      const [ormEntities, totalItems] =
+        await this.userOrmRepository.findAndCount({
+          skip,
+          take: limit,
+          order: { createdAt: 'DESC' },
+        });
+
+      const users = ormEntities.map((entity) =>
+        this.userMapper.toDomainEntity(entity),
+      );
+
+      const totalPages = Math.ceil(totalItems / limit);
+      const hasNextPage = page < totalPages;
+      const hasPreviousPage = page > 1;
+
+      const result = {
+        data: users,
+        meta: {
+          currentPage: page,
+          totalPages,
+          totalItems,
+          itemsPerPage: limit,
+          hasNextPage,
+          hasPreviousPage,
+        },
+      };
+
+      this.logger.info(
+        this.i18n.t('success.user.found_paginated', {
+          count: users.length,
+          totalItems,
+        }),
+        { operation: 'UserRepository.findAll', page, limit, totalItems },
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        this.i18n.t('errors.user.find_all_failed', {
+          error: (error as Error).message,
+        }),
+        error as Error,
+        { operation: 'UserRepository.findAll' },
+      );
+      throw error;
+    }
+  }

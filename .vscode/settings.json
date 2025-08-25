@@ -1,0 +1,90 @@
+{
+  "// 🎯 Configuration VS Code pour Clean Architecture + NestJS": "",
+  "// Optimise l'expérience de développement et les performances Copilot": "",
+  
+  "// ===== COPILOT OPTIMIZATIONS =====": "",
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false,
+    "log": false
+  },
+  
+  "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.advanced": {
+    "debug.overrideEngine": "copilot-codex",
+    "debug.testOverrideProxyUrl": "",
+    "debug.overrideProxyUrl": ""
+  },
+
+  "// ===== TYPESCRIPT & NESTJS =====": "",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  
+  "// ===== EDITOR SETTINGS =====": "",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.rulers": [80, 120],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+
+  "// ===== FILES & WORKSPACE =====": "",
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/.nyc_output": true,
+    "**/*.log": true
+  },
+  
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/coverage": true,
+    "**/*.log": true,
+    "**/package-lock.json": true
+  },
+
+  "// ===== PERFORMANCE =====": "",
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/coverage/**": true
+  },
+  
+  "typescript.disableAutomaticTypeAcquisition": false,
+  "typescript.preferences.noSemicolons": false,
+
+  "// ===== CLEAN ARCHITECTURE HELPERS =====": "",
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.spec.ts, ${capture}.test.ts, ${capture}.d.ts",
+    "*.entity.ts": "${capture}.entity.spec.ts",
+    "*.use-case.ts": "${capture}.use-case.spec.ts",
+    "*.service.ts": "${capture}.service.spec.ts"
+  },
+
+  "// ===== EXTENSIONS RECOMMENDATIONS =====": "",
+  "extensions.ignoreRecommendations": false,
+  
+  "// ===== EMMET =====": "",
+  "emmet.includeLanguages": {
+    "typescript": "javascript"
+  },
+
+  "// ===== BREADCRUMBS =====": "",
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.showFiles": true,
+  "breadcrumbs.showModules": true,
+
+  "// ===== PROBLEMS & DIAGNOSTICS =====": "",
+  "problems.decorations.enabled": true,
+  "typescript.reportStyleChecksAsWarnings": true
+}
