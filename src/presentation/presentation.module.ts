@@ -10,6 +10,8 @@ import type { I18nService } from '../application/ports/i18n.port';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
 import { PinoLoggerModule } from '../infrastructure/logging/pino-logger.module';
 import { TOKENS } from '../shared/constants/injection-tokens';
+import { AuthController } from './controllers/auth.controller';
+import { HealthController } from './controllers/health.controller';
 import { UserController } from './controllers/user.controller';
 
 /**
@@ -110,7 +112,9 @@ class TemporaryI18nService implements I18nService {
   ],
   controllers: [
     // 🎯 Tous les contrôleurs de l'application
+    HealthController,
     UserController,
+    AuthController,
   ],
   providers: [
     // 🌍 Services de la couche présentation

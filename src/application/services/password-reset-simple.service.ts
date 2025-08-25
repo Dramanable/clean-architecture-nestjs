@@ -4,7 +4,7 @@
  * Service minimal pour faire passer les tests TDD
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 
 @Injectable()
@@ -15,10 +15,12 @@ export class PasswordResetService {
     @Inject(TOKENS.LOGGER) private readonly logger: any,
   ) {}
 
-  async requestPasswordReset(email: string): Promise<{ success: boolean; message: string }> {
+  async requestPasswordReset(
+    email: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.info(`Password reset requested for: ${email}`);
-      
+
       // Pour la sécurité, on retourne toujours un succès
       // même si l'email n'existe pas
       return {
@@ -34,7 +36,10 @@ export class PasswordResetService {
     }
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> {
     try {
       // Validation basique du mot de passe
       if (newPassword.length < 8) {
@@ -45,7 +50,7 @@ export class PasswordResetService {
       }
 
       this.logger.info(`Password reset with token: ${token}`);
-      
+
       return {
         success: true,
         message: 'Password reset successfully',

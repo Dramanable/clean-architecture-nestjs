@@ -67,6 +67,8 @@ export interface RefreshTokenResponse {
 export interface LogoutRequest {
   refreshToken?: string;
   logoutAll?: boolean; // Déconnecter tous les appareils
+  userAgent?: string; // User-Agent pour traçage
+  ipAddress?: string; // IP pour audit trail
 }
 
 export interface CookieConfig {

@@ -5,13 +5,12 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { LoginUseCase } from './login.use-case';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import {
-  InvalidCredentialsError,
-  UserNotFoundError,
-  TokenRepositoryError,
+    InvalidCredentialsError,
+    TokenRepositoryError
 } from '../../exceptions/auth.exceptions';
+import { LoginUseCase } from './login.use-case';
 
 describe('LoginUseCase (TDD)', () => {
   let useCase: LoginUseCase;
@@ -117,7 +116,9 @@ describe('LoginUseCase (TDD)', () => {
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockPasswordService.compare.mockResolvedValue(true);
       mockTokenService.generateAccessToken.mockReturnValue('access_token_123');
-      mockTokenService.generateRefreshToken.mockReturnValue('refresh_token_456');
+      mockTokenService.generateRefreshToken.mockReturnValue(
+        'refresh_token_456',
+      );
       mockRefreshTokenRepository.save.mockResolvedValue(undefined);
 
       // Act
@@ -128,7 +129,10 @@ describe('LoginUseCase (TDD)', () => {
       expect(result.user.id).toBe('user-456');
       expect(result.tokens.accessToken).toBe('access_token_123');
       expect(result.tokens.refreshToken).toBe('refresh_token_456');
-      expect(mockPasswordService.compare).toHaveBeenCalledWith('validPassword123', 'hashedPassword');
+      expect(mockPasswordService.compare).toHaveBeenCalledWith(
+        'validPassword123',
+        'hashedPassword',
+      );
       expect(mockRefreshTokenRepository.save).toHaveBeenCalled();
     });
 
@@ -156,7 +160,9 @@ describe('LoginUseCase (TDD)', () => {
       await useCase.execute(request);
 
       // Assert
-      expect(mockRefreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith('user-456');
+      expect(mockRefreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith(
+        'user-456',
+      );
     });
   });
 
@@ -173,7 +179,9 @@ describe('LoginUseCase (TDD)', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(useCase.execute(request)).rejects.toThrow(InvalidCredentialsError);
+      await expect(useCase.execute(request)).rejects.toThrow(
+        InvalidCredentialsError,
+      );
     });
 
     it('should reject when password is invalid', async () => {
@@ -195,7 +203,9 @@ describe('LoginUseCase (TDD)', () => {
       mockPasswordService.compare.mockResolvedValue(false);
 
       // Act & Assert
-      await expect(useCase.execute(request)).rejects.toThrow(InvalidCredentialsError);
+      await expect(useCase.execute(request)).rejects.toThrow(
+        InvalidCredentialsError,
+      );
     });
 
     it('should handle repository errors gracefully', async () => {
@@ -207,10 +217,14 @@ describe('LoginUseCase (TDD)', () => {
         ipAddress: '192.168.1.1',
       };
 
-      mockUserRepository.findByEmail.mockRejectedValue(new Error('Database error'));
+      mockUserRepository.findByEmail.mockRejectedValue(
+        new Error('Database error'),
+      );
 
       // Act & Assert
-      await expect(useCase.execute(request)).rejects.toThrow(TokenRepositoryError);
+      await expect(useCase.execute(request)).rejects.toThrow(
+        TokenRepositoryError,
+      );
     });
   });
 

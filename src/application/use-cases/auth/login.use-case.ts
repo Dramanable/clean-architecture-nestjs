@@ -4,15 +4,15 @@
  * Use case pour l'authentification avec gestion d'erreurs spécifiques
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
-import type { Logger } from '../../ports/logger.port';
-import type { I18nService } from '../../ports/i18n.port';
-import type { IConfigService } from '../../ports/config.port';
 import {
-  InvalidCredentialsError,
-  TokenRepositoryError,
+    InvalidCredentialsError,
+    TokenRepositoryError,
 } from '../../exceptions/auth.exceptions';
+import type { IConfigService } from '../../ports/config.port';
+import type { I18nService } from '../../ports/i18n.port';
+import type { Logger } from '../../ports/logger.port';
 
 // Interfaces pour les ports
 export interface UserRepository {
@@ -89,10 +89,7 @@ export class LoginUseCase {
       ipAddress: request.ipAddress,
     };
 
-    this.logger.info(
-      this.i18n.t('operations.login.attempt'),
-      operationContext,
-    );
+    this.logger.info(this.i18n.t('operations.login.attempt'), operationContext);
 
     try {
       // 1. Rechercher l'utilisateur par email
@@ -113,10 +110,10 @@ export class LoginUseCase {
 
       // 2. Vérifier si l'utilisateur existe
       if (!user) {
-        this.logger.warn(
-          this.i18n.t('warnings.login.user_not_found'),
-          { ...operationContext, email: request.email },
-        );
+        this.logger.warn(this.i18n.t('warnings.login.user_not_found'), {
+          ...operationContext,
+          email: request.email,
+        });
         throw new InvalidCredentialsError(
           this.i18n.t('errors.login.invalid_credentials'),
         );
@@ -129,10 +126,10 @@ export class LoginUseCase {
       );
 
       if (!isPasswordValid) {
-        this.logger.warn(
-          this.i18n.t('warnings.login.invalid_password'),
-          { ...operationContext, userId: user.id },
-        );
+        this.logger.warn(this.i18n.t('warnings.login.invalid_password'), {
+          ...operationContext,
+          userId: user.id,
+        });
         throw new InvalidCredentialsError(
           this.i18n.t('errors.login.invalid_credentials'),
         );
@@ -144,7 +141,11 @@ export class LoginUseCase {
       } catch (error) {
         this.logger.warn(
           this.i18n.t('warnings.login.token_revocation_failed'),
-          { ...operationContext, userId: user.id, error: (error as Error).message },
+          {
+            ...operationContext,
+            userId: user.id,
+            error: (error as Error).message,
+          },
         );
         // Continue malgré l'erreur de révocation
       }
@@ -152,7 +153,7 @@ export class LoginUseCase {
       // 5. Générer de nouveaux tokens
       const accessTokenSecret = this.config.getAccessTokenSecret();
       const expiresIn = this.config.getAccessTokenExpirationTime();
-      
+
       const accessToken = this.tokenService.generateAccessToken(
         user.id,
         user.email,
@@ -162,7 +163,8 @@ export class LoginUseCase {
       );
 
       const refreshTokenSecret = this.config.getRefreshTokenSecret();
-      const refreshToken = this.tokenService.generateRefreshToken(refreshTokenSecret);
+      const refreshToken =
+        this.tokenService.generateRefreshToken(refreshTokenSecret);
 
       // 6. Sauvegarder le nouveau refresh token
       try {
@@ -172,7 +174,8 @@ export class LoginUseCase {
           userAgent: request.userAgent,
           ipAddress: request.ipAddress,
           expiresAt: new Date(
-            Date.now() + this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
+            Date.now() +
+              this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
           ),
         });
       } catch (error) {
@@ -194,10 +197,7 @@ export class LoginUseCase {
         userId: user.id,
       };
 
-      this.logger.info(
-        this.i18n.t('operations.login.success'),
-        successContext,
-      );
+      this.logger.info(this.i18n.t('operations.login.success'), successContext);
 
       return {
         success: true,
@@ -212,11 +212,12 @@ export class LoginUseCase {
           refreshToken,
         },
       };
-
     } catch (error) {
       // Ne pas re-logger les erreurs déjà loggées spécifiquement
-      if (error instanceof InvalidCredentialsError || 
-          error instanceof TokenRepositoryError) {
+      if (
+        error instanceof InvalidCredentialsError ||
+        error instanceof TokenRepositoryError
+      ) {
         throw error;
       }
 
@@ -226,7 +227,7 @@ export class LoginUseCase {
         error as Error,
         operationContext,
       );
-      
+
       throw new TokenRepositoryError(
         this.i18n.t('errors.login.unexpected_error'),
         { originalError: (error as Error).message },

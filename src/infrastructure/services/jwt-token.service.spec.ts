@@ -4,10 +4,10 @@
  * Tests avant implémentation pour JWT token service
  */
 
-import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { JwtTokenService } from './jwt-token.service';
+import { Test, TestingModule } from '@nestjs/testing';
 import { TOKENS } from '../../shared/constants/injection-tokens';
+import { JwtTokenService } from './jwt-token.service';
 
 describe('JwtTokenService (TDD)', () => {
   let service: JwtTokenService;
@@ -65,7 +65,13 @@ describe('JwtTokenService (TDD)', () => {
       mockJwtService.sign = jest.fn().mockReturnValue(expectedToken);
 
       // Act
-      const result = service.generateAccessToken(userId, email, role, secret, expiresIn);
+      const result = service.generateAccessToken(
+        userId,
+        email,
+        role,
+        secret,
+        expiresIn,
+      );
 
       // Assert
       expect(result).toBe(expectedToken);
@@ -112,7 +118,7 @@ describe('JwtTokenService (TDD)', () => {
       // Arrange
       const secret = 'refresh-secret';
       const expectedToken = 'random-secure-token-abc123';
-      
+
       // Mock crypto.randomBytes et buffer toString
       const mockRandomBytes = jest.spyOn(require('crypto'), 'randomBytes');
       mockRandomBytes.mockReturnValue(Buffer.from('test-random-data'));
@@ -169,7 +175,7 @@ describe('JwtTokenService (TDD)', () => {
       // Arrange
       const token = 'invalid.jwt.token';
       const secret = 'test-secret';
-      
+
       mockJwtService.verify = jest.fn().mockImplementation(() => {
         throw new Error('Invalid token');
       });
@@ -193,10 +199,10 @@ describe('JwtTokenService (TDD)', () => {
       });
 
       // Act & Assert
-      expect(() => 
-        service.generateAccessToken(userId, email, role, secret, expiresIn)
+      expect(() =>
+        service.generateAccessToken(userId, email, role, secret, expiresIn),
       ).toThrow('JWT generation failed');
-      
+
       expect(mockLogger.error).toHaveBeenCalled();
     });
   });

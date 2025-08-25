@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 📝 COMMIT-MSG HOOK - Semantic Commit Validation
+# Valide le format des messages de commit selon les conventions sémantiques
+
+echo "📝 Validating commit message format..."
+
+# Run commitlint to validate the commit message
+npx --no-install commitlint --edit "$1"
+
+echo "✅ Commit message format is valid!"

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PasswordResetService } from './password-reset-simple.service';
 import { TOKENS } from '../../shared/constants/injection-tokens';
+import { PasswordResetService } from './password-reset-simple.service';
 
 describe('PasswordResetService (Simplified)', () => {
   let service: PasswordResetService;
@@ -94,7 +94,9 @@ describe('PasswordResetService (Simplified)', () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Password does not meet security requirements');
+      expect(result.message).toBe(
+        'Password does not meet security requirements',
+      );
     });
   });
 });

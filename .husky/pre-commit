@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 🔍 PRE-COMMIT HOOK - Quality Checks
+# Exécute les vérifications de qualité avant chaque commit
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint-staged to check only staged files
+npx lint-staged
+
+# Run unit tests to ensure nothing is broken
+echo "🧪 Running unit tests..."
+npm run test:unit
+
+# Check for TypeScript compilation errors
+echo "📝 Checking TypeScript compilation..."
+npx tsc --noEmit
+
+echo "✅ Pre-commit checks completed successfully!"

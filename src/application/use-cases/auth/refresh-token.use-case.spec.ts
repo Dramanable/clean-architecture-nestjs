@@ -5,13 +5,13 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { RefreshTokenUseCase } from './refresh-token.use-case';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import {
-  InvalidRefreshTokenError,
-  TokenExpiredError,
-  UserNotFoundError,
+    InvalidRefreshTokenError,
+    TokenExpiredError,
+    UserNotFoundError,
 } from '../../exceptions/auth.exceptions';
+import { RefreshTokenUseCase } from './refresh-token.use-case';
 
 describe('RefreshTokenUseCase (TDD)', () => {
   let useCase: RefreshTokenUseCase;
@@ -115,7 +115,9 @@ describe('RefreshTokenUseCase (TDD)', () => {
       mockRefreshTokenRepository.findByToken.mockResolvedValue(mockStoredToken);
       mockUserRepository.findById.mockResolvedValue(mockUser);
       mockTokenService.generateAccessToken.mockReturnValue('new_access_token');
-      mockTokenService.generateRefreshToken.mockReturnValue('new_refresh_token');
+      mockTokenService.generateRefreshToken.mockReturnValue(
+        'new_refresh_token',
+      );
 
       // Act
       const result = await useCase.execute(request);
@@ -125,7 +127,9 @@ describe('RefreshTokenUseCase (TDD)', () => {
       expect(result.tokens.accessToken).toBe('new_access_token');
       expect(result.tokens.refreshToken).toBe('new_refresh_token');
       expect(result.user.id).toBe('user-456');
-      expect(mockRefreshTokenRepository.findByToken).toHaveBeenCalledWith(request.refreshToken);
+      expect(mockRefreshTokenRepository.findByToken).toHaveBeenCalledWith(
+        request.refreshToken,
+      );
       expect(mockStoredToken.revoke).toHaveBeenCalled();
     });
 
@@ -168,7 +172,9 @@ describe('RefreshTokenUseCase (TDD)', () => {
       mockRefreshTokenRepository.findByToken.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(useCase.execute(request)).rejects.toThrow(InvalidRefreshTokenError);
+      await expect(useCase.execute(request)).rejects.toThrow(
+        InvalidRefreshTokenError,
+      );
     });
 
     it('should reject expired refresh token', async () => {
@@ -185,7 +191,9 @@ describe('RefreshTokenUseCase (TDD)', () => {
         isExpired: () => true, // Mais il est expiré
       };
 
-      mockRefreshTokenRepository.findByToken.mockResolvedValue(mockExpiredToken);
+      mockRefreshTokenRepository.findByToken.mockResolvedValue(
+        mockExpiredToken,
+      );
 
       // Act & Assert
       await expect(useCase.execute(request)).rejects.toThrow(TokenExpiredError);

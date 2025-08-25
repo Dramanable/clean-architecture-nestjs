@@ -5,8 +5,8 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { LogoutUseCase } from './logout.use-case';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
+import { LogoutUseCase } from './logout.use-case';
 
 describe('LogoutUseCase (TDD)', () => {
   let useCase: LogoutUseCase;
@@ -73,9 +73,15 @@ describe('LogoutUseCase (TDD)', () => {
       // Assert
       expect(result.success).toBe(true);
       expect(result.message).toBe('Mock message');
-      expect(mockRefreshTokenRepository.findByToken).toHaveBeenCalledWith(request.refreshToken);
-      expect(mockRefreshTokenRepository.revokeByToken).toHaveBeenCalledWith(request.refreshToken);
-      expect(mockRefreshTokenRepository.revokeAllByUserId).not.toHaveBeenCalled();
+      expect(mockRefreshTokenRepository.findByToken).toHaveBeenCalledWith(
+        request.refreshToken,
+      );
+      expect(mockRefreshTokenRepository.revokeByToken).toHaveBeenCalledWith(
+        request.refreshToken,
+      );
+      expect(
+        mockRefreshTokenRepository.revokeAllByUserId,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -100,7 +106,9 @@ describe('LogoutUseCase (TDD)', () => {
 
       // Assert
       expect(result.success).toBe(true);
-      expect(mockRefreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith('user-456');
+      expect(mockRefreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith(
+        'user-456',
+      );
       expect(mockRefreshTokenRepository.revokeByToken).not.toHaveBeenCalled();
     });
 
@@ -147,7 +155,9 @@ describe('LogoutUseCase (TDD)', () => {
         logoutAll: false,
       };
 
-      mockRefreshTokenRepository.findByToken.mockRejectedValue(new Error('Database error'));
+      mockRefreshTokenRepository.findByToken.mockRejectedValue(
+        new Error('Database error'),
+      );
 
       // Act
       const result = await useCase.execute(request);

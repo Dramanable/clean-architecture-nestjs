@@ -37,7 +37,7 @@ export class RefreshToken {
     } else {
       this.validateBasicInputs(userId, token);
     }
-    
+
     this.id = this.generateId();
     this.userId = userId;
     this.tokenHash = this.hashToken(token); // Hash du token pour sécurité
@@ -107,11 +107,11 @@ export class RefreshToken {
     if (this.deviceId && deviceId) {
       return this.deviceId === deviceId;
     }
-    
+
     if (this.userAgent && userAgent) {
       return this.userAgent === userAgent;
     }
-    
+
     return true; // Si pas d'info d'appareil, on accepte
   }
 
@@ -121,13 +121,13 @@ export class RefreshToken {
   private withRevocation(reason: string): RefreshToken {
     const revoked = Object.create(RefreshToken.prototype);
     Object.assign(revoked, this);
-    
+
     Object.defineProperties(revoked, {
       isRevoked: { value: true, writable: false },
       revokedAt: { value: new Date(), writable: false },
       revokedReason: { value: reason, writable: false },
     });
-    
+
     return revoked;
   }
 
@@ -144,7 +144,7 @@ export class RefreshToken {
     // Vérification que l'expiration n'est pas trop lointaine (max 1 an)
     const maxExpiry = new Date();
     maxExpiry.setFullYear(maxExpiry.getFullYear() + 1);
-    
+
     if (expiresAt > maxExpiry) {
       throw new Error(
         'Expiration date cannot be more than 1 year in the future',
@@ -232,22 +232,22 @@ export class RefreshToken {
     // Créer un token temporaire pour la reconstruction
     const tempToken = 'temp-reconstruction-token-32chars-min';
     const instance = new RefreshToken(
-      userId, 
-      tempToken, 
+      userId,
+      tempToken,
       expiresAt,
       metadata.deviceId,
       metadata.userAgent,
       metadata.ipAddress,
-      true // Skip validation pour reconstruction
+      true, // Skip validation pour reconstruction
     );
-    
+
     // Override les propriétés avec les vraies valeurs
     (instance as any).id = id;
     (instance as any).tokenHash = tokenHash;
     (instance as any).isRevoked = isRevoked;
     (instance as any).revokedAt = revokedAt;
     (instance as any).createdAt = createdAt || new Date();
-    
+
     return instance;
   }
 }

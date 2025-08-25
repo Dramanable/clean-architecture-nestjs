@@ -4,11 +4,11 @@
  * Service bcrypt pour hachage et vérification des mots de passe
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { TOKENS } from '../../shared/constants/injection-tokens';
-import type { Logger } from '../../application/ports/logger.port';
 import type { I18nService } from '../../application/ports/i18n.port';
+import type { Logger } from '../../application/ports/logger.port';
+import { TOKENS } from '../../shared/constants/injection-tokens';
 
 @Injectable()
 export class BcryptPasswordService {
@@ -27,18 +27,15 @@ export class BcryptPasswordService {
       timestamp: new Date().toISOString(),
     };
 
-    this.logger.info(
-      this.i18n.t('operations.password.hash_attempt'),
-      context,
-    );
+    this.logger.info(this.i18n.t('operations.password.hash_attempt'), context);
 
     try {
       const hashedPassword = await bcrypt.hash(plainPassword, this.saltRounds);
 
-      this.logger.info(
-        this.i18n.t('operations.password.hash_success'),
-        { ...context, saltRounds: this.saltRounds },
-      );
+      this.logger.info(this.i18n.t('operations.password.hash_success'), {
+        ...context,
+        saltRounds: this.saltRounds,
+      });
 
       return hashedPassword;
     } catch (error) {
@@ -51,7 +48,10 @@ export class BcryptPasswordService {
     }
   }
 
-  async compare(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  async compare(
+    plainPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
     const context = {
       operation: 'COMPARE_PASSWORD',
       timestamp: new Date().toISOString(),
@@ -65,10 +65,10 @@ export class BcryptPasswordService {
     try {
       const isMatch = await bcrypt.compare(plainPassword, hashedPassword);
 
-      this.logger.info(
-        this.i18n.t('operations.password.compare_success'),
-        { ...context, result: isMatch ? 'match' : 'no_match' },
-      );
+      this.logger.info(this.i18n.t('operations.password.compare_success'), {
+        ...context,
+        result: isMatch ? 'match' : 'no_match',
+      });
 
       return isMatch;
     } catch (error) {

@@ -4,39 +4,39 @@
  * Implémentation TypeORM pour la gestion des refresh tokens
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { RefreshTokenEntity } from '../entities/refresh-token.entity';
-import { TOKENS } from '../../../shared/constants/injection-tokens';
-import type { Logger } from '../../../application/ports/logger.port';
 import type { I18nService } from '../../../application/ports/i18n.port';
+import type { Logger } from '../../../application/ports/logger.port';
+import { TOKENS } from '../../../shared/constants/injection-tokens';
+import { RefreshTokenOrmEntity } from '../entities/typeorm/refresh-token.entity';
 
 @Injectable()
 export class TypeOrmRefreshTokenRepository {
   constructor(
-    @InjectRepository(RefreshTokenEntity)
-    private readonly repository: Repository<RefreshTokenEntity>,
+    @InjectRepository(RefreshTokenOrmEntity)
+    private readonly repository: Repository<RefreshTokenOrmEntity>,
     @Inject(TOKENS.PINO_LOGGER)
     private readonly logger: Logger,
     @Inject(TOKENS.I18N_SERVICE)
     private readonly i18n: I18nService,
   ) {}
 
-  async findByToken(token: string): Promise<RefreshTokenEntity | null> {
+  async findByToken(token: string): Promise<RefreshTokenOrmEntity | null> {
     const context = {
       operation: 'FIND_REFRESH_TOKEN',
       timestamp: new Date().toISOString(),
     };
 
-    this.logger.info(
-      this.i18n.t('operations.refresh_token.lookup_attempt'),
-      { ...context, tokenProvided: !!token },
-    );
+    this.logger.info(this.i18n.t('operations.refresh_token.lookup_attempt'), {
+      ...context,
+      tokenProvided: !!token,
+    });
 
     try {
       const result = await this.repository.findOne({
-        where: { token },
+        where: { tokenHash: token },
       });
 
       if (result) {
@@ -68,7 +68,7 @@ export class TypeOrmRefreshTokenRepository {
     userAgent?: string;
     ipAddress?: string;
     expiresAt: Date;
-  }): Promise<RefreshTokenEntity> {
+  }): Promise<RefreshTokenOrmEntity> {
     const context = {
       operation: 'SAVE_REFRESH_TOKEN',
       timestamp: new Date().toISOString(),
@@ -81,8 +81,8 @@ export class TypeOrmRefreshTokenRepository {
     );
 
     try {
-      const entity = new RefreshTokenEntity();
-      entity.token = refreshTokenData.token;
+      const entity = new RefreshTokenOrmEntity();
+      entity.tokenHash = refreshTokenData.token;
       entity.userId = refreshTokenData.userId;
       entity.userAgent = refreshTokenData.userAgent;
       entity.ipAddress = refreshTokenData.ipAddress;
@@ -91,10 +91,10 @@ export class TypeOrmRefreshTokenRepository {
 
       const result = await this.repository.save(entity);
 
-      this.logger.info(
-        this.i18n.t('operations.refresh_token.save_success'),
-        { ...context, tokenId: result.id },
-      );
+      this.logger.info(this.i18n.t('operations.refresh_token.save_success'), {
+        ...context,
+        tokenId: result.id,
+      });
 
       return result;
     } catch (error) {

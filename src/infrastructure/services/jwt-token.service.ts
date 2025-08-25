@@ -4,12 +4,12 @@
  * Service JWT pour génération et vérification des tokens
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
-import { TOKENS } from '../../shared/constants/injection-tokens';
-import type { Logger } from '../../application/ports/logger.port';
 import type { I18nService } from '../../application/ports/i18n.port';
+import type { Logger } from '../../application/ports/logger.port';
+import { TOKENS } from '../../shared/constants/injection-tokens';
 
 @Injectable()
 export class JwtTokenService {
@@ -106,25 +106,22 @@ export class JwtTokenService {
       timestamp: new Date().toISOString(),
     };
 
-    this.logger.info(
-      this.i18n.t('operations.token.verify_attempt'),
-      context,
-    );
+    this.logger.info(this.i18n.t('operations.token.verify_attempt'), context);
 
     try {
       const payload = this.jwtService.verify(token, { secret });
 
-      this.logger.info(
-        this.i18n.t('operations.token.verify_success'),
-        { ...context, userId: payload.sub },
-      );
+      this.logger.info(this.i18n.t('operations.token.verify_success'), {
+        ...context,
+        userId: payload.sub,
+      });
 
       return payload;
     } catch (error) {
-      this.logger.warn(
-        this.i18n.t('warnings.token.verify_failed'),
-        { ...context, error: (error as Error).message },
-      );
+      this.logger.warn(this.i18n.t('warnings.token.verify_failed'), {
+        ...context,
+        error: (error as Error).message,
+      });
       throw error;
     }
   }

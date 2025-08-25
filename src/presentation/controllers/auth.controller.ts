@@ -5,32 +5,31 @@
  */
 
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Inject,
+  InternalServerErrorException,
   Post,
   Req,
   Res,
-  UnauthorizedException,
-  InternalServerErrorException,
+  UnauthorizedException
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import type { I18nService } from '../../application/ports/i18n.port';
-import type { Logger } from '../../application/ports/logger.port';
-import { LoginUseCase } from '../../application/use-cases/auth/login.use-case';
-import { RefreshTokenUseCase } from '../../application/use-cases/auth/refresh-token.use-case';
-import { LogoutUseCase } from '../../application/use-cases/auth/logout.use-case';
 import {
   InvalidCredentialsError,
   InvalidRefreshTokenError,
   TokenExpiredError,
-  UserNotFoundError,
   TokenRepositoryError,
+  UserNotFoundError,
 } from '../../application/exceptions/auth.exceptions';
+import type { I18nService } from '../../application/ports/i18n.port';
+import type { Logger } from '../../application/ports/logger.port';
+import { LoginUseCase } from '../../application/use-cases/auth/login.use-case';
+import { LogoutUseCase } from '../../application/use-cases/auth/logout.use-case';
+import { RefreshTokenUseCase } from '../../application/use-cases/auth/refresh-token.use-case';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 
 // DTOs pour la validation
@@ -112,10 +111,10 @@ export class AuthController {
   ): Promise<{ success: boolean; user: any }> {
     try {
       const refreshToken = req.cookies?.refreshToken;
-      
+
       if (!refreshToken) {
         throw new InvalidRefreshTokenError(
-          this.i18n.t('auth.refresh_token_missing')
+          this.i18n.t('auth.refresh_token_missing'),
         );
       }
 
@@ -181,7 +180,7 @@ export class AuthController {
       // Le logout réussit toujours pour des raisons de sécurité
       res.clearCookie('accessToken');
       res.clearCookie('refreshToken');
-      
+
       return {
         success: true,
         message: this.i18n.t('auth.logout_success'),
@@ -212,51 +211,47 @@ export class AuthController {
    */
   private extractClientIp(req: Request): string {
     const forwarded = req.headers['x-forwarded-for'];
-    const ip = forwarded 
-      ? (Array.isArray(forwarded) ? forwarded[0] : forwarded.split(',')[0])
+    const ip = forwarded
+      ? Array.isArray(forwarded)
+        ? forwarded[0]
+        : forwarded.split(',')[0]
       : req.connection.remoteAddress || req.socket.remoteAddress;
-    
+
     return ip || 'unknown';
   }
 
   private handleAuthError(error: any): never {
-    this.logger.error(
-      this.i18n.t('errors.auth.controller_error'),
-      error,
-      {
-        operation: 'AUTH_CONTROLLER_ERROR',
-        timestamp: new Date().toISOString(),
-      },
-    );
+    this.logger.error(this.i18n.t('errors.auth.controller_error'), error, {
+      operation: 'AUTH_CONTROLLER_ERROR',
+      timestamp: new Date().toISOString(),
+    });
 
     if (error instanceof InvalidCredentialsError) {
-      throw new UnauthorizedException(
-        this.i18n.t('auth.invalid_credentials')
-      );
+      throw new UnauthorizedException(this.i18n.t('auth.invalid_credentials'));
     }
 
-    if (error instanceof InvalidRefreshTokenError || 
-        error instanceof TokenExpiredError) {
+    if (
+      error instanceof InvalidRefreshTokenError ||
+      error instanceof TokenExpiredError
+    ) {
       throw new UnauthorizedException(
-        this.i18n.t('auth.invalid_refresh_token')
+        this.i18n.t('auth.invalid_refresh_token'),
       );
     }
 
     if (error instanceof UserNotFoundError) {
-      throw new UnauthorizedException(
-        this.i18n.t('auth.user_not_found')
-      );
+      throw new UnauthorizedException(this.i18n.t('auth.user_not_found'));
     }
 
     if (error instanceof TokenRepositoryError) {
       throw new InternalServerErrorException(
-        this.i18n.t('auth.service_unavailable')
+        this.i18n.t('auth.service_unavailable'),
       );
     }
 
     // Erreur générique
     throw new InternalServerErrorException(
-      this.i18n.t('auth.unexpected_error')
+      this.i18n.t('auth.unexpected_error'),
     );
   }
 }

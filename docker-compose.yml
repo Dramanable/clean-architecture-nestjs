@@ -1,107 +1,108 @@
+# 🚀 Docker Compose - Mode Développement
+# Configuration optimisée pour le développement avec hot reload
+
 version: '3.8'
 
 services:
   # PostgreSQL - Base principale pour les utilisateurs
   postgres:
     image: postgres:15-alpine
-    container_name: cleanarchi_postgres
+    container_name: cleanarchi_postgres_dev
     restart: unless-stopped
     environment:
-      POSTGRES_DB: cleanarchi
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: cleanarchi_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password123
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_dev_data:/var/lib/postgresql/data
       - ./database/init:/docker-entrypoint-initdb.d
     networks:
-      - cleanarchi_network
+      - cleanarchi_dev_network
 
   # MongoDB - Pour les logs et données non-relationnelles
   mongodb:
     image: mongo:7.0
-    container_name: cleanarchi_mongodb
+    container_name: cleanarchi_mongodb_dev
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password123
-      MONGO_INITDB_DATABASE: cleanarchi
+      MONGO_INITDB_ROOT_USERNAME: dev_user
+      MONGO_INITDB_ROOT_PASSWORD: dev_password123
+      MONGO_INITDB_DATABASE: cleanarchi_dev
     ports:
       - "27017:27017"
     volumes:
-      - mongodb_data:/data/db
-      - ./database/mongo-init:/docker-entrypoint-initdb.d
+      - mongodb_dev_data:/data/db
     networks:
-      - cleanarchi_network
+      - cleanarchi_dev_network
 
   # Redis - Pour les sessions et cache
   redis:
     image: redis:7.2-alpine
-    container_name: cleanarchi_redis
+    container_name: cleanarchi_redis_dev
     restart: unless-stopped
-    command: redis-server --requirepass password123 --appendonly yes
+    command: redis-server --requirepass dev_password123 --appendonly yes
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/data
+      - redis_dev_data:/data
     networks:
-      - cleanarchi_network
+      - cleanarchi_dev_network
 
   # pgAdmin4 - Interface d'administration PostgreSQL
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: cleanarchi_pgadmin
+    container_name: cleanarchi_pgadmin_dev
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@cleanarchi.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: dev@cleanarchi.com
+      PGADMIN_DEFAULT_PASSWORD: dev123
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     ports:
       - "5050:80"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin
-      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json
+      - pgadmin_dev_data:/var/lib/pgadmin
     networks:
-      - cleanarchi_network
+      - cleanarchi_dev_network
     depends_on:
       - postgres
 
   # Mongo Express - Interface d'admin pour MongoDB
   mongo-express:
     image: mongo-express:latest
-    container_name: cleanarchi_mongo_express
+    container_name: cleanarchi_mongo_express_dev
     restart: unless-stopped
     ports:
       - "8081:8081"
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password123
-      ME_CONFIG_MONGODB_URL: mongodb://admin:password123@mongodb:27017/
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_ADMINUSERNAME: dev_user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: dev_password123
+      ME_CONFIG_MONGODB_URL: mongodb://dev_user:dev_password123@mongodb:27017/
+      ME_CONFIG_BASICAUTH_USERNAME: dev
+      ME_CONFIG_BASICAUTH_PASSWORD: dev
     networks:
-      - cleanarchi_network
+      - cleanarchi_dev_network
     depends_on:
       - mongodb
 
   # Redis Commander - Interface d'admin pour Redis
   redis-commander:
     image: rediscommander/redis-commander:latest
-    container_name: cleanarchi_redis_commander
+    container_name: cleanarchi_redis_commander_dev
     restart: unless-stopped
     ports:
       - "8082:8081"
     environment:
-      REDIS_HOSTS: local:redis:6379:0:password123
+      REDIS_HOSTS: local:redis:6379:0:dev_password123
     networks:
-      - cleanarchi_network
+      - cleanarchi_dev_network
     depends_on:
       - redis
 
-  # Application NestJS - Clean Architecture (Development Mode)
+  # Application NestJS - Clean Architecture (Development)
   app:
     build:
       context: .
@@ -111,7 +112,8 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-      - "9229:9229"  # Port pour le debug Node.js
+      - "9229:9229"  # Debug port
+      - "24678:24678"  # VSCode debugger
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -119,21 +121,21 @@ services:
       # Database Connections
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: admin
-      DB_PASSWORD: password123
-      DB_DATABASE: cleanarchi
+      DB_USERNAME: dev_user
+      DB_PASSWORD: dev_password123
+      DB_DATABASE: cleanarchi_dev
       
       # MongoDB Connection
-      MONGODB_URL: mongodb://admin:password123@mongodb:27017/cleanarchi?authSource=admin
+      MONGODB_URL: mongodb://dev_user:dev_password123@mongodb:27017/cleanarchi_dev?authSource=admin
       
       # Redis Connection
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: password123
+      REDIS_PASSWORD: dev_password123
       
-      # JWT Secrets (développement - NE PAS UTILISER EN PRODUCTION!)
-      ACCESS_TOKEN_SECRET: dev-access-token-secret-32characters
-      REFRESH_TOKEN_SECRET: dev-refresh-token-secret-32characters
+      # JWT Secrets (développement uniquement)
+      ACCESS_TOKEN_SECRET: dev-access-token-secret-for-development-only-32chars
+      REFRESH_TOKEN_SECRET: dev-refresh-token-secret-for-development-only-32chars
       ACCESS_TOKEN_EXPIRATION: 3600
       REFRESH_TOKEN_EXPIRATION_DAYS: 30
       
@@ -144,33 +146,34 @@ services:
       APP_NAME: "Clean Architecture NestJS (Development)"
       APP_VERSION: "1.0.0-dev"
       
+      # Debug & Development
+      DEBUG: "*"
+      LOG_LEVEL: debug
+      
     volumes:
       - .:/app  # Mount du code source pour hot reload
-      - /app/node_modules  # Volume anonyme pour node_modules
+      - /app/node_modules  # Volume anonyme pour éviter les conflits
       - ./logs:/app/logs
     networks:
-      - cleanarchi_network
+      - cleanarchi_dev_network
     depends_on:
       - postgres
       - mongodb
       - redis
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-      interval: 60s  # Plus long en dev
-      timeout: 15s
-      retries: 3
-      start_period: 60s  # Plus de temps pour démarrer en dev
+    command: ["npx", "nest", "start"]  # Démarrage direct avec nest
+    stdin_open: true  # Permet l'interaction
+    tty: true  # Alloue un TTY
 
 volumes:
-  postgres_data:
+  postgres_dev_data:
     driver: local
-  mongodb_data:
+  mongodb_dev_data:
     driver: local
-  redis_data:
+  redis_dev_data:
     driver: local
-  pgadmin_data:
+  pgadmin_dev_data:
     driver: local
 
 networks:
-  cleanarchi_network:
+  cleanarchi_dev_network:
     driver: bridge

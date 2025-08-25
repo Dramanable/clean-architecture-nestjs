@@ -5,15 +5,15 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { TypeOrmRefreshTokenRepository } from './typeorm-refresh-token.repository';
-import { RefreshTokenEntity } from '../entities/refresh-token.entity';
+import { Repository } from 'typeorm';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
+import { RefreshTokenOrmEntity } from '../entities/typeorm/refresh-token.entity';
+import { TypeOrmRefreshTokenRepository } from './typeorm-refresh-token.repository';
 
 describe('TypeOrmRefreshTokenRepository (TDD)', () => {
   let repository: TypeOrmRefreshTokenRepository;
-  let mockTypeOrmRepository: Partial<Repository<RefreshTokenEntity>>;
+  let mockTypeOrmRepository: Partial<Repository<RefreshTokenOrmEntity>>;
   let mockLogger: any;
   let mockI18n: any;
 
@@ -40,7 +40,7 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
       providers: [
         TypeOrmRefreshTokenRepository,
         {
-          provide: getRepositoryToken(RefreshTokenEntity),
+          provide: getRepositoryToken(RefreshTokenOrmEntity),
           useValue: mockTypeOrmRepository,
         },
         {
@@ -54,7 +54,9 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
       ],
     }).compile();
 
-    repository = module.get<TypeOrmRefreshTokenRepository>(TypeOrmRefreshTokenRepository);
+    repository = module.get<TypeOrmRefreshTokenRepository>(
+      TypeOrmRefreshTokenRepository,
+    );
   });
 
   describe('Token Lookup', () => {
@@ -82,7 +84,7 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
       expect(result.token).toBe(tokenString);
       expect(result.userId).toBe('user-789');
       expect(mockTypeOrmRepository.findOne).toHaveBeenCalledWith({
-        where: { token: tokenString },
+        where: { tokenHash: tokenString },
       });
     });
 
@@ -127,7 +129,7 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
       expect(result.token).toBe(refreshTokenData.token);
       expect(mockTypeOrmRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          token: refreshTokenData.token,
+          tokenHash: refreshTokenData.token,
           userId: refreshTokenData.userId,
         }),
       );
@@ -138,7 +140,9 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
     it('should revoke all tokens by user ID', async () => {
       // Arrange
       const userId = 'user-456';
-      mockTypeOrmRepository.update = jest.fn().mockResolvedValue({ affected: 3 });
+      mockTypeOrmRepository.update = jest
+        .fn()
+        .mockResolvedValue({ affected: 3 });
 
       // Act
       await repository.revokeAllByUserId(userId);
@@ -153,7 +157,9 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
     it('should handle revocation errors gracefully', async () => {
       // Arrange
       const userId = 'user-456';
-      mockTypeOrmRepository.update = jest.fn().mockRejectedValue(new Error('Database error'));
+      mockTypeOrmRepository.update = jest
+        .fn()
+        .mockRejectedValue(new Error('Database error'));
 
       // Act & Assert
       await expect(repository.revokeAllByUserId(userId)).rejects.toThrow();

@@ -4,17 +4,17 @@
  * Use case pour le renouvellement des tokens d'accès
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
-import type { Logger } from '../../ports/logger.port';
-import type { I18nService } from '../../ports/i18n.port';
-import type { IConfigService } from '../../ports/config.port';
 import {
   InvalidRefreshTokenError,
   TokenExpiredError,
-  UserNotFoundError,
   TokenRepositoryError,
+  UserNotFoundError,
 } from '../../exceptions/auth.exceptions';
+import type { IConfigService } from '../../ports/config.port';
+import type { I18nService } from '../../ports/i18n.port';
+import type { Logger } from '../../ports/logger.port';
 
 // Interfaces pour les ports
 export interface RefreshTokenRepository {
@@ -29,17 +29,14 @@ export interface UserRepository {
 
 export interface TokenService {
   generateAccessToken(
-    userId: string, 
-    email: string, 
+    userId: string,
+    email: string,
     role: string,
     secret: string,
     expiresIn: number,
-    algorithm?: string
+    algorithm?: string,
   ): string;
-  generateRefreshToken(
-    secret: string,
-    algorithm?: string
-  ): string;
+  generateRefreshToken(secret: string, algorithm?: string): string;
 }
 
 // DTOs
@@ -96,7 +93,9 @@ export class RefreshTokenUseCase {
       // 1. Valider le refresh token
       let storedToken;
       try {
-        storedToken = await this.refreshTokenRepository.findByToken(request.refreshToken);
+        storedToken = await this.refreshTokenRepository.findByToken(
+          request.refreshToken,
+        );
       } catch (error) {
         this.logger.error(
           this.i18n.t('errors.refresh_token.repository_lookup_failed'),
@@ -120,20 +119,20 @@ export class RefreshTokenUseCase {
       }
 
       if (!storedToken.isValid || !storedToken.isValid()) {
-        this.logger.warn(
-          this.i18n.t('warnings.refresh_token.token_invalid'),
-          { ...operationContext, userId: storedToken.userId },
-        );
+        this.logger.warn(this.i18n.t('warnings.refresh_token.token_invalid'), {
+          ...operationContext,
+          userId: storedToken.userId,
+        });
         throw new InvalidRefreshTokenError(
           this.i18n.t('errors.refresh_token.invalid_token'),
         );
       }
 
       if (storedToken.isExpired && storedToken.isExpired()) {
-        this.logger.warn(
-          this.i18n.t('warnings.refresh_token.token_expired'),
-          { ...operationContext, userId: storedToken.userId },
-        );
+        this.logger.warn(this.i18n.t('warnings.refresh_token.token_expired'), {
+          ...operationContext,
+          userId: storedToken.userId,
+        });
         throw new TokenExpiredError(
           this.i18n.t('errors.refresh_token.token_expired'),
         );
@@ -173,17 +172,17 @@ export class RefreshTokenUseCase {
           storedToken.revoke();
         }
       } catch (error) {
-        this.logger.warn(
-          this.i18n.t('warnings.refresh_token.revoke_failed'),
-          { ...operationContext, error: (error as Error).message },
-        );
+        this.logger.warn(this.i18n.t('warnings.refresh_token.revoke_failed'), {
+          ...operationContext,
+          error: (error as Error).message,
+        });
         // Continue malgré l'erreur de révocation
       }
 
       // 4. Générer de nouveaux tokens
       const accessTokenSecret = this.config.getAccessTokenSecret();
       const expiresIn = this.config.getAccessTokenExpirationTime();
-      
+
       const newAccessToken = this.tokenService.generateAccessToken(
         user.id,
         user.email,
@@ -193,7 +192,8 @@ export class RefreshTokenUseCase {
       );
 
       const refreshTokenSecret = this.config.getRefreshTokenSecret();
-      const newRefreshToken = this.tokenService.generateRefreshToken(refreshTokenSecret);
+      const newRefreshToken =
+        this.tokenService.generateRefreshToken(refreshTokenSecret);
 
       // 5. Sauvegarder le nouveau refresh token
       try {
@@ -202,7 +202,10 @@ export class RefreshTokenUseCase {
           userId: user.id,
           userAgent: request.userAgent,
           ipAddress: request.ipAddress,
-          expiresAt: new Date(Date.now() + this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000),
+          expiresAt: new Date(
+            Date.now() +
+              this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
+          ),
         });
       } catch (error) {
         this.logger.error(
@@ -216,10 +219,10 @@ export class RefreshTokenUseCase {
         );
       }
 
-      this.logger.info(
-        this.i18n.t('operations.refresh_token.success'),
-        { ...operationContext, userId: user.id },
-      );
+      this.logger.info(this.i18n.t('operations.refresh_token.success'), {
+        ...operationContext,
+        userId: user.id,
+      });
 
       return {
         success: true,
@@ -237,10 +240,12 @@ export class RefreshTokenUseCase {
       };
     } catch (error) {
       // Les erreurs spécifiques sont re-lancées telles quelles
-      if (error instanceof InvalidRefreshTokenError || 
-          error instanceof TokenExpiredError || 
-          error instanceof UserNotFoundError || 
-          error instanceof TokenRepositoryError) {
+      if (
+        error instanceof InvalidRefreshTokenError ||
+        error instanceof TokenExpiredError ||
+        error instanceof UserNotFoundError ||
+        error instanceof TokenRepositoryError
+      ) {
         throw error;
       }
 
@@ -250,7 +255,7 @@ export class RefreshTokenUseCase {
         error as Error,
         operationContext,
       );
-      
+
       throw new TokenRepositoryError(
         this.i18n.t('errors.refresh_token.unexpected_error'),
         { originalError: (error as Error).message },

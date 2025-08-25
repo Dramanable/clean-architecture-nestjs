@@ -20,7 +20,11 @@ import { PinoLoggerService } from './pino-logger.service';
       provide: TOKENS.LOGGER,
       useClass: PinoLoggerService,
     },
+    {
+      provide: TOKENS.PINO_LOGGER,
+      useClass: PinoLoggerService,
+    },
   ],
-  exports: [TOKENS.LOGGER, PinoLoggerService],
+  exports: [TOKENS.LOGGER, TOKENS.PINO_LOGGER, PinoLoggerService],
 })
 export class PinoLoggerModule {}
