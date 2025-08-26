@@ -122,6 +122,6 @@ export function getTokensByLayer(
     case 'presentation':
       return PRESENTATION_TOKENS;
     default:
-      throw new Error(`Unknown layer: ${layer}`);
+      throw new Error(`Unknown layer: ${String(layer)}`);
   }
 }

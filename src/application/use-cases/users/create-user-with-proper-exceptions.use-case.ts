@@ -12,11 +12,11 @@ import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Permission, UserRole } from '../../../shared/enums/user-role.enum';
 import {
-    ApplicationAuthorizationError,
-    ApplicationValidationError,
-    ExternalServiceError,
-    UseCaseExecutionError,
-    WorkflowOrchestrationError,
+  ApplicationAuthorizationError,
+  ApplicationValidationError,
+  ExternalServiceError,
+  UseCaseExecutionError,
+  WorkflowOrchestrationError,
 } from '../../exceptions/application.exceptions';
 import { IEmailService } from '../../ports/email.port';
 import type { I18nService } from '../../ports/i18n.port';

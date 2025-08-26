@@ -8,7 +8,8 @@ import { RefreshToken } from './refresh-token.entity';
 
 describe('RefreshToken Entity', () => {
   const validUserId = 'user-123';
-  const validToken = 'secure-token-with-minimum-32-characters-length-requirement';
+  const validToken =
+    'secure-token-with-minimum-32-characters-length-requirement';
   let futureDate: Date;
 
   beforeEach(() => {
@@ -45,7 +46,11 @@ describe('RefreshToken Entity', () => {
 
     it('should create token with optional fields', () => {
       // Act
-      const refreshToken = new RefreshToken(validUserId, validToken, futureDate);
+      const refreshToken = new RefreshToken(
+        validUserId,
+        validToken,
+        futureDate,
+      );
 
       // Assert
       expect(refreshToken.deviceId).toBeUndefined();
@@ -230,7 +235,11 @@ describe('RefreshToken Entity', () => {
         undefined,
         'Mozilla/5.0',
       );
-      tokenWithoutDevice = new RefreshToken(validUserId, validToken, futureDate);
+      tokenWithoutDevice = new RefreshToken(
+        validUserId,
+        validToken,
+        futureDate,
+      );
     });
 
     it('should match correct device ID', () => {
@@ -270,7 +279,11 @@ describe('RefreshToken Entity', () => {
 
     it('should verify correct token', () => {
       // Arrange
-      const refreshToken = new RefreshToken(validUserId, validToken, futureDate);
+      const refreshToken = new RefreshToken(
+        validUserId,
+        validToken,
+        futureDate,
+      );
 
       // Assert
       expect(refreshToken.verifyToken(validToken)).toBe(true);
@@ -279,7 +292,11 @@ describe('RefreshToken Entity', () => {
 
     it('should not expose original token', () => {
       // Arrange
-      const refreshToken = new RefreshToken(validUserId, validToken, futureDate);
+      const refreshToken = new RefreshToken(
+        validUserId,
+        validToken,
+        futureDate,
+      );
 
       // Assert
       expect(refreshToken).not.toHaveProperty('token');

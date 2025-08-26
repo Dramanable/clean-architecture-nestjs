@@ -7,8 +7,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import {
-    InvalidCredentialsError,
-    TokenRepositoryError,
+  InvalidCredentialsError,
+  TokenRepositoryError,
 } from '../../exceptions/auth.exceptions';
 import type { IConfigService } from '../../ports/config.port';
 import type { I18nService } from '../../ports/i18n.port';

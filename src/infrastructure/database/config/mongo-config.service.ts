@@ -7,8 +7,8 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-    MongooseModuleOptions,
-    MongooseOptionsFactory,
+  MongooseModuleOptions,
+  MongooseOptionsFactory,
 } from '@nestjs/mongoose';
 import type { IConfigService } from '../../../application/ports/config.port';
 

@@ -118,10 +118,10 @@ describe('MongoUserMapper', () => {
         lastLoginIp: '192.168.1.1',
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-01-02'),
-      } as UserDocument;
+      } as MockUserDocument;
 
       // Act
-      const result = MongoUserMapper.toDomain(mongoDoc);
+      const result = MongoUserMapper.toDomain(mongoDoc as any);
 
       // Assert - MongoDB specific fields available in User
       expect((result as any)._emailVerified).toBe(true);

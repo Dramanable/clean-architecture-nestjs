@@ -1,6 +1,6 @@
 /**
  * 🔌 APPLICATION PORT - User Repository
- * 
+ *
  * Interface pour la persistance des utilisateurs avec pagination et filtres
  * Clean Architecture : Application ne dépend PAS de l'infrastructure
  */

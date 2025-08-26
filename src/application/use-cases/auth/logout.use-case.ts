@@ -6,9 +6,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
-import {
-  TokenRepositoryError
-} from '../../exceptions/auth.exceptions';
+import { TokenRepositoryError } from '../../exceptions/auth.exceptions';
 import type { I18nService } from '../../ports/i18n.port';
 import type { Logger } from '../../ports/logger.port';
 

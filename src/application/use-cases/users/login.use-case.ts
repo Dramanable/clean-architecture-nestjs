@@ -4,17 +4,13 @@
  * Règles métier pour l'authentification avec génération de tokens JWT et refresh
  */
 
-import { UserRepository } from '../../../domain/repositories/user.repository';
-import { User } from '../../../domain/entities/user.entity';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
+import { InvalidCredentialsError } from '../../../domain/exceptions/user.exceptions';
+import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
-import { Logger } from '../../ports/logger.port';
-import type { I18nService } from '../../ports/i18n.port';
 import { IConfigService } from '../../ports/config.port';
-import {
-  UserNotFoundError,
-  InvalidCredentialsError,
-} from '../../../domain/exceptions/user.exceptions';
+import type { I18nService } from '../../ports/i18n.port';
+import { Logger } from '../../ports/logger.port';
 
 // Interfaces pour les ports
 export interface PasswordService {
@@ -23,17 +19,14 @@ export interface PasswordService {
 
 export interface TokenService {
   generateAccessToken(
-    userId: string, 
-    email: string, 
+    userId: string,
+    email: string,
     role: string,
     secret: string,
     expiresIn: number,
-    algorithm?: string
+    algorithm?: string,
   ): string;
-  generateRefreshToken(
-    secret: string,
-    algorithm?: string
-  ): string;
+  generateRefreshToken(secret: string, algorithm?: string): string;
 }
 
 export interface RefreshTokenRepository {
@@ -102,10 +95,10 @@ export class LoginUseCase {
       const user = await this.userRepository.findByEmail(email);
 
       if (!user) {
-        this.logger.warn(
-          this.i18n.t('warnings.auth.invalid_credentials'),
-          { ...requestContext, reason: 'user_not_found' },
-        );
+        this.logger.warn(this.i18n.t('warnings.auth.invalid_credentials'), {
+          ...requestContext,
+          reason: 'user_not_found',
+        });
         throw new InvalidCredentialsError();
       }
 
@@ -121,15 +114,15 @@ export class LoginUseCase {
       );
 
       if (!isValidPassword) {
-        this.logger.warn(
-          this.i18n.t('warnings.auth.invalid_credentials'),
-          { ...requestContext, reason: 'invalid_password' },
-        );
+        this.logger.warn(this.i18n.t('warnings.auth.invalid_credentials'), {
+          ...requestContext,
+          reason: 'invalid_password',
+        });
         throw new InvalidCredentialsError();
       }
 
       // 3. Révocation des anciens refresh tokens (optionnel - sécurité max)
-      await this.revokeExistingTokens(user.id!, requestContext);
+      await this.revokeExistingTokens(user.id, requestContext);
 
       // 4. Génération des nouveaux tokens
       this.logger.debug(
@@ -138,7 +131,7 @@ export class LoginUseCase {
       );
 
       const accessToken = this.tokenService.generateAccessToken(
-        user.id!,
+        user.id,
         user.email.value,
         user.role,
         this.config.getAccessTokenSecret(),
@@ -153,11 +146,12 @@ export class LoginUseCase {
 
       // 5. Création et sauvegarde du refresh token
       const expiresAt = new Date();
-      const refreshTokenExpirationDays = this.config.getRefreshTokenExpirationDays();
+      const refreshTokenExpirationDays =
+        this.config.getRefreshTokenExpirationDays();
       expiresAt.setDate(expiresAt.getDate() + refreshTokenExpirationDays);
 
       const refreshToken = new RefreshToken(
-        user.id!,
+        user.id,
         refreshTokenValue,
         expiresAt,
         request.deviceId,
@@ -179,23 +173,19 @@ export class LoginUseCase {
       );
 
       // Audit trail
-      this.logger.audit(
-        this.i18n.t('audit.auth.user_logged_in'),
-        user.id!,
-        {
-          email: user.email.value,
-          deviceId: request.deviceId,
-          ipAddress: request.ipAddress,
-          userAgent: request.userAgent,
-        },
-      );
+      this.logger.audit(this.i18n.t('audit.auth.user_logged_in'), user.id, {
+        email: user.email.value,
+        deviceId: request.deviceId,
+        ipAddress: request.ipAddress,
+        userAgent: request.userAgent,
+      });
 
       // 6. Retour de la réponse
       return {
         accessToken,
         refreshToken: refreshTokenValue,
         user: {
-          id: user.id!,
+          id: user.id,
           email: user.email.value,
           name: user.name,
           role: user.role,
@@ -205,7 +195,7 @@ export class LoginUseCase {
       };
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       // Ne pas logger les erreurs de credentials (sécurité)
       if (!(error instanceof InvalidCredentialsError)) {
         this.logger.error(
@@ -214,7 +204,7 @@ export class LoginUseCase {
           { ...requestContext, duration },
         );
       }
-      
+
       throw error;
     }
   }
@@ -224,7 +214,7 @@ export class LoginUseCase {
    */
   private async revokeExistingTokens(
     userId: string,
-    requestContext: any,
+    requestContext: Record<string, any>,
   ): Promise<void> {
     try {
       this.logger.debug(
@@ -235,10 +225,10 @@ export class LoginUseCase {
       await this.refreshTokenRepository.revokeAllByUserId(userId);
     } catch (error) {
       // Log mais ne fait pas échouer le login
-      this.logger.warn(
-        this.i18n.t('warnings.auth.token_revocation_failed'),
-        { ...requestContext, error: (error as Error).message },
-      );
+      this.logger.warn(this.i18n.t('warnings.auth.token_revocation_failed'), {
+        ...requestContext,
+        error: (error as Error).message,
+      });
     }
   }
 }

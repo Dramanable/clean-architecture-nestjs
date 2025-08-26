@@ -1,6 +1,6 @@
 /**
  * 🧪 TDD - i18n Integration Test
- * 
+ *
  * Tests pour vérifier l'internationalisation des logs et erreurs
  */
 

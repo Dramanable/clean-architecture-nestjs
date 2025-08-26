@@ -1,6 +1,6 @@
 /**
  * 🧪 TDD - Email Value Object
- * 
+ *
  * CYCLE RED → GREEN → REFACTOR
  * Test 1 : Email valide doit être accepté
  */
@@ -12,10 +12,10 @@ describe('Email Value Object', () => {
     it('should create email with valid format', () => {
       // Arrange
       const validEmail = 'user@example.com';
-      
+
       // Act
       const email = new Email(validEmail);
-      
+
       // Assert
       expect(email.value).toBe('user@example.com');
       expect(email.toString()).toBe('user@example.com');
@@ -24,10 +24,10 @@ describe('Email Value Object', () => {
     it('should normalize email (lowercase and trim)', () => {
       // Arrange
       const unnormalizedEmail = '  USER@EXAMPLE.COM  ';
-      
+
       // Act
       const email = new Email(unnormalizedEmail);
-      
+
       // Assert
       expect(email.value).toBe('user@example.com');
     });
@@ -58,7 +58,7 @@ describe('Email Value Object', () => {
       // Arrange
       const email1 = new Email('test@example.com');
       const email2 = new Email('test@example.com');
-      
+
       // Act & Assert
       expect(email1.equals(email2)).toBe(true);
     });
@@ -66,7 +66,7 @@ describe('Email Value Object', () => {
     it('should not be equal when values differ', () => {
       const email1 = new Email('test1@example.com');
       const email2 = new Email('test2@example.com');
-      
+
       expect(email1.equals(email2)).toBe(false);
     });
   });

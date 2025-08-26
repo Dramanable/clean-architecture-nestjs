@@ -13,7 +13,7 @@ import {
   Inject,
   Param,
   ParseUUIDPipe,
-  Post
+  Post,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -21,7 +21,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiResponse,
-  ApiTags
+  ApiTags,
 } from '@nestjs/swagger';
 import type { I18nService } from '../../application/ports/i18n.port';
 import type { Logger } from '../../application/ports/logger.port';
@@ -30,10 +30,7 @@ import { GetUserUseCase } from '../../application/use-cases/users/get-user.use-c
 import type { UserRepository } from '../../domain/repositories/user.repository';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 import { ApiErrorResponseDto } from '../dtos/common.dto';
-import {
-  CreateUserDto,
-  UserResponseDto
-} from '../dtos/user.dto';
+import { CreateUserDto, UserResponseDto } from '../dtos/user.dto';
 
 @ApiTags('users')
 @Controller('users')

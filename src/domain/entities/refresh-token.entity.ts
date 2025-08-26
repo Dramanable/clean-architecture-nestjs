@@ -4,8 +4,20 @@
  * Entité métier pour la gestion des tokens de rafraîchissement.
  * Gère le cycle de vie des tokens avec rotation automatique et sécurité.
  *
- * PRINCIPES CLEAN ARCHITECTURE :
- * - Pas de dépendance vers l'infrastructure
+ * PRINCIPES CLEAN ARCHITECTUR  static fromRepository(
+    id: string,
+    userId: string,
+    tokenHash: string,
+    expiresAt: Date,
+    metadata: {
+      deviceId?: string;
+      userAgent?: string;
+      ipAddress?: string;
+    },
+    isRevoked: boolean = false,
+    revokedAt?: Date,
+    createdAt?: Date,
+  ): RefreshToken { dépendance vers l'infrastructure
  * - Logique métier pure pour la sécurité des tokens
  * - Entité auto-validante avec expiration
  */
@@ -119,7 +131,7 @@ export class RefreshToken {
    * Crée une version révoquée du token
    */
   private withRevocation(reason: string): RefreshToken {
-    const revoked = Object.create(RefreshToken.prototype);
+    const revoked = Object.create(RefreshToken.prototype) as RefreshToken;
     Object.assign(revoked, this);
 
     Object.defineProperties(revoked, {
@@ -227,7 +239,6 @@ export class RefreshToken {
     isRevoked: boolean = false,
     revokedAt?: Date,
     createdAt?: Date,
-    _updatedAt?: Date,
   ): RefreshToken {
     // Créer un token temporaire pour la reconstruction
     const tempToken = 'temp-reconstruction-token-32chars-min';
@@ -242,11 +253,23 @@ export class RefreshToken {
     );
 
     // Override les propriétés avec les vraies valeurs
-    (instance as any).id = id;
-    (instance as any).tokenHash = tokenHash;
-    (instance as any).isRevoked = isRevoked;
-    (instance as any).revokedAt = revokedAt;
-    (instance as any).createdAt = createdAt || new Date();
+    Object.defineProperty(instance, 'id', { value: id, writable: false });
+    Object.defineProperty(instance, 'tokenHash', {
+      value: tokenHash,
+      writable: false,
+    });
+    Object.defineProperty(instance, 'isRevoked', {
+      value: isRevoked,
+      writable: false,
+    });
+    Object.defineProperty(instance, 'revokedAt', {
+      value: revokedAt,
+      writable: false,
+    });
+    Object.defineProperty(instance, 'createdAt', {
+      value: createdAt || new Date(),
+      writable: false,
+    });
 
     return instance;
   }

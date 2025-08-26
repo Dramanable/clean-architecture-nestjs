@@ -6,32 +6,32 @@
 
 export interface AppContext {
   // Identifiants uniques
-  correlationId: string;          // ID unique pour tracer la requête
-  operationId?: string;           // ID unique pour l'opération
-  
+  correlationId: string; // ID unique pour tracer la requête
+  operationId?: string; // ID unique pour l'opération
+
   // Information de l'opération
-  operation: string;              // Nom de l'opération (CreateUser, Login, etc.)
-  timestamp: Date;                // Moment de début de l'opération
-  
+  operation: string; // Nom de l'opération (CreateUser, Login, etc.)
+  timestamp: Date; // Moment de début de l'opération
+
   // Utilisateur et permissions
-  requestingUserId?: string;      // Qui fait la requête
-  targetUserId?: string;          // Sur qui porte l'opération
-  userRole?: string;              // Rôle de l'utilisateur demandeur
-  
+  requestingUserId?: string; // Qui fait la requête
+  targetUserId?: string; // Sur qui porte l'opération
+  userRole?: string; // Rôle de l'utilisateur demandeur
+
   // Context technique
-  ipAddress?: string;             // Adresse IP du client
-  userAgent?: string;             // User agent du navigateur
-  deviceId?: string;              // ID unique du device
-  sessionId?: string;             // ID de session
-  
+  ipAddress?: string; // Adresse IP du client
+  userAgent?: string; // User agent du navigateur
+  deviceId?: string; // ID unique du device
+  sessionId?: string; // ID de session
+
   // Context métier
-  tenantId?: string;              // Multi-tenant ID
-  organizationId?: string;        // Organisation (pour B2B)
-  
+  tenantId?: string; // Multi-tenant ID
+  organizationId?: string; // Organisation (pour B2B)
+
   // Performance et debug
-  startTime?: number;             // Timestamp de début (pour mesurer durée)
-  traceId?: string;               // ID de trace distribué
-  
+  startTime?: number; // Timestamp de début (pour mesurer durée)
+  traceId?: string; // ID de trace distribué
+
   // Données spécifiques à l'opération
   metadata?: Record<string, any>; // Données additionnelles flexibles
 }
@@ -40,7 +40,11 @@ export interface AppContextBuilder {
   operation(name: string): AppContextBuilder;
   requestingUser(userId: string, role?: string): AppContextBuilder;
   targetUser(userId: string): AppContextBuilder;
-  clientInfo(ipAddress?: string, userAgent?: string, deviceId?: string): AppContextBuilder;
+  clientInfo(
+    ipAddress?: string,
+    userAgent?: string,
+    deviceId?: string,
+  ): AppContextBuilder;
   session(sessionId: string): AppContextBuilder;
   tenant(tenantId: string): AppContextBuilder;
   organization(orgId: string): AppContextBuilder;
@@ -72,7 +76,11 @@ class AppContextBuilderImpl implements AppContextBuilder {
     return this;
   }
 
-  clientInfo(ipAddress?: string, userAgent?: string, deviceId?: string): AppContextBuilder {
+  clientInfo(
+    ipAddress?: string,
+    userAgent?: string,
+    deviceId?: string,
+  ): AppContextBuilder {
     this.context.ipAddress = ipAddress;
     this.context.userAgent = userAgent;
     this.context.deviceId = deviceId;
@@ -128,28 +136,36 @@ export class AppContextFactory {
    */
   static simple(operation: string, requestingUserId?: string): AppContext {
     const builder = new AppContextBuilderImpl().operation(operation);
-    
+
     if (requestingUserId) {
       builder.requestingUser(requestingUserId);
     }
-    
+
     return builder.build();
   }
 
   /**
    * Crée un context pour les opérations d'authentification
    */
-  static auth(operation: string, email: string, clientInfo?: {
-    ipAddress?: string;
-    userAgent?: string;
-    deviceId?: string;
-  }): AppContext {
+  static auth(
+    operation: string,
+    email: string,
+    clientInfo?: {
+      ipAddress?: string;
+      userAgent?: string;
+      deviceId?: string;
+    },
+  ): AppContext {
     const builder = new AppContextBuilderImpl()
       .operation(operation)
       .metadata('email', email);
 
     if (clientInfo) {
-      builder.clientInfo(clientInfo.ipAddress, clientInfo.userAgent, clientInfo.deviceId);
+      builder.clientInfo(
+        clientInfo.ipAddress,
+        clientInfo.userAgent,
+        clientInfo.deviceId,
+      );
     }
 
     return builder.build();
@@ -159,9 +175,9 @@ export class AppContextFactory {
    * Crée un context pour les opérations CRUD sur utilisateurs
    */
   static userOperation(
-    operation: string, 
-    requestingUserId: string, 
-    targetUserId?: string
+    operation: string,
+    requestingUserId: string,
+    targetUserId?: string,
   ): AppContext {
     const builder = new AppContextBuilderImpl()
       .operation(operation)

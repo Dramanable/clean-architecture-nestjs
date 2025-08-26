@@ -120,6 +120,7 @@ describe('JwtTokenService (TDD)', () => {
       const expectedToken = 'random-secure-token-abc123';
 
       // Mock crypto.randomBytes et buffer toString
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const mockRandomBytes = jest.spyOn(require('crypto'), 'randomBytes');
       mockRandomBytes.mockReturnValue(Buffer.from('test-random-data'));
 

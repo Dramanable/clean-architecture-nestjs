@@ -10,8 +10,8 @@ import type { I18nService } from '../ports/i18n.port';
 import { Logger } from '../ports/logger.port';
 import { IPasswordGenerator } from '../ports/password-generator.port';
 import {
-    CreateUserRequest,
-    CreateUserResponse,
+  CreateUserRequest,
+  CreateUserResponse,
 } from '../use-cases/users/create-user.use-case';
 
 export interface OnboardingStrategy {

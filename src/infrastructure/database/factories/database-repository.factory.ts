@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
- * 🏭 Database Factory Pattern
+ * 🏭 Database Repository Factory
  *
- * Factory pour créer les repositories selon le type de base de données
- * Permet de basculer entre SQL (TypeORM) et NoSQL (MongoDB) facilement
+ * Factory pattern pour créer des repositories selon le type de base de données
  */
 
 import { Injectable } from '@nestjs/common';
@@ -69,7 +69,7 @@ export class DatabaseRepositoryFactoryProvider {
         return new MongoRepositoryFactory();
 
       default:
-        throw new Error(`Unsupported database type: ${databaseType}`);
+        throw new Error(`Unsupported database type: ${String(databaseType)}`);
     }
   }
 }

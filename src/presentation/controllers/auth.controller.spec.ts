@@ -126,9 +126,9 @@ describe('AuthController', () => {
   });
 
   describe('👤 GET /auth/me', () => {
-    it('should return user information', async () => {
+    it('should return user information', () => {
       // Act
-      const result = await controller.me(mockRequest as any);
+      const result = controller.me(mockRequest as any);
 
       // Assert
       expect(result).toEqual({

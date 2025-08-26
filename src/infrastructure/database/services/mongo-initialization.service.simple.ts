@@ -175,7 +175,8 @@ export class MongoInitializationService implements OnModuleInit {
    * 🔍 État de la connexion
    */
   private getConnectionState(): string {
-    switch (this.connection.readyState) {
+    const state = Number(this.connection.readyState);
+    switch (state) {
       case 0:
         return 'disconnected';
       case 1:

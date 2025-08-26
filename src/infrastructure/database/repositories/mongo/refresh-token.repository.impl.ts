@@ -12,8 +12,8 @@ import type { Logger } from '../../../../application/ports/logger.port';
 import { RefreshToken as DomainRefreshToken } from '../../../../domain/entities/refresh-token.entity';
 import { TOKENS } from '../../../../shared/constants/injection-tokens';
 import {
-    RefreshToken,
-    RefreshTokenDocument,
+  RefreshToken,
+  RefreshTokenDocument,
 } from '../../entities/mongo/refresh-token.schema';
 
 export interface IRefreshTokenRepository {
@@ -181,7 +181,6 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
       tokenDoc.isRevoked,
       tokenDoc.revokedAt,
       tokenDoc.createdAt,
-      tokenDoc.updatedAt,
     );
   }
 }

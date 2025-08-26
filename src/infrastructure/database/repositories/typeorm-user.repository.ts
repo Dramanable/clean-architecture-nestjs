@@ -12,7 +12,6 @@ import { UserQueryParams } from '../../../shared/types/user-query.types';
 
 @Injectable()
 export class TypeOrmUserRepository implements UserRepository {
-  
   async save(user: User): Promise<User> {
     return user;
   }
@@ -32,7 +31,14 @@ export class TypeOrmUserRepository implements UserRepository {
   async findAll(params?: UserQueryParams): Promise<PaginatedResult<User>> {
     return {
       data: [],
-      meta: { currentPage: 1, totalPages: 0, totalItems: 0, itemsPerPage: 10, hasNextPage: false, hasPreviousPage: false },
+      meta: {
+        currentPage: 1,
+        totalPages: 0,
+        totalItems: 0,
+        itemsPerPage: 10,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
     };
   }
 
@@ -40,7 +46,10 @@ export class TypeOrmUserRepository implements UserRepository {
     return this.findAll(params);
   }
 
-  async findByRole(role: UserRole, params?: UserQueryParams): Promise<PaginatedResult<User>> {
+  async findByRole(
+    role: UserRole,
+    params?: UserQueryParams,
+  ): Promise<PaginatedResult<User>> {
     return this.findAll(params);
   }
 

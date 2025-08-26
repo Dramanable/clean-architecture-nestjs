@@ -1,6 +1,6 @@
 /**
  * 🔍 SHARED TYPES - Pagination & Filtres
- * 
+ *
  * Types réutilisables pour la pagination et filtrage
  */
 
@@ -69,7 +69,7 @@ export class QueryBuilder {
     page: 1,
     limit: 10,
     sortBy: 'createdAt',
-    sortOrder: 'DESC'
+    sortOrder: 'DESC',
   };
 
   page(page: number): this {

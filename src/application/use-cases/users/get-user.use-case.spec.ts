@@ -229,7 +229,9 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('ne peut pas accéder aux profils administrateurs'),
+        expect.stringContaining(
+          'ne peut pas accéder aux profils administrateurs',
+        ),
         expect.any(Object),
       );
     });
@@ -335,7 +337,7 @@ describe('GetUserUseCase', () => {
       await expect(getUserUseCase.execute(request)).rejects.toThrow();
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.stringContaining('Échec de l\'opération GetUser'),
+        expect.stringContaining("Échec de l'opération GetUser"),
         expect.any(Error),
         expect.objectContaining({
           operation: 'GetUser',

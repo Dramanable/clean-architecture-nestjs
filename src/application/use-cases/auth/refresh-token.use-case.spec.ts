@@ -7,9 +7,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import {
-    InvalidRefreshTokenError,
-    TokenExpiredError,
-    UserNotFoundError,
+  InvalidRefreshTokenError,
+  TokenExpiredError,
+  UserNotFoundError,
 } from '../../exceptions/auth.exceptions';
 import { RefreshTokenUseCase } from './refresh-token.use-case';
 

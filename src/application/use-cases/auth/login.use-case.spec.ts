@@ -7,8 +7,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import {
-    InvalidCredentialsError,
-    TokenRepositoryError
+  InvalidCredentialsError,
+  TokenRepositoryError,
 } from '../../exceptions/auth.exceptions';
 import { LoginUseCase } from './login.use-case';
 

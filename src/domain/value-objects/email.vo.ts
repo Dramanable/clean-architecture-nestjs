@@ -1,6 +1,6 @@
 /**
  * 🏛️ DOMAIN VALUE OBJECT - Email
- * 
+ *
  * Value Object pour représenter un email avec validation complète
  * Immutable et auto-validant
  */
@@ -12,7 +12,7 @@ export class Email {
     this.validateNotEmpty(email);
     this.validateLength(email);
     this.validateFormat(email);
-    
+
     // Normalisation : trim et lowercase
     this.value = email.trim().toLowerCase();
   }
@@ -24,7 +24,8 @@ export class Email {
   }
 
   private validateLength(email: string): void {
-    if (email.length > 254) { // RFC 5321 limite
+    if (email.length > 254) {
+      // RFC 5321 limite
       throw new Error('Email too long');
     }
   }

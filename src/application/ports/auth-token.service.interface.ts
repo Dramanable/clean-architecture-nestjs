@@ -7,9 +7,9 @@
 
 import { User } from '../../domain/entities/user.entity';
 import {
-    JWTPayload,
-    JWTTokens,
-    SecurityContext,
+  JWTPayload,
+  JWTTokens,
+  SecurityContext,
 } from '../../shared/types/auth.types';
 
 export interface IAuthTokenService {

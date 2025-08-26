@@ -1,6 +1,6 @@
 /**
  * 🔌 APPLICATION PORT - Logger Interface
- * 
+ *
  * Interface pour le logging structuré
  * Support de différents niveaux et contextes
  */
@@ -12,7 +12,7 @@ export interface Logger {
   info(message: string, context?: Record<string, any>): void;
 
   /**
-   * Log de niveau warning  
+   * Log de niveau warning
    */
   warn(message: string, context?: Record<string, any>): void;
 

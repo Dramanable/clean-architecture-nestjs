@@ -1,8 +1,8 @@
 import {
-    PasswordResetConfirmDto,
-    PasswordResetRequestDto,
-    PasswordResetResponseDto,
-    TokenValidationResponseDto,
+  PasswordResetConfirmDto,
+  PasswordResetRequestDto,
+  PasswordResetResponseDto,
+  TokenValidationResponseDto,
 } from '../dtos/password-reset.dto';
 
 /**

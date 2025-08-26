@@ -18,10 +18,10 @@ const mockConfigService = {
     }
   }),
   getEnvironment: jest.fn().mockReturnValue('development'),
-      getAccessTokenExpirationTime: jest.fn().mockReturnValue(900), // 15 minutes
-      getRefreshTokenExpirationTime: jest.fn().mockReturnValue(31536000), // 1 year
-      getRefreshTokenExpirationDays: jest.fn().mockReturnValue(365), // 1 year in days
-      getCookieDomain: jest.fn().mockReturnValue('localhost'),
+  getAccessTokenExpirationTime: jest.fn().mockReturnValue(900), // 15 minutes
+  getRefreshTokenExpirationTime: jest.fn().mockReturnValue(31536000), // 1 year
+  getRefreshTokenExpirationDays: jest.fn().mockReturnValue(365), // 1 year in days
+  getCookieDomain: jest.fn().mockReturnValue('localhost'),
 };
 
 const mockUserRepository = {
@@ -159,7 +159,7 @@ describe('AuthController I18n Tests', () => {
         },
       }),
     };
-    
+
     // Re-compile with updated mock
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],

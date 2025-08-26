@@ -6,12 +6,12 @@
 
 import { User } from '../../../domain/entities/user.entity';
 import {
-    EmailAlreadyExistsError,
-    InsufficientPermissionsError,
-    InvalidEmailFormatError,
-    InvalidNameError,
-    RoleElevationError,
-    UserNotFoundError,
+  EmailAlreadyExistsError,
+  InsufficientPermissionsError,
+  InvalidEmailFormatError,
+  InvalidNameError,
+  RoleElevationError,
+  UserNotFoundError,
 } from '../../../domain/exceptions/user.exceptions';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
@@ -27,14 +27,6 @@ interface UpdateUserRequest {
   name?: string;
   role?: UserRole;
   requestingUserId: string;
-}
-
-interface UpdateUserResponse {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  updatedAt: Date;
 }
 
 describe('UpdateUserUseCase', () => {

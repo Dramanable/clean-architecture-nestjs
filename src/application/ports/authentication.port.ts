@@ -1,6 +1,6 @@
 /**
  * 🔌 APPLICATION PORT - Authentication Service
- * 
+ *
  * Interface pour l'authentification et gestion des tokens JWT
  */
 

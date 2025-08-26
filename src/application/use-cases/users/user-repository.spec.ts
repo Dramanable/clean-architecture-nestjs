@@ -1,6 +1,6 @@
 /**
  * 🧪 TDD - User Repository avec Pagination & Filtres
- * 
+ *
  * Tests pour la recherche avancée et pagination des utilisateurs
  */
 
@@ -17,12 +17,24 @@ describe('User Repository - Pagination & Search', () => {
   beforeEach(() => {
     // Mock repository sera injecté
     userRepository = {} as UserRepository;
-    
+
     // Données de test
     testUsers = [
-      new User(new Email('admin@company.com'), 'Admin User', UserRole.SUPER_ADMIN),
-      new User(new Email('manager1@company.com'), 'Manager One', UserRole.MANAGER),
-      new User(new Email('manager2@company.com'), 'Manager Two', UserRole.MANAGER),
+      new User(
+        new Email('admin@company.com'),
+        'Admin User',
+        UserRole.SUPER_ADMIN,
+      ),
+      new User(
+        new Email('manager1@company.com'),
+        'Manager One',
+        UserRole.MANAGER,
+      ),
+      new User(
+        new Email('manager2@company.com'),
+        'Manager Two',
+        UserRole.MANAGER,
+      ),
       new User(new Email('user1@company.com'), 'User One', UserRole.USER),
       new User(new Email('user2@company.com'), 'User Two', UserRole.USER),
       new User(new Email('john@external.com'), 'John External', UserRole.USER),
@@ -49,8 +61,8 @@ describe('User Repository - Pagination & Search', () => {
           hasNextPage: true,
           hasPreviousPage: false,
           nextPage: 2,
-          previousPage: undefined
-        }
+          previousPage: undefined,
+        },
       });
 
       // Act
@@ -67,10 +79,7 @@ describe('User Repository - Pagination & Search', () => {
 
     it('should handle last page correctly', async () => {
       // Arrange
-      const queryParams = new UserQueryBuilder()
-        .page(2)
-        .limit(4)
-        .build();
+      const queryParams = new UserQueryBuilder().page(2).limit(4).build();
 
       userRepository.findAll = jest.fn().mockResolvedValue({
         data: testUsers.slice(4),
@@ -82,8 +91,8 @@ describe('User Repository - Pagination & Search', () => {
           hasNextPage: false,
           hasPreviousPage: true,
           nextPage: undefined,
-          previousPage: 1
-        }
+          previousPage: 1,
+        },
       });
 
       // Act
@@ -104,8 +113,8 @@ describe('User Repository - Pagination & Search', () => {
         .searchByName('Manager')
         .build();
 
-      const expectedUsers = testUsers.filter(u => u.name.includes('Manager'));
-      
+      const expectedUsers = testUsers.filter((u) => u.name.includes('Manager'));
+
       userRepository.search = jest.fn().mockResolvedValue({
         data: expectedUsers,
         meta: {
@@ -114,8 +123,8 @@ describe('User Repository - Pagination & Search', () => {
           totalItems: 2,
           itemsPerPage: 20,
           hasNextPage: false,
-          hasPreviousPage: false
-        }
+          hasPreviousPage: false,
+        },
       });
 
       // Act
@@ -123,7 +132,7 @@ describe('User Repository - Pagination & Search', () => {
 
       // Assert
       expect(result.data).toHaveLength(2);
-      expect(result.data.every(u => u.name.includes('Manager'))).toBe(true);
+      expect(result.data.every((u) => u.name.includes('Manager'))).toBe(true);
       expect(userRepository.search).toHaveBeenCalledWith(queryParams);
     });
 
@@ -133,10 +142,10 @@ describe('User Repository - Pagination & Search', () => {
         .searchByDomain('company.com')
         .build();
 
-      const expectedUsers = testUsers.filter(u => 
-        u.email.value.includes('company.com')
+      const expectedUsers = testUsers.filter((u) =>
+        u.email.value.includes('company.com'),
       );
-      
+
       userRepository.search = jest.fn().mockResolvedValue({
         data: expectedUsers,
         meta: {
@@ -145,8 +154,8 @@ describe('User Repository - Pagination & Search', () => {
           totalItems: 5,
           itemsPerPage: 20,
           hasNextPage: false,
-          hasPreviousPage: false
-        }
+          hasPreviousPage: false,
+        },
       });
 
       // Act
@@ -154,19 +163,19 @@ describe('User Repository - Pagination & Search', () => {
 
       // Assert
       expect(result.data).toHaveLength(5);
-      expect(result.data.every(u => u.email.value.includes('company.com'))).toBe(true);
+      expect(
+        result.data.every((u) => u.email.value.includes('company.com')),
+      ).toBe(true);
     });
 
     it('should perform global search across name and email', async () => {
       // Arrange
-      const queryParams = new UserQueryBuilder()
-        .searchGlobal('John')
-        .build();
+      const queryParams = new UserQueryBuilder().searchGlobal('John').build();
 
-      const expectedUsers = testUsers.filter(u => 
-        u.name.includes('John') || u.email.value.includes('john')
+      const expectedUsers = testUsers.filter(
+        (u) => u.name.includes('John') || u.email.value.includes('john'),
       );
-      
+
       userRepository.search = jest.fn().mockResolvedValue({
         data: expectedUsers,
         meta: {
@@ -175,8 +184,8 @@ describe('User Repository - Pagination & Search', () => {
           totalItems: 1,
           itemsPerPage: 20,
           hasNextPage: false,
-          hasPreviousPage: false
-        }
+          hasPreviousPage: false,
+        },
       });
 
       // Act
@@ -195,8 +204,10 @@ describe('User Repository - Pagination & Search', () => {
         .filterByRole(UserRole.MANAGER)
         .build();
 
-      const expectedUsers = testUsers.filter(u => u.role === UserRole.MANAGER);
-      
+      const expectedUsers = testUsers.filter(
+        (u) => u.role === UserRole.MANAGER,
+      );
+
       userRepository.search = jest.fn().mockResolvedValue({
         data: expectedUsers,
         meta: {
@@ -205,8 +216,8 @@ describe('User Repository - Pagination & Search', () => {
           totalItems: 2,
           itemsPerPage: 20,
           hasNextPage: false,
-          hasPreviousPage: false
-        }
+          hasPreviousPage: false,
+        },
       });
 
       // Act
@@ -214,7 +225,7 @@ describe('User Repository - Pagination & Search', () => {
 
       // Assert
       expect(result.data).toHaveLength(2);
-      expect(result.data.every(u => u.role === UserRole.MANAGER)).toBe(true);
+      expect(result.data.every((u) => u.role === UserRole.MANAGER)).toBe(true);
     });
 
     it('should filter users by multiple roles', async () => {
@@ -223,10 +234,10 @@ describe('User Repository - Pagination & Search', () => {
         .filterByRole([UserRole.SUPER_ADMIN, UserRole.MANAGER])
         .build();
 
-      const expectedUsers = testUsers.filter(u => 
-        [UserRole.SUPER_ADMIN, UserRole.MANAGER].includes(u.role)
+      const expectedUsers = testUsers.filter((u) =>
+        [UserRole.SUPER_ADMIN, UserRole.MANAGER].includes(u.role),
       );
-      
+
       userRepository.search = jest.fn().mockResolvedValue({
         data: expectedUsers,
         meta: {
@@ -235,8 +246,8 @@ describe('User Repository - Pagination & Search', () => {
           totalItems: 3,
           itemsPerPage: 20,
           hasNextPage: false,
-          hasPreviousPage: false
-        }
+          hasPreviousPage: false,
+        },
       });
 
       // Act
@@ -244,8 +255,10 @@ describe('User Repository - Pagination & Search', () => {
 
       // Assert
       expect(result.data).toHaveLength(3);
-      expect(result.data.some(u => u.role === UserRole.SUPER_ADMIN)).toBe(true);
-      expect(result.data.some(u => u.role === UserRole.MANAGER)).toBe(true);
+      expect(result.data.some((u) => u.role === UserRole.SUPER_ADMIN)).toBe(
+        true,
+      );
+      expect(result.data.some((u) => u.role === UserRole.MANAGER)).toBe(true);
     });
 
     it('should filter by email domain', async () => {
@@ -254,10 +267,10 @@ describe('User Repository - Pagination & Search', () => {
         .filterByEmailDomain('external.com')
         .build();
 
-      const expectedUsers = testUsers.filter(u => 
-        u.email.getDomain() === 'external.com'
+      const expectedUsers = testUsers.filter(
+        (u) => u.email.getDomain() === 'external.com',
       );
-      
+
       userRepository.search = jest.fn().mockResolvedValue({
         data: expectedUsers,
         meta: {
@@ -266,8 +279,8 @@ describe('User Repository - Pagination & Search', () => {
           totalItems: 1,
           itemsPerPage: 20,
           hasNextPage: false,
-          hasPreviousPage: false
-        }
+          hasPreviousPage: false,
+        },
       });
 
       // Act
@@ -291,12 +304,13 @@ describe('User Repository - Pagination & Search', () => {
         .sortBy('name', 'ASC')
         .build();
 
-      const expectedUsers = testUsers.filter(u => 
-        u.name.includes('User') && 
-        u.role === UserRole.USER &&
-        u.email.getDomain() === 'company.com'
+      const expectedUsers = testUsers.filter(
+        (u) =>
+          u.name.includes('User') &&
+          u.role === UserRole.USER &&
+          u.email.getDomain() === 'company.com',
       );
-      
+
       userRepository.search = jest.fn().mockResolvedValue({
         data: expectedUsers,
         meta: {
@@ -305,8 +319,8 @@ describe('User Repository - Pagination & Search', () => {
           totalItems: 2,
           itemsPerPage: 10,
           hasNextPage: false,
-          hasPreviousPage: false
-        }
+          hasPreviousPage: false,
+        },
       });
 
       // Act
@@ -314,38 +328,35 @@ describe('User Repository - Pagination & Search', () => {
 
       // Assert
       expect(result.data).toHaveLength(2);
-      expect(result.data.every(u => 
-        u.name.includes('User') && 
-        u.role === UserRole.USER &&
-        u.email.getDomain() === 'company.com'
-      )).toBe(true);
+      expect(
+        result.data.every(
+          (u) =>
+            u.name.includes('User') &&
+            u.role === UserRole.USER &&
+            u.email.getDomain() === 'company.com',
+        ),
+      ).toBe(true);
     });
   });
 
   describe('Utility Filters Tests', () => {
     it('should use onlyAdmins utility filter', async () => {
       // Arrange
-      const queryParams = new UserQueryBuilder()
-        .onlyAdmins()
-        .build();
+      const queryParams = new UserQueryBuilder().onlyAdmins().build();
 
       expect(queryParams.filters?.role).toEqual([UserRole.SUPER_ADMIN]);
     });
 
     it('should use onlyManagers utility filter', async () => {
       // Arrange
-      const queryParams = new UserQueryBuilder()
-        .onlyManagers()
-        .build();
+      const queryParams = new UserQueryBuilder().onlyManagers().build();
 
       expect(queryParams.filters?.role).toEqual([UserRole.MANAGER]);
     });
 
     it('should use recentlyCreated utility filter', async () => {
       // Arrange
-      const queryParams = new UserQueryBuilder()
-        .recentlyCreated(7)
-        .build();
+      const queryParams = new UserQueryBuilder().recentlyCreated(7).build();
 
       expect(queryParams.filters?.createdAt?.from).toBeDefined();
       expect(queryParams.filters?.createdAt?.to).toBeUndefined();

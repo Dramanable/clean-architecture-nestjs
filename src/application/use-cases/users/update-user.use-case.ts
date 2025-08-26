@@ -1,6 +1,6 @@
 /**
  * 🎯 Update User Use Case
- * 
+ *
  * Règles métier pour la modification d'utilisateurs avec logging et i18n
  */
 
@@ -67,17 +67,20 @@ export class UpdateUserUseCase {
         request.requestingUserId,
       );
       if (!requestingUser) {
-        this.logger.warn(this.i18n.t('warnings.user.not_found'), requestContext);
+        this.logger.warn(
+          this.i18n.t('warnings.user.not_found'),
+          requestContext,
+        );
         throw new UserNotFoundError(request.requestingUserId);
       }
 
       // 2. Validation de l'utilisateur cible
       const targetUser = await this.userRepository.findById(request.userId);
       if (!targetUser) {
-        this.logger.warn(
-          this.i18n.t('warnings.user.not_found'),
-          { ...requestContext, targetUserId: request.userId },
-        );
+        this.logger.warn(this.i18n.t('warnings.user.not_found'), {
+          ...requestContext,
+          targetUserId: request.userId,
+        });
         throw new UserNotFoundError(request.userId);
       }
 
@@ -109,7 +112,9 @@ export class UpdateUserUseCase {
 
       // 6. Mise à jour de l'utilisateur - Construction du User mis à jour
       const updatedUser = new User(
-        request.email !== undefined ? new Email(request.email.trim()) : targetUser.email,
+        request.email !== undefined
+          ? new Email(request.email.trim())
+          : targetUser.email,
         request.name !== undefined ? request.name.trim() : targetUser.name,
         request.role !== undefined ? request.role : targetUser.role,
       );
@@ -238,7 +243,9 @@ export class UpdateUserUseCase {
       if (requestingUser.role === UserRole.MANAGER) {
         if (newRole === UserRole.MANAGER || newRole === UserRole.SUPER_ADMIN) {
           this.logger.warn(
-            this.i18n.t('warnings.role.elevation_attempt', { targetRole: newRole }),
+            this.i18n.t('warnings.role.elevation_attempt', {
+              targetRole: newRole,
+            }),
             {
               requestingUserId: requestingUser.id,
               targetUserId: targetUser.id,
@@ -288,7 +295,9 @@ export class UpdateUserUseCase {
         email = new Email(request.email.trim());
       } catch {
         this.logger.warn(
-          this.i18n.t('warnings.email.invalid_format', { email: request.email }),
+          this.i18n.t('warnings.email.invalid_format', {
+            email: request.email,
+          }),
           { email: request.email },
         );
         throw new InvalidEmailFormatError(request.email);
@@ -299,7 +308,9 @@ export class UpdateUserUseCase {
         const existingUser = await this.userRepository.findByEmail(email);
         if (existingUser) {
           this.logger.warn(
-            this.i18n.t('warnings.email.already_exists', { email: email.value }),
+            this.i18n.t('warnings.email.already_exists', {
+              email: email.value,
+            }),
             { email: email.value, targetUserId: request.userId },
           );
           throw new EmailAlreadyExistsError(email.value);

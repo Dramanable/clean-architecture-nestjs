@@ -2,7 +2,7 @@
 
 ## 🎯 **Context du Projet**
 
-Vous travaillez sur une **application enterprise NestJS** implémentant la **Clean Architecture** avec une approche **TDD rigoureuse**. L'application est **production-ready** avec sécurité, i18n, et patterns enterprise.
+Vous travaillez sur une **application enterprise NestJS** implémentant la **Clean Architecture** avec une approche **TDD rigoureuse**, les **principes SOLID de Robert C. Martin**, et les **meilleures pratiques TypeScript** strictes. L'application est **production-ready** avec sécurité, i18n, et patterns enterprise.
 
 **🚀 NOUVEAUTÉ ### 📊 **Métriques de Qualité\*\*
 
@@ -43,6 +43,278 @@ src/
 - ✅ **TDD First** : Tests avant implémentation (**24 tests auth + autres**)
 - ✅ **Clean Code** : Nommage expressif, fonctions courtes, commentaires utiles
 - ✅ **Enterprise Security** : Authentification, autorizations, audit trail
+- ✅ **SOLID Principles** : Application rigoureuse des 5 principes de Robert C. Martin
+- ✅ **TypeScript Strict** : Type safety à 100%, zéro tolérance pour `any`
+
+## 🎯 **Principes SOLID de Robert C. Martin**
+
+### 🔹 **S** - Single Responsibility Principle (SRP)
+
+**Une classe, une seule raison de changer**
+
+```typescript
+// ✅ GOOD - Une seule responsabilité
+export class CreateUserUseCase {
+  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+    // Gère uniquement la création d'utilisateur
+  }
+}
+
+// ❌ BAD - Multiples responsabilités
+export class UserService {
+  createUser() {} // Création utilisateur
+  sendEmail() {} // Envoi email
+  validateData() {} // Validation données
+}
+```
+
+### 🔹 **O** - Open/Closed Principle (OCP)
+
+**Ouvert à l'extension, fermé à la modification**
+
+```typescript
+// ✅ GOOD - Extension via interfaces
+export interface INotificationService {
+  send(message: string, recipient: string): Promise<void>;
+}
+
+export class EmailNotificationService implements INotificationService {
+  async send(message: string, recipient: string): Promise<void> {
+    // Implémentation email
+  }
+}
+
+export class SmsNotificationService implements INotificationService {
+  async send(message: string, recipient: string): Promise<void> {
+    // Implémentation SMS - extension sans modification
+  }
+}
+```
+
+### 🔹 **L** - Liskov Substitution Principle (LSP)
+
+**Les sous-types doivent être substituables à leurs types de base**
+
+```typescript
+// ✅ GOOD - Substitution correcte
+export abstract class Repository<T> {
+  abstract save(entity: T): Promise<T>;
+  abstract findById(id: string): Promise<T | null>;
+}
+
+export class UserRepository extends Repository<User> {
+  async save(user: User): Promise<User> {
+    // Respecte le contrat - retourne toujours un User
+    return this.persistenceAdapter.save(user);
+  }
+
+  async findById(id: string): Promise<User | null> {
+    // Respecte le contrat - retourne User ou null
+    return this.persistenceAdapter.findById(id);
+  }
+}
+```
+
+### 🔹 **I** - Interface Segregation Principle (ISP)
+
+**Les clients ne doivent pas dépendre d'interfaces qu'ils n'utilisent pas**
+
+```typescript
+// ✅ GOOD - Interfaces ségrégées
+export interface IUserReader {
+  findById(id: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
+}
+
+export interface IUserWriter {
+  save(user: User): Promise<User>;
+  delete(id: string): Promise<void>;
+}
+
+export interface IUserCounter {
+  count(): Promise<number>;
+  countByRole(role: UserRole): Promise<number>;
+}
+
+// ❌ BAD - Fat interface
+export interface IUserRepository {
+  findById(id: string): Promise<User | null>;
+  save(user: User): Promise<User>;
+  delete(id: string): Promise<void>;
+  count(): Promise<number>;
+  exportToJson(): Promise<string>; // Non utilisé par tous
+  generateReport(): Promise<Buffer>; // Non utilisé par tous
+}
+```
+
+### 🔹 **D** - Dependency Inversion Principle (DIP)
+
+**Dépendre des abstractions, pas des implémentations**
+
+```typescript
+// ✅ GOOD - Dépend des abstractions
+export class CreateUserUseCase {
+  constructor(
+    private readonly userRepository: IUserRepository, // Interface
+    private readonly logger: ILogger, // Interface
+    private readonly eventBus: IEventBus, // Interface
+  ) {}
+}
+
+// ❌ BAD - Dépend des implémentations
+export class CreateUserUseCase {
+  constructor(
+    private readonly userRepository: TypeOrmUserRepository, // Classe concrète
+    private readonly logger: ConsoleLogger, // Classe concrète
+    private readonly eventBus: InMemoryEventBus, // Classe concrète
+  ) {}
+}
+```
+
+## 🔧 **Meilleures Pratiques TypeScript**
+
+### 🎯 **Configuration Stricte Obligatoire**
+
+```typescript
+// tsconfig.json - Mode strict OBLIGATOIRE
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
+```
+
+### 🎯 **Typage Explicite - ZERO `any`**
+
+```typescript
+// ✅ GOOD - Types explicites pour APIs publiques
+export interface CreateUserRequest {
+  readonly email: string;
+  readonly name: string;
+  readonly role: UserRole;
+  readonly requestingUserId: string;
+}
+
+export interface CreateUserResponse {
+  readonly id: string;
+  readonly email: string;
+  readonly name: string;
+  readonly role: UserRole;
+  readonly createdAt: Date;
+}
+
+// ✅ GOOD - Contraintes génériques
+export interface Repository<T extends Entity> {
+  save(entity: T): Promise<T>;
+  findById(id: string): Promise<T | null>;
+}
+
+// ✅ GOOD - Union types pour valeurs contrôlées
+export type DatabaseType = 'mongodb' | 'postgresql' | 'mysql';
+export type Environment = 'development' | 'staging' | 'production';
+
+// ❌ INTERDIT - Usage de any
+export function processData(data: any): any {
+  // JAMAIS !
+  return data;
+}
+
+// ✅ GOOD - Générique typé
+export function processData<T>(data: T): T {
+  return data;
+}
+```
+
+### 🎯 **Gestion Null-Safe & Erreurs**
+
+```typescript
+// ✅ GOOD - Gestion explicite des null
+export class UserService {
+  async findUserById(id: string): Promise<User | null> {
+    const userData = await this.repository.findById(id);
+    return userData ? User.fromData(userData) : null;
+  }
+
+  async getUserById(id: string): Promise<User> {
+    const user = await this.findUserById(id);
+    if (!user) {
+      throw new UserNotFoundError(`User with id ${id} not found`);
+    }
+    return user;
+  }
+}
+
+// ✅ GOOD - Result pattern pour gestion d'erreurs
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+export async function safeOperation<T>(
+  operation: () => Promise<T>,
+): Promise<Result<T>> {
+  try {
+    const data = await operation();
+    return { success: true, data };
+  } catch (error) {
+    return { success: false, error: error as Error };
+  }
+}
+```
+
+## 🔍 **ESLint & Formatage - Règles CRITIQUES**
+
+### 🎯 **Règles NON DÉSACTIVABLES**
+
+```typescript
+// eslint.config.mjs
+export default [
+  {
+    rules: {
+      // Type Safety - CRITIQUE
+      '@typescript-eslint/no-any': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+
+      // Qualité Code - CRITIQUE
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/prefer-readonly': 'error',
+      '@typescript-eslint/explicit-function-return-type': 'error',
+      '@typescript-eslint/no-inferrable-types': 'off', // Préférer explicite
+
+      // Bonnes Pratiques - CRITIQUE
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+    },
+  },
+];
+```
+
+### 🎯 **Configuration Prettier Standardisée**
+
+```json
+// .prettierrc
+{
+  "semi": true,
+  "trailingComma": "all",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "arrowParens": "avoid"
+}
+```
 
 ## 🔐 **Système d'Authentification Implémenté**
 
@@ -211,28 +483,588 @@ REFRESH_TOKEN_SECRET=your-refresh-secret
 BCRYPT_ROUNDS=12                     # Plus élevé en prod
 ```
 
+## 🎯 **Patterns de Développement SOLID + TypeScript**
+
+### 🏢 **Pattern Entity (Domain)**
+
+```typescript
+// ✅ GOOD - Entity avec SOLID et type safety
+export class User {
+  private constructor(
+    private readonly _id: string,
+    private readonly _email: Email,
+    private readonly _name: string,
+    private readonly _role: UserRole,
+    private readonly _createdAt: Date,
+    private readonly _updatedAt: Date,
+  ) {}
+
+  // Factory method - SRP pour la création
+  static create(email: Email, name: string, role: UserRole): User {
+    if (!name?.trim()) {
+      throw new InvalidUserNameError('Name cannot be empty');
+    }
+
+    return new User(
+      generateId(),
+      email,
+      name.trim(),
+      role,
+      new Date(),
+      new Date(),
+    );
+  }
+
+  // Business logic pure - SRP pour les règles métier
+  hasPermission(permission: Permission): boolean {
+    return this.role.hasPermission(permission);
+  }
+
+  canActOn(targetUser: User): boolean {
+    if (this.role === UserRole.SUPER_ADMIN) return true;
+    if (this.role === UserRole.MANAGER)
+      return targetUser.role === UserRole.USER;
+    return this.id === targetUser.id;
+  }
+
+  // Getters read-only - LSP respecté
+  get id(): string {
+    return this._id;
+  }
+  get email(): Email {
+    return this._email;
+  }
+  get name(): string {
+    return this._name;
+  }
+  get role(): UserRole {
+    return this._role;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+}
+```
+
+### 💼 **Pattern Use Case (Application)**
+
+```typescript
+// ✅ GOOD - Use Case avec SOLID complet
+export class CreateUserUseCase {
+  constructor(
+    private readonly userRepository: IUserRepository, // DIP - Interface
+    private readonly logger: ILogger, // DIP - Interface
+    private readonly i18n: II18nService, // DIP - Interface
+    private readonly eventBus: IEventBus, // DIP - Interface
+  ) {}
+
+  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+    // 1. Context pour traceabilité
+    const context: AppContext = AppContextFactory.create()
+      .operation('CreateUser')
+      .requestingUser(request.requestingUserId)
+      .build();
+
+    this.logger.info(
+      this.i18n.t('operations.user.creation_attempt'),
+      context as Record<string, unknown>,
+    );
+
+    try {
+      // 2. Autorisation - SRP pour sécurité
+      await this.validatePermissions(request, context);
+
+      // 3. Validation métier - SRP pour règles
+      await this.validateBusinessRules(request, context);
+
+      // 4. Création entity - SRP pour logique métier
+      const email = Email.create(request.email);
+      const user = User.create(email, request.name, request.role);
+
+      // 5. Persistance - DIP via interface
+      const savedUser = await this.userRepository.save(user);
+
+      // 6. Événements - OCP pour extensions futures
+      await this.eventBus.publish(new UserCreatedEvent(savedUser, context));
+
+      // 7. Réponse typée
+      const response: CreateUserResponse = {
+        id: savedUser.id,
+        email: savedUser.email.value,
+        name: savedUser.name,
+        role: savedUser.role,
+        createdAt: savedUser.createdAt,
+      };
+
+      this.logger.info(this.i18n.t('operations.user.creation_success'), {
+        ...context,
+        userId: savedUser.id,
+      } as Record<string, unknown>);
+
+      return response;
+    } catch (error) {
+      this.logger.error(
+        this.i18n.t('operations.user.creation_failed'),
+        error as Error,
+        context as Record<string, unknown>,
+      );
+      throw error;
+    }
+  }
+
+  // SRP - Méthode dédiée à la validation des permissions
+  private async validatePermissions(
+    request: CreateUserRequest,
+    context: AppContext,
+  ): Promise<void> {
+    const requestingUser = await this.userRepository.findById(
+      request.requestingUserId,
+    );
+    if (!requestingUser) {
+      throw new UnauthorizedError('Requesting user not found');
+    }
+
+    if (!requestingUser.hasPermission(Permission.CREATE_USER)) {
+      throw new ForbiddenError('Insufficient permissions to create user');
+    }
+  }
+
+  // SRP - Méthode dédiée aux règles métier
+  private async validateBusinessRules(
+    request: CreateUserRequest,
+    context: AppContext,
+  ): Promise<void> {
+    const existingUser = await this.userRepository.findByEmail(
+      Email.create(request.email),
+    );
+
+    if (existingUser) {
+      throw new EmailAlreadyExistsError('Email already registered');
+    }
+  }
+}
+```
+
+### 🔧 **Pattern Repository (Infrastructure)**
+
+```typescript
+// ✅ GOOD - Repository avec ISP et DIP
+export class TypeOrmUserRepository implements IUserRepository {
+  constructor(
+    private readonly ormRepository: Repository<UserEntity>, // DIP
+    private readonly mapper: IUserMapper, // DIP - ISP
+    private readonly logger: ILogger, // DIP
+    private readonly i18n: II18nService, // DIP
+  ) {}
+
+  async save(user: User): Promise<User> {
+    const context = { operation: 'UserRepository.save', userId: user.id };
+
+    this.logger.debug(this.i18n.t('infrastructure.user.save_attempt'), context);
+
+    try {
+      const entity = this.mapper.toEntity(user);
+      const savedEntity = await this.ormRepository.save(entity);
+      const savedUser = this.mapper.toDomain(savedEntity);
+
+      this.logger.debug(
+        this.i18n.t('infrastructure.user.save_success'),
+        context,
+      );
+
+      return savedUser;
+    } catch (error) {
+      this.logger.error(
+        this.i18n.t('infrastructure.user.save_failed'),
+        error as Error,
+        context,
+      );
+      throw new RepositoryError('Failed to save user', error as Error);
+    }
+  }
+
+  async findById(id: string): Promise<User | null> {
+    if (!id?.trim()) return null;
+
+    try {
+      const entity = await this.ormRepository.findOne({ where: { id } });
+      return entity ? this.mapper.toDomain(entity) : null;
+    } catch (error) {
+      this.logger.error(
+        this.i18n.t('infrastructure.user.find_failed'),
+        error as Error,
+        { operation: 'UserRepository.findById', userId: id },
+      );
+      throw new RepositoryError('Failed to find user', error as Error);
+    }
+  }
+}
+```
+
+### 🧪 **Pattern Test TDD avec Types**
+
+```typescript
+// ✅ GOOD - Tests TDD avec type safety complet
+describe('CreateUserUseCase', () => {
+  let useCase: CreateUserUseCase;
+  let mockRepository: jest.Mocked<IUserRepository>;
+  let mockLogger: jest.Mocked<ILogger>;
+  let mockI18n: jest.Mocked<II18nService>;
+  let mockEventBus: jest.Mocked<IEventBus>;
+
+  beforeEach(() => {
+    // Mocks typés avec jest.Mocked
+    mockRepository = {
+      save: jest.fn(),
+      findById: jest.fn(),
+      findByEmail: jest.fn(),
+      delete: jest.fn(),
+    } as jest.Mocked<IUserRepository>;
+
+    mockLogger = {
+      info: jest.fn(),
+      error: jest.fn(),
+      warn: jest.fn(),
+      debug: jest.fn(),
+    } as jest.Mocked<ILogger>;
+
+    mockI18n = {
+      t: jest.fn().mockReturnValue('Mocked message'),
+    } as jest.Mocked<II18nService>;
+
+    mockEventBus = {
+      publish: jest.fn(),
+    } as jest.Mocked<IEventBus>;
+
+    useCase = new CreateUserUseCase(
+      mockRepository,
+      mockLogger,
+      mockI18n,
+      mockEventBus,
+    );
+  });
+
+  describe('Successful Operations', () => {
+    it('should create user when valid request provided', async () => {
+      // Arrange - Données typées
+      const request: CreateUserRequest = {
+        email: 'test@example.com',
+        name: 'Test User',
+        role: UserRole.USER,
+        requestingUserId: 'admin-123',
+      };
+
+      const requestingUser = User.create(
+        Email.create('admin@example.com'),
+        'Admin User',
+        UserRole.SUPER_ADMIN,
+      );
+
+      const expectedUser = User.create(
+        Email.create(request.email),
+        request.name,
+        request.role,
+      );
+
+      // Setup mocks avec types
+      mockRepository.findById.mockResolvedValue(requestingUser);
+      mockRepository.findByEmail.mockResolvedValue(null);
+      mockRepository.save.mockResolvedValue(expectedUser);
+      mockEventBus.publish.mockResolvedValue();
+
+      // Act
+      const result: CreateUserResponse = await useCase.execute(request);
+
+      // Assert - Types garantis
+      expect(result).toEqual({
+        id: expectedUser.id,
+        email: request.email,
+        name: request.name,
+        role: request.role,
+        createdAt: expectedUser.createdAt,
+      });
+
+      // Verify interactions
+      expect(mockRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: expect.objectContaining({ value: request.email }),
+          name: request.name,
+          role: request.role,
+        }),
+      );
+
+      expect(mockEventBus.publish).toHaveBeenCalledWith(
+        expect.any(UserCreatedEvent),
+      );
+    });
+  });
+
+  describe('Authorization Failures', () => {
+    it('should reject when requesting user not found', async () => {
+      // Arrange
+      const request: CreateUserRequest = {
+        email: 'test@example.com',
+        name: 'Test User',
+        role: UserRole.USER,
+        requestingUserId: 'invalid-user',
+      };
+
+      mockRepository.findById.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(useCase.execute(request)).rejects.toThrow(UnauthorizedError);
+      expect(mockRepository.save).not.toHaveBeenCalled();
+    });
+  });
+});
+```
+
 ## 🎯 **Guidelines pour Suggestions**
 
-### ✅ **DO - Suggestions Préférées**
+## 🎯 **Guidelines pour Suggestions**
 
-- Respecter la structure Clean Architecture existante
-- Utiliser les patterns établis (Repository, UseCase, AppContext)
-- Écrire les tests AVANT l'implémentation (TDD)
-- Utiliser le système i18n HYBRIDE pour les messages
-- Appliquer les principes SOLID
-- Inclure logging avec AppContext
-- Gérer les erreurs avec exceptions typées
-- Valider les permissions avec RBAC
+### ✅ **DO - Obligations SOLID + TypeScript**
 
-### ❌ **DON'T - Éviter**
+#### **🏗️ Architecture & SOLID**
 
-- Créer des dépendances entre couches incorrectes
-- Ignorer les tests (108 tests doivent rester verts)
-- Mélanger logique métier et technique
-- Hardcoder des valeurs (utiliser la configuration)
-- Omettre le logging et l'audit trail
-- Créer des use cases sans validation des permissions
-- Exposer des détails d'implémentation
+- ✅ **SRP**: Chaque classe/méthode a UNE seule responsabilité
+- ✅ **OCP**: Utiliser interfaces pour extensibilité (jamais de modifications)
+- ✅ **LSP**: Sous-types substituables sans surprise comportementale
+- ✅ **ISP**: Interfaces spécifiques, jamais de fat interfaces
+- ✅ **DIP**: Dépendre d'abstractions (interfaces), jamais d'implémentations
+
+#### **🔧 TypeScript Strict**
+
+- ✅ **ZERO `any`**: Utiliser generics, unions, interfaces strictes
+- ✅ **Types explicites**: Tous les returns types des méthodes publiques
+- ✅ **Null safety**: Gestion explicite de null/undefined
+- ✅ **Readonly**: Propriétés immutables où approprié
+- ✅ **Error handling**: Types d'erreurs spécifiques + Result patterns
+
+#### **🎯 Clean Architecture**
+
+- ✅ **Respecter les couches**: Domain → Application → Infrastructure → Presentation
+- ✅ **Dependency Inversion**: Toujours via interfaces
+- ✅ **Use Cases**: Pattern avec AppContext + validation + logging
+- ✅ **TDD First**: Tests AVANT implémentation (maintenir 202 tests ✅)
+
+#### **🔐 Enterprise Standards**
+
+- ✅ **RBAC**: Validation permissions sur toutes opérations
+- ✅ **Audit Trail**: AppContext + logging sur toutes opérations
+- ✅ **I18n**: Messages typés (domain vs operational)
+- ✅ **Error Management**: Exceptions typées + proper handling
+
+### ❌ **DON'T - Interdictions ABSOLUES**
+
+#### **🚫 Type Safety**
+
+- ❌ **JAMAIS `any`** - Utiliser `unknown` ou types appropriés
+- ❌ **Pas de types implicites** sur APIs publiques
+- ❌ **Pas de mutations** sur propriétés publiques des entities
+- ❌ **Pas d'assertions de type** non sécurisées
+
+#### **🚫 SOLID Violations**
+
+- ❌ **Classes à responsabilités multiples** (SRP violation)
+- ❌ **Modification de code existant** pour nouvelles features (OCP violation)
+- ❌ **Sous-types qui changent le comportement** (LSP violation)
+- ❌ **Fat interfaces** avec méthodes non utilisées (ISP violation)
+- ❌ **Dépendances vers implémentations** (DIP violation)
+
+#### **🚫 Architecture**
+
+- ❌ **Business logic** dans Infrastructure layer
+- ❌ **Direct database access** depuis Use Cases
+- ❌ **Dépendances circulaires** entre couches
+- ❌ **Hardcoded strings** (toujours i18n)
+- ❌ **Operations sans permissions** check
+- ❌ **Tests sans mocks typés**
+
+### 🎯 **Patterns Obligatoires**
+
+#### **💼 Use Case Pattern (SOLID Compliant)**
+
+```typescript
+// ✅ OBLIGATOIRE - Structure Use Case complète
+export class CreateUserUseCase {
+  constructor(
+    private readonly userRepository: IUserRepository, // DIP - Interface only
+    private readonly logger: ILogger, // DIP - Interface only
+    private readonly i18n: II18nService, // DIP - Interface only
+    private readonly eventBus: IEventBus, // DIP - Interface only
+  ) {}
+
+  async execute(request: CreateUserRequest): Promise<CreateUserResponse> {
+    // 1. AppContext OBLIGATOIRE
+    const context: AppContext = AppContextFactory.create()
+      .operation('CreateUser')
+      .requestingUser(request.requestingUserId)
+      .build();
+
+    // 2. Logging initial OBLIGATOIRE
+    this.logger.info(
+      this.i18n.t('operations.user.creation_attempt'),
+      context as Record<string, unknown>,
+    );
+
+    try {
+      // 3. Authorization OBLIGATOIRE - SRP dedicated method
+      await this.validatePermissions(request, context);
+
+      // 4. Business rules OBLIGATOIRE - SRP dedicated method
+      await this.validateBusinessRules(request, context);
+
+      // 5. Entity creation - Pure domain logic
+      const email = Email.create(request.email);
+      const user = User.create(email, request.name, request.role);
+
+      // 6. Persistence via interface - DIP
+      const savedUser = await this.userRepository.save(user);
+
+      // 7. Events for extensibility - OCP
+      await this.eventBus.publish(new UserCreatedEvent(savedUser, context));
+
+      // 8. Typed response OBLIGATOIRE
+      const response: CreateUserResponse = {
+        id: savedUser.id,
+        email: savedUser.email.value,
+        name: savedUser.name,
+        role: savedUser.role,
+        createdAt: savedUser.createdAt,
+      };
+
+      // 9. Success logging OBLIGATOIRE
+      this.logger.info(this.i18n.t('operations.user.creation_success'), {
+        ...context,
+        userId: savedUser.id,
+      } as Record<string, unknown>);
+
+      return response;
+    } catch (error) {
+      // 10. Error logging OBLIGATOIRE
+      this.logger.error(
+        this.i18n.t('operations.user.creation_failed'),
+        error as Error,
+        context as Record<string, unknown>,
+      );
+      throw error;
+    }
+  }
+
+  // SRP - Single method for permissions
+  private async validatePermissions(
+    request: CreateUserRequest,
+    context: AppContext,
+  ): Promise<void> {
+    // Implementation...
+  }
+
+  // SRP - Single method for business rules
+  private async validateBusinessRules(
+    request: CreateUserRequest,
+    context: AppContext,
+  ): Promise<void> {
+    // Implementation...
+  }
+}
+```
+
+#### **🏢 Entity Pattern (Domain)**
+
+```typescript
+// ✅ OBLIGATOIRE - Entity immutable avec factory
+export class User {
+  private constructor(
+    private readonly _id: string,
+    private readonly _email: Email,
+    private readonly _name: string,
+    private readonly _role: UserRole,
+    private readonly _createdAt: Date,
+  ) {}
+
+  // Factory method - SRP pour création
+  static create(email: Email, name: string, role: UserRole): User {
+    // Validation business rules
+    if (!name?.trim()) {
+      throw new InvalidUserNameError('Name cannot be empty');
+    }
+
+    return new User(generateId(), email, name.trim(), role, new Date());
+  }
+
+  // Business methods - SRP pour règles métier
+  hasPermission(permission: Permission): boolean {
+    return this.role.hasPermission(permission);
+  }
+
+  // Read-only getters - LSP compliance
+  get id(): string {
+    return this._id;
+  }
+  get email(): Email {
+    return this._email;
+  }
+  get name(): string {
+    return this._name;
+  }
+  get role(): UserRole {
+    return this._role;
+  }
+  get createdAt(): Date {
+    return this._createdAt;
+  }
+}
+```
+
+#### **🧪 Test Pattern (TDD + Types)**
+
+```typescript
+// ✅ OBLIGATOIRE - Tests typés avec mocks corrects
+describe('CreateUserUseCase', () => {
+  let useCase: CreateUserUseCase;
+  let mockRepository: jest.Mocked<IUserRepository>;
+  let mockLogger: jest.Mocked<ILogger>;
+  let mockI18n: jest.Mocked<II18nService>;
+  let mockEventBus: jest.Mocked<IEventBus>;
+
+  beforeEach(() => {
+    // Mocks typed OBLIGATOIRE
+    mockRepository = createMockUserRepository();
+    mockLogger = createMockLogger();
+    mockI18n = createMockI18nService();
+    mockEventBus = createMockEventBus();
+
+    useCase = new CreateUserUseCase(
+      mockRepository,
+      mockLogger,
+      mockI18n,
+      mockEventBus,
+    );
+  });
+
+  it('should create user when valid request', async () => {
+    // Arrange - Typed data OBLIGATOIRE
+    const request: CreateUserRequest = {
+      email: 'test@example.com',
+      name: 'Test User',
+      role: UserRole.USER,
+      requestingUserId: 'admin-123',
+    };
+
+    // Setup mocks with types
+    mockRepository.findById.mockResolvedValue(adminUser);
+    mockRepository.save.mockResolvedValue(expectedUser);
+
+    // Act
+    const result: CreateUserResponse = await useCase.execute(request);
+
+    // Assert - Type safety guaranteed
+    expect(result).toEqual(expectedResponse);
+    expect(mockRepository.save).toHaveBeenCalledWith(expect.any(User));
+  });
+});
+```
 
 ### 🎯 **Patterns de Code Préférés**
 
@@ -385,16 +1217,162 @@ describe('[FeatureName]', () => {
 - **Security** : JWT + RBAC + Audit
 - **I18n** : Système HYBRIDE innovant
 
+## 📊 **Métriques de Qualité OBLIGATOIRES**
+
+### 🎯 **Standards à Maintenir**
+
+#### **✅ Type Safety (100%)**
+
+- **Zero `any` types** - Utiliser `unknown` ou types appropriés
+- **Explicit return types** sur toutes méthodes publiques
+- **Strict TypeScript** config avec toutes options strictes activées
+- **Null safety** avec gestion explicite null/undefined
+
+#### **✅ Test Coverage (Maintenir 202 tests ✅)**
+
+- **TDD obligatoire** - Tests AVANT implémentation
+- **Unit tests** pour toute logique métier
+- **Integration tests** pour Use Cases
+- **Type-safe mocks** avec `jest.Mocked<T>`
+
+#### **✅ SOLID Compliance (100%)**
+
+- **SRP**: Une responsabilité par classe/méthode
+- **OCP**: Extension via interfaces, pas de modification
+- **LSP**: Substitution sans surprise comportementale
+- **ISP**: Interfaces spécifiques, jamais fat interfaces
+- **DIP**: Dépendances vers abstractions uniquement
+
+#### **✅ Architecture Quality**
+
+- **Dependency Inversion** strict entre couches
+- **Clean separation** Domain/Application/Infrastructure/Presentation
+- **No circular dependencies** vérifiées
+- **Interface-based design** obligatoire
+
+#### **✅ Code Quality**
+
+- **ESLint**: 0 erreurs, warnings minimaux
+- **Prettier**: Formatage automatique appliqué
+- **Documentation**: JSDoc sur APIs publiques
+- **Error handling**: Types d'erreurs spécifiques
+
+### 🚨 **Détection de Non-Conformité**
+
+#### **🔴 Violations CRITIQUES (Jamais accepter)**
+
+```typescript
+// ❌ VIOLATION TYPE SAFETY
+function process(data: any): any {} // INTERDIT
+
+// ❌ VIOLATION SRP
+class UserService {
+  createUser() {}
+  sendEmail() {} // Responsabilité multiple
+  generateReport() {} // Responsabilité multiple
+}
+
+// ❌ VIOLATION DIP
+class UseCase {
+  constructor(
+    private repo: TypeOrmRepository, // Dépendance concrète INTERDITE
+  ) {}
+}
+
+// ❌ VIOLATION OCP
+class PaymentProcessor {
+  process(type: string) {
+    if (type === 'credit') {
+      // Modification requise pour nouveau type INTERDIT
+    }
+  }
+}
+```
+
+#### **✅ Correction OBLIGATOIRE**
+
+```typescript
+// ✅ TYPE SAFETY CORRECT
+function process<T>(data: T): ProcessResult<T> {}
+
+// ✅ SRP CORRECT
+class UserService {
+  createUser() {} // Une seule responsabilité
+}
+class EmailService {
+  sendEmail() {} // Service séparé
+}
+
+// ✅ DIP CORRECT
+class UseCase {
+  constructor(
+    private readonly repo: IUserRepository, // Interface obligatoire
+  ) {}
+}
+
+// ✅ OCP CORRECT
+interface IPaymentProcessor {
+  process(payment: Payment): Promise<PaymentResult>;
+}
+class PaymentService {
+  constructor(private processors: Map<PaymentType, IPaymentProcessor>) {}
+
+  async process(payment: Payment): Promise<PaymentResult> {
+    const processor = this.processors.get(payment.type);
+    return processor.process(payment); // Extension sans modification
+  }
+}
+```
+
+### 🎯 **Checklist Génération de Code**
+
+#### **📋 AVANT de générer du code**
+
+- [ ] **Architecture**: Identifier la couche correcte (Domain/Application/Infrastructure/Presentation)
+- [ ] **SOLID**: Vérifier respect des 5 principes
+- [ ] **Types**: Définir interfaces et types stricts
+- [ ] **Dependencies**: Identifier abstractions nécessaires
+- [ ] **Tests**: Planifier structure TDD
+
+#### **📋 PENDANT la génération**
+
+- [ ] **SRP**: Une responsabilité par classe/méthode
+- [ ] **Interfaces**: Utiliser abstractions pour toutes dépendances
+- [ ] **Types explicites**: Return types sur méthodes publiques
+- [ ] **Error handling**: Types d'erreurs spécifiques
+- [ ] **Logging**: AppContext + i18n messages
+
+#### **📋 APRÈS génération**
+
+- [ ] **Tests**: Créer tests TDD avec mocks typés
+- [ ] **ESLint**: Vérifier 0 erreurs
+- [ ] **Type check**: Compilation TypeScript sans erreurs
+- [ ] **Architecture**: Respect des couches
+- [ ] **Documentation**: JSDoc sur APIs publiques
+
+### 📈 **Métriques Actuelles**
+
+- ✅ **Tests**: 202 tests passants (30 suites)
+- ✅ **Architecture**: Clean Architecture respectée
+- ✅ **SOLID**: Principes appliqués dans Use Cases existants
+- ✅ **Type Safety**: Configuration TypeScript stricte
+- ✅ **Security**: RBAC + JWT + Audit trail
+- ✅ **I18n**: Système hybride opérationnel
+
 ### 📋 **Commandes Utiles**
 
 ```bash
-npm test                    # Tous les tests
+npm test                    # Tous les tests (maintenir 202 ✅)
 npm run test:watch         # Tests en mode watch
 npm run test:coverage      # Rapport de couverture
-npm run lint               # Linting
-npm run build              # Build production
+npm run lint               # Linting (0 erreurs obligatoire)
+npm run format             # Formatage Prettier
+npm run build              # Build production (0 erreurs TS)
+npm run type-check         # Vérification types uniquement
 ```
 
 ---
 
-**🎯 Utilisez ces instructions pour générer du code qui respecte parfaitement l'architecture et les standards établis dans ce projet enterprise !**
+**🎯 Utilisez ces instructions pour générer du code qui respecte RIGOUREUSEMENT les principes SOLID de Robert C. Martin, les meilleures pratiques TypeScript strictes, et l'architecture Clean établie dans ce projet enterprise de niveau production !**
+
+**🔴 RAPPEL CRITIQUE**: Tout code généré DOIT respecter les 5 principes SOLID, avoir une type safety à 100% (ZERO `any`), et maintenir les 202 tests passants. Aucune exception n'est tolérée sur ces standards fondamentaux.\*\*

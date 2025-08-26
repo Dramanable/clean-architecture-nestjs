@@ -1,6 +1,6 @@
 /**
  * 🚨 Domain Exceptions
- * 
+ *
  * Exceptions métier avec codes d'erreur et support i18n
  */
 
@@ -13,7 +13,7 @@ export abstract class DomainException extends Error {
     message: string,
     code: string,
     i18nKey: string,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ) {
     super(message);
     this.name = this.constructor.name;
@@ -29,7 +29,7 @@ export class UserNotFoundError extends DomainException {
       `User with ID ${userId} not found`,
       'USER_NOT_FOUND',
       'errors.user.not_found',
-      { userId }
+      { userId },
     );
   }
 }
@@ -40,7 +40,7 @@ export class EmailAlreadyExistsError extends DomainException {
       `Email ${email} already exists`,
       'EMAIL_ALREADY_EXISTS',
       'errors.user.email_already_exists',
-      { email }
+      { email },
     );
   }
 }
@@ -50,7 +50,7 @@ export class InvalidCredentialsError extends DomainException {
     super(
       'Invalid email or password',
       'INVALID_CREDENTIALS',
-      'errors.auth.invalid_credentials'
+      'errors.auth.invalid_credentials',
     );
   }
 }
@@ -61,7 +61,7 @@ export class InsufficientPermissionsError extends DomainException {
       `Insufficient permissions: ${permission} required for role ${userRole}`,
       'INSUFFICIENT_PERMISSIONS',
       'errors.auth.insufficient_permissions',
-      { permission, userRole }
+      { permission, userRole },
     );
   }
 }
@@ -72,7 +72,7 @@ export class InvalidEmailFormatError extends DomainException {
       `Invalid email format: ${email}`,
       'INVALID_EMAIL_FORMAT',
       'errors.validation.invalid_email',
-      { email }
+      { email },
     );
   }
 }
@@ -83,7 +83,7 @@ export class InvalidNameError extends DomainException {
       `Invalid name: ${reason}`,
       'INVALID_NAME',
       'errors.validation.invalid_name',
-      { name, reason }
+      { name, reason },
     );
   }
 }
@@ -94,7 +94,7 @@ export class RoleElevationError extends DomainException {
       `Cannot elevate from ${fromRole} to ${toRole}`,
       'ROLE_ELEVATION_FORBIDDEN',
       'errors.auth.role_elevation_forbidden',
-      { fromRole, toRole }
+      { fromRole, toRole },
     );
   }
 }

@@ -1,13 +1,13 @@
 /**
  * 🏛️ DOMAIN ENUMS - User Roles & Permissions
- * 
+ *
  * Définit les rôles et permissions dans le système
  */
 
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
-  MANAGER = 'MANAGER', 
-  USER = 'USER'
+  MANAGER = 'MANAGER',
+  USER = 'USER',
 }
 
 export enum Permission {
@@ -17,15 +17,15 @@ export enum Permission {
   DELETE_USER = 'DELETE_USER',
   VIEW_USER = 'VIEW_USER',
   VIEW_ALL_USERS = 'VIEW_ALL_USERS',
-  
+
   // Manager permissions
   MANAGE_TEAM = 'MANAGE_TEAM',
   VIEW_REPORTS = 'VIEW_REPORTS',
-  
+
   // Super admin permissions
   MANAGE_SYSTEM = 'MANAGE_SYSTEM',
   MANAGE_ROLES = 'MANAGE_ROLES',
-  ACCESS_ADMIN_PANEL = 'ACCESS_ADMIN_PANEL'
+  ACCESS_ADMIN_PANEL = 'ACCESS_ADMIN_PANEL',
 }
 
 /**
@@ -43,9 +43,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.VIEW_REPORTS,
     Permission.MANAGE_SYSTEM,
     Permission.MANAGE_ROLES,
-    Permission.ACCESS_ADMIN_PANEL
+    Permission.ACCESS_ADMIN_PANEL,
   ],
-  
+
   [UserRole.MANAGER]: [
     // Manager peut gérer son équipe
     Permission.CREATE_USER,
@@ -53,12 +53,12 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.VIEW_USER,
     Permission.VIEW_ALL_USERS,
     Permission.MANAGE_TEAM,
-    Permission.VIEW_REPORTS
+    Permission.VIEW_REPORTS,
   ],
-  
+
   [UserRole.USER]: [
     // User basique peut seulement voir son profil
     Permission.VIEW_USER,
-    Permission.UPDATE_USER // Son propre profil seulement
-  ]
+    Permission.UPDATE_USER, // Son propre profil seulement
+  ],
 };

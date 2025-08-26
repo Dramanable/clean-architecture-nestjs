@@ -1,6 +1,6 @@
 /**
  * 🔍 USER SPECIFIC - Filtres et recherche pour les utilisateurs
- * 
+ *
  * Types spécifiques pour la recherche et filtrage des utilisateurs
  */
 
@@ -43,11 +43,11 @@ export interface UserQueryParams {
 /**
  * Options de tri spécifiques aux utilisateurs
  */
-export type UserSortField = 
-  | 'name' 
-  | 'email' 
-  | 'role' 
-  | 'createdAt' 
+export type UserSortField =
+  | 'name'
+  | 'email'
+  | 'role'
+  | 'createdAt'
   | 'lastLoginAt';
 
 /**
@@ -60,7 +60,7 @@ export class UserQueryBuilder {
     sortBy: 'createdAt',
     sortOrder: 'DESC',
     search: {},
-    filters: {}
+    filters: {},
   };
 
   page(page: number): this {

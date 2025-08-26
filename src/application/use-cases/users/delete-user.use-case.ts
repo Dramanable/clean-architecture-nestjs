@@ -43,7 +43,9 @@ export class DeleteUserUseCase {
     };
 
     this.logger.info(
-      this.i18n.t('operations.user.deletion_attempt', { userId: request.userId }),
+      this.i18n.t('operations.user.deletion_attempt', {
+        userId: request.userId,
+      }),
       requestContext,
     );
 
@@ -58,7 +60,10 @@ export class DeleteUserUseCase {
         request.requestingUserId,
       );
       if (!requestingUser) {
-        this.logger.warn(this.i18n.t('warnings.user.not_found'), requestContext);
+        this.logger.warn(
+          this.i18n.t('warnings.user.not_found'),
+          requestContext,
+        );
         throw new UserNotFoundError(request.requestingUserId);
       }
 
@@ -66,7 +71,9 @@ export class DeleteUserUseCase {
       const targetUser = await this.userRepository.findById(request.userId);
       if (!targetUser) {
         this.logger.warn(
-          this.i18n.t('warnings.user.target_not_found', { userId: request.userId }),
+          this.i18n.t('warnings.user.target_not_found', {
+            userId: request.userId,
+          }),
           requestContext,
         );
         throw new UserNotFoundError(request.userId);

@@ -30,19 +30,29 @@ describe('AppContext Pattern', () => {
       };
 
       // Act
-      const context = AppContextFactory.auth('Login', 'user@test.com', clientInfo);
+      const context = AppContextFactory.auth(
+        'Login',
+        'user@test.com',
+        clientInfo,
+      );
 
       // Assert
       expect(context.operation).toBe('Login');
       expect(context.ipAddress).toBe('192.168.1.100');
-      expect(context.userAgent).toBe('Mozilla/5.0 (Windows NT 10.0; Win64; x64)');
+      expect(context.userAgent).toBe(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      );
       expect(context.deviceId).toBe('device-abc123');
       expect(context.metadata?.email).toBe('user@test.com');
     });
 
     it('devrait créer un context pour opération utilisateur', () => {
       // Act
-      const context = AppContextFactory.userOperation('UpdateUser', 'admin-123', 'user-456');
+      const context = AppContextFactory.userOperation(
+        'UpdateUser',
+        'admin-123',
+        'user-456',
+      );
 
       // Assert
       expect(context.operation).toBe('UpdateUser');
@@ -84,9 +94,7 @@ describe('AppContext Pattern', () => {
     it('devrait rejeter un context sans opération', () => {
       // Act & Assert
       expect(() => {
-        AppContextFactory.create()
-          .requestingUser('user-123')
-          .build();
+        AppContextFactory.create().requestingUser('user-123').build();
       }).toThrow('Operation name is required');
     });
   });
@@ -113,7 +121,7 @@ describe('AppContext Pattern', () => {
     });
   });
 
-  describe('Exemples d\'utilisation pratique', () => {
+  describe("Exemples d'utilisation pratique", () => {
     it('devrait créer un context pour audit de sécurité', () => {
       // Simulate: Admin user trying to delete another user from suspicious IP
       const context = AppContextFactory.create()
@@ -164,7 +172,7 @@ describe('AppContext Pattern', () => {
     it('devrait créer un context pour debugging distribué', () => {
       // Simulate: Complex operation spanning multiple services
       const parentTraceId = 'trace-abc123-def456';
-      
+
       const context = AppContextFactory.create()
         .operation('ProcessPayment')
         .requestingUser('customer-789')

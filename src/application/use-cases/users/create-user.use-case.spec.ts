@@ -1,25 +1,24 @@
 /**
  * 🧪 TDD - Create User Use Case
- * 
+ *
  * Tests pour la création d'utilisateurs avec règles métier strictes
  */
 
-import { CreateUserUseCase } from './create-user.use-case';
-import { UserRepository } from '../../../domain/repositories/user.repository';
 import { User } from '../../../domain/entities/user.entity';
-import { Email } from '../../../domain/value-objects/email.vo';
-import { UserRole } from '../../../shared/enums/user-role.enum';
-import { Logger } from '../../ports/logger.port';
-import type { I18nService } from '../../ports/i18n.port';
-import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
 import {
-  UserNotFoundError,
   EmailAlreadyExistsError,
   InsufficientPermissionsError,
   InvalidEmailFormatError,
   InvalidNameError,
   RoleElevationError,
+  UserNotFoundError,
 } from '../../../domain/exceptions/user.exceptions';
+import { UserRepository } from '../../../domain/repositories/user.repository';
+import { Email } from '../../../domain/value-objects/email.vo';
+import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
+import { UserRole } from '../../../shared/enums/user-role.enum';
+import { Logger } from '../../ports/logger.port';
+import { CreateUserUseCase } from './create-user.use-case';
 
 // DTOs
 interface CreateUserRequest {
@@ -27,14 +26,6 @@ interface CreateUserRequest {
   name: string;
   role: UserRole;
   requestingUserId: string;
-}
-
-interface CreateUserResponse {
-  id: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  createdAt: Date;
 }
 
 describe('CreateUserUseCase', () => {
@@ -78,19 +69,19 @@ describe('CreateUserUseCase', () => {
     superAdminUser = new User(
       new Email('admin@company.com'),
       'Super Admin',
-      UserRole.SUPER_ADMIN
+      UserRole.SUPER_ADMIN,
     );
 
     managerUser = new User(
       new Email('manager@company.com'),
       'Manager User',
-      UserRole.MANAGER
+      UserRole.MANAGER,
     );
 
     regularUser = new User(
       new Email('user@company.com'),
       'Regular User',
-      UserRole.USER
+      UserRole.USER,
     );
   });
 
@@ -101,16 +92,16 @@ describe('CreateUserUseCase', () => {
         email: 'newuser@company.com',
         name: 'New User',
         role: UserRole.MANAGER,
-        requestingUserId: 'admin-id'
+        requestingUserId: 'admin-id',
       };
 
       mockUserRepository.findById.mockResolvedValue(superAdminUser);
       mockUserRepository.findByEmail.mockResolvedValue(null); // Email disponible
-      
+
       const savedUser = new User(
         new Email(request.email),
         request.name,
-        request.role
+        request.role,
       );
       mockUserRepository.save.mockResolvedValue(savedUser);
 
@@ -140,16 +131,16 @@ describe('CreateUserUseCase', () => {
         email: 'newuser@company.com',
         name: 'New User',
         role: UserRole.USER,
-        requestingUserId: 'manager-id'
+        requestingUserId: 'manager-id',
       };
 
       mockUserRepository.findById.mockResolvedValue(managerUser);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      
+
       const savedUser = new User(
         new Email(request.email),
         request.name,
-        request.role
+        request.role,
       );
       mockUserRepository.save.mockResolvedValue(savedUser);
 
@@ -169,16 +160,16 @@ describe('CreateUserUseCase', () => {
         email: 'newuser@company.com',
         name: 'New User',
         role: UserRole.USER,
-        requestingUserId: 'user-id'
+        requestingUserId: 'user-id',
       };
 
       mockUserRepository.findById.mockResolvedValue(regularUser);
 
       // Act & Assert
-      await expect(createUserUseCase.execute(request))
-        .rejects
-        .toThrow(InsufficientPermissionsError);
-      
+      await expect(createUserUseCase.execute(request)).rejects.toThrow(
+        InsufficientPermissionsError,
+      );
+
       expect(mockUserRepository.save).not.toHaveBeenCalled();
       expect(mockLogger.warn).toHaveBeenCalled();
     });
@@ -189,16 +180,16 @@ describe('CreateUserUseCase', () => {
         email: 'newadmin@company.com',
         name: 'New Admin',
         role: UserRole.SUPER_ADMIN,
-        requestingUserId: 'manager-id'
+        requestingUserId: 'manager-id',
       };
 
       mockUserRepository.findById.mockResolvedValue(managerUser);
 
       // Act & Assert
-      await expect(createUserUseCase.execute(request))
-        .rejects
-        .toThrow(RoleElevationError);
-      
+      await expect(createUserUseCase.execute(request)).rejects.toThrow(
+        RoleElevationError,
+      );
+
       expect(mockUserRepository.save).not.toHaveBeenCalled();
     });
 
@@ -214,10 +205,10 @@ describe('CreateUserUseCase', () => {
       mockUserRepository.findById.mockResolvedValue(managerUser);
 
       // Act & Assert
-      await expect(createUserUseCase.execute(request))
-        .rejects
-        .toThrow(RoleElevationError);
-      
+      await expect(createUserUseCase.execute(request)).rejects.toThrow(
+        RoleElevationError,
+      );
+
       expect(mockUserRepository.save).not.toHaveBeenCalled();
     });
   });
@@ -235,9 +226,9 @@ describe('CreateUserUseCase', () => {
       mockUserRepository.findById.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(createUserUseCase.execute(request))
-        .rejects
-        .toThrow(UserNotFoundError);
+      await expect(createUserUseCase.execute(request)).rejects.toThrow(
+        UserNotFoundError,
+      );
     });
 
     it('should reject when email already exists', async () => {
@@ -259,10 +250,10 @@ describe('CreateUserUseCase', () => {
       mockUserRepository.findByEmail.mockResolvedValue(existingUser);
 
       // Act & Assert
-      await expect(createUserUseCase.execute(request))
-        .rejects
-        .toThrow(EmailAlreadyExistsError);
-      
+      await expect(createUserUseCase.execute(request)).rejects.toThrow(
+        EmailAlreadyExistsError,
+      );
+
       expect(mockUserRepository.save).not.toHaveBeenCalled();
     });
 
@@ -278,9 +269,9 @@ describe('CreateUserUseCase', () => {
       mockUserRepository.findById.mockResolvedValue(superAdminUser);
 
       // Act & Assert
-      await expect(createUserUseCase.execute(request))
-        .rejects
-        .toThrow(InvalidEmailFormatError);
+      await expect(createUserUseCase.execute(request)).rejects.toThrow(
+        InvalidEmailFormatError,
+      );
     });
 
     it('should reject empty name', async () => {
@@ -296,9 +287,9 @@ describe('CreateUserUseCase', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(createUserUseCase.execute(request))
-        .rejects
-        .toThrow(InvalidNameError);
+      await expect(createUserUseCase.execute(request)).rejects.toThrow(
+        InvalidNameError,
+      );
     });
   });
 
@@ -309,16 +300,16 @@ describe('CreateUserUseCase', () => {
         email: '  NewUser@Company.COM  ',
         name: '  New User  ',
         role: UserRole.USER,
-        requestingUserId: 'admin-id'
+        requestingUserId: 'admin-id',
       };
 
       mockUserRepository.findById.mockResolvedValue(superAdminUser);
       mockUserRepository.findByEmail.mockResolvedValue(null);
-      
+
       const savedUser = new User(
         new Email('newuser@company.com'),
         'New User',
-        request.role
+        request.role,
       );
       mockUserRepository.save.mockResolvedValue(savedUser);
 

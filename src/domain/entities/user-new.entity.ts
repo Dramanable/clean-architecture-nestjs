@@ -1,9 +1,9 @@
 /**
  * 🏛️ DOMAIN ENTITY - User avec Système de Rôles
- * 
+ *
  * Entité métier pure représentant un utilisateur avec rôles et permissions.
  * Contient la logique métier et les règles de validation.
- * 
+ *
  * PRINCIPES CLEAN ARCHITECTURE :
  * - Pas de dépendance vers l'infrastructure
  * - Logique métier pure avec système de permissions
@@ -11,9 +11,9 @@
  */
 
 import { Email } from '../value-objects/email.vo';
-import { 
-  UserRole, 
-  Permission, 
+import {
+  UserRole,
+  Permission,
   ROLE_PERMISSIONS,
 } from '../../shared/enums/user-role.enum';
 
@@ -26,7 +26,7 @@ export class User {
 
   constructor(email: Email, name: string, role: UserRole) {
     this.validateName(name);
-    
+
     this.id = this.generateId();
     this.email = email;
     this.name = name.trim();
@@ -81,11 +81,11 @@ export class User {
     if (this.isSuperAdmin()) {
       return true; // Super admin peut tout
     }
-    
+
     if (this.isManager()) {
       return targetUser.isRegularUser(); // Manager peut agir sur users uniquement
     }
-    
+
     return this.hasSameEmail(targetUser); // User peut agir que sur lui-même
   }
 
