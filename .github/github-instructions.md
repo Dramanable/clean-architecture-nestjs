@@ -47,6 +47,8 @@ make status
 ### **Accès aux Services**
 
 - **Application**: http://localhost:3000
+- **API Base URL**: http://localhost:3000/api/v1
+- **Swagger Documentation**: http://localhost:3000/api/docs
 - **pgAdmin**: http://localhost:5050
   - Email: `admin@admin.com`
   - Mot de passe: `admin`
@@ -125,6 +127,42 @@ fix: resolve email validation issue
 docs: update API documentation
 test: add login use case tests
 chore: update dependencies
+```
+
+### **🚨 Résolution des Problèmes de Commit**
+
+**Erreur de validation commitlint:**
+
+Si vous obtenez des erreurs lors du commit, vérifiez le format :
+
+```bash
+# ❌ Incorrect
+git commit -m "fix bug"
+git commit -m "updated code"
+
+# ✅ Correct
+git commit -m "fix: resolve authentication bug"
+git commit -m "docs: update setup instructions"
+```
+
+**Hook Husky déprécié:**
+
+Si vous voyez un warning Husky, c'est normal et n'affecte pas le fonctionnement :
+
+```
+husky - DEPRECATED
+Please remove the following two lines from .husky/commit-msg:
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+```
+
+**Bypass des hooks (à éviter):**
+
+En cas d'urgence seulement :
+
+```bash
+# Bypass les hooks de pre-commit
+git commit --no-verify -m "hotfix: emergency fix"
 ```
 
 ## 🏗️ **Architecture Clean**
@@ -304,6 +342,40 @@ make down
 docker volume prune
 make up
 ```
+
+### **🔐 Problèmes d'Authentification**
+
+**Erreur 401 "Identifiants invalides"**
+
+Si vous obtenez une erreur 401 lors de la connexion, vérifiez que l'utilisateur super admin existe :
+
+```bash
+# Vérifier si l'utilisateur existe
+docker exec -i cleanarchi_postgres_dev psql -U postgres -d cleanarchi_dev -c "SELECT email, role FROM users WHERE email = 'admin@example.com';"
+
+# Créer l'utilisateur super admin si nécessaire
+docker exec -i cleanarchi_postgres_dev psql -U postgres -d cleanarchi_dev < scripts/create-superadmin.sql
+```
+
+**Credentials par défaut:**
+
+- Email: `admin@example.com`
+- Password: `superadmin`
+
+**Test de connexion:**
+
+```bash
+# Tester l'API d'authentification
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "superadmin"}'
+```
+
+**URLs importantes:**
+
+- API Base: `http://localhost:3000/api/v1`
+- Swagger UI: `http://localhost:3000/api/docs`
+- Health Check: `http://localhost:3000/health`
 
 ### **Commandes de Debug**
 
