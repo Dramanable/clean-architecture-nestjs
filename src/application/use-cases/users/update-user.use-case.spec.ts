@@ -15,8 +15,8 @@ import {
 } from '../../../domain/exceptions/user.exceptions';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
-import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
 import { UserRole } from '../../../shared/enums/user-role.enum';
+import { MockI18nService } from '../../mocks/mock-i18n.service';
 import { Logger } from '../../ports/logger.port';
 import { UpdateUserUseCase } from './update-user.use-case';
 
@@ -131,11 +131,11 @@ describe('UpdateUserUseCase', () => {
         }),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('modifié avec succès'),
+        expect.stringContaining('success.user.update_success'), // Clé i18n
         expect.any(Object),
       );
       expect(mockLogger.audit).toHaveBeenCalledWith(
-        'Utilisateur modifié',
+        'audit.user.updated', // Clé i18n
         'admin-id',
         expect.any(Object),
       );

@@ -2,7 +2,89 @@
 
 ## 🎯 **Context du Projet**
 
-Vous travaillez sur une **application enterprise NestJS** implémentant la **Clean Architecture** avec une approche **TDD rigoureuse**, les **principes SOLID de Robert C. Martin**, et les **meilleures pratiques TypeScript** strictes. L'application est **production-ready** avec sécurité, i18n, et patterns enterprise.
+Vous travaillez sur une **application enterprise NestJS** implémentant la **Clean Architecture de Robert C. Martin (Uncle Bob)** avec une approche **TDD rigoureuse**, les **principes SOLID**, et les **meilleures pratiques TypeScript** strictes. L'application est **production-ready** avec sécurité, i18n, et patterns enterprise.
+
+## 🏛️ **Clean Architecture - Principes Fondamentaux d'Uncle Bob**
+
+### 📚 **Référence Officielle**
+
+**Source** : [The Clean Architecture par Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+
+### 🎯 **Objectifs de la Clean Architecture**
+
+La Clean Architecture produit des systèmes qui sont :
+
+1. **🔧 Independent of Frameworks** - L'architecture ne dépend pas de l'existence de frameworks. Vous utilisez les frameworks comme des outils, plutôt que de contraindre votre système dans leurs limitations.
+
+2. **🧪 Testable** - Les règles métier peuvent être testées sans UI, Database, Web Server, ou tout autre élément externe.
+
+3. **🎨 Independent of UI** - L'UI peut changer facilement, sans changer le reste du système. Une Web UI peut être remplacée par une console UI sans changer les règles métier.
+
+4. **🗄️ Independent of Database** - Vous pouvez échanger Oracle ou SQL Server pour Mongo, BigTable, CouchDB, ou autre chose. Vos règles métier ne sont pas liées à la base de données.
+
+5. **🌐 Independent of any external agency** - Vos règles métier ne savent simplement rien du monde extérieur.
+
+### 🔄 **The Dependency Rule - RÈGLE FONDAMENTALE**
+
+> **"Source code dependencies can only point inwards"**
+
+![Clean Architecture Circles](https://blog.cleancoder.com/uncle-bob/images/2012-08-13-the-clean-architecture/CleanArchitecture.jpg)
+
+**Les cercles concentriques représentent différentes zones du logiciel :**
+
+- Plus vous allez vers l'intérieur, plus le niveau du logiciel est élevé
+- Les cercles extérieurs sont des mécanismes
+- Les cercles intérieurs sont des politiques
+
+**❌ INTERDIT** : Rien dans un cercle intérieur ne peut connaître quoi que ce soit d'un cercle extérieur
+**❌ INTERDIT** : Le nom de quelque chose déclaré dans un cercle extérieur ne doit pas être mentionné par le code dans un cercle intérieur
+
+### 🏗️ **Les 4 Couches Principales**
+
+#### 1. 🏛️ **Entities (Entités)**
+
+- **Rôle** : Encapsulent les règles métier de l'enterprise
+- **Contenu** : Objets avec méthodes OU structures de données + fonctions
+- **Stabilité** : Les moins susceptibles de changer lors de changements externes
+- **Exemple** : Pas affectées par les changements de navigation, sécurité, ou UI
+
+#### 2. 💼 **Use Cases (Cas d'Usage)**
+
+- **Rôle** : Contiennent les règles métier spécifiques à l'application
+- **Contenu** : Orchestrent le flux de données vers/depuis les entités
+- **Isolation** : Isolées des préoccupations externes (DB, UI, frameworks)
+- **Impact** : Affectées uniquement par les changements d'opérations applicatives
+
+#### 3. 🔌 **Interface Adapters (Adaptateurs d'Interface)**
+
+- **Rôle** : Ensemble d'adaptateurs qui convertissent les données
+- **Contenu** : MVC, Presenters, Views, Controllers, Repository implementations
+- **Conversion** : Du format le plus pratique pour use cases/entities vers le format externe
+- **Exemple** : Tout le SQL doit être restreint à cette couche
+
+#### 4. 🔧 **Frameworks and Drivers (Frameworks et Pilotes)**
+
+- **Rôle** : Couche la plus externe composée de frameworks et outils
+- **Contenu** : Database, Web Framework, outils externes
+- **Code** : Principalement du code de "glue" qui communique vers l'intérieur
+- **Détails** : Où tous les détails vont (Web, Database sont des détails)
+
+### 🚪 **Crossing Boundaries (Franchissement des Frontières)**
+
+#### 🔄 **Dependency Inversion Principle**
+
+- **Problème** : Use case doit appeler presenter, mais ne peut pas (violation de Dependency Rule)
+- **Solution** : Use case appelle une interface dans le cercle intérieur
+- **Implémentation** : Presenter dans cercle extérieur implémente l'interface
+- **Technique** : Polymorphisme dynamique pour créer des dépendances qui s'opposent au flux de contrôle
+
+#### 📦 **Data Crossing Boundaries**
+
+- **Format** : Structures de données simples et isolées
+- **Types autorisés** : Structs basiques, Data Transfer Objects, arguments de fonctions
+- **❌ INTERDIT** : Passer des Entities ou Database rows à travers les frontières
+- **❌ INTERDIT** : Structures de données avec dépendances violant la Dependency Rule
+- **✅ RÈGLE** : Données toujours dans le format le plus pratique pour le cercle intérieur
 
 ## 📝 **Commits Sémantiques OBLIGATOIRES**
 

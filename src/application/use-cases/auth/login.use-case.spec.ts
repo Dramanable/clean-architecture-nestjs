@@ -110,7 +110,7 @@ describe('LoginUseCase (TDD)', () => {
         email: 'user@example.com',
         name: 'John Doe',
         role: 'USER',
-        passwordHash: 'hashedPassword',
+        hashedPassword: 'hashedPassword',
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
@@ -148,7 +148,7 @@ describe('LoginUseCase (TDD)', () => {
       const mockUser = {
         id: 'user-456',
         email: 'user@example.com',
-        passwordHash: 'hashedPassword',
+        hashedPassword: 'hashedPassword',
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
@@ -196,7 +196,7 @@ describe('LoginUseCase (TDD)', () => {
       const mockUser = {
         id: 'user-456',
         email: 'user@example.com',
-        passwordHash: 'hashedPassword',
+        hashedPassword: 'hashedPassword',
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
@@ -241,7 +241,7 @@ describe('LoginUseCase (TDD)', () => {
       const mockUser = {
         id: 'user-456',
         email: 'user@example.com',
-        passwordHash: 'hashedPassword',
+        hashedPassword: 'hashedPassword',
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);

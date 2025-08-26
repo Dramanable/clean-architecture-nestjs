@@ -10,7 +10,7 @@ import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { UserRole } from '../../../shared/enums/user-role.enum';
 import { Logger } from '../../ports/logger.port';
-import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
+import { MockI18nService } from '../../mocks/mock-i18n.service';
 import { UserNotFoundError } from '../../../domain/exceptions/user.exceptions';
 
 interface CreateUserRequest {
@@ -84,17 +84,17 @@ describe('CreateUserUseCase - i18n Integration', () => {
       // Act
       await createUserUseCase.execute(request);
 
-      // Assert - Vérifier les messages en anglais
+      // Assert - Vérifier les clés i18n (pas les messages traduits)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Attempting to create user',
+        'operations.user.creation_attempt',
         expect.any(Object),
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Starting user validation process',
+        'operations.user.validation_process',
         expect.any(Object),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('created successfully by'),
+        expect.stringContaining('success.user.creation_success'), // Clé i18n
         expect.any(Object),
       );
     });
@@ -116,7 +116,7 @@ describe('CreateUserUseCase - i18n Integration', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'User operation failed: requesting user not found',
+        'warnings.user.not_found',
         expect.any(Object),
       );
     });
@@ -151,17 +151,17 @@ describe('CreateUserUseCase - i18n Integration', () => {
       // Act
       await createUserUseCase.execute(request);
 
-      // Assert - Vérifier les messages en français
+      // Assert - Vérifier les clés i18n (pas les messages traduits)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Tentative de création utilisateur',
+        'operations.user.creation_attempt',
         expect.any(Object),
       );
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Début du processus de validation utilisateur',
+        'operations.user.validation_process', // Clé i18n
         expect.any(Object),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('créé avec succès par'),
+        expect.stringContaining('success.user.creation_success'), // Clé i18n
         expect.any(Object),
       );
     });
@@ -183,7 +183,7 @@ describe('CreateUserUseCase - i18n Integration', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        'Échec opération utilisateur : utilisateur demandeur non trouvé',
+        'warnings.user.not_found',
         expect.any(Object),
       );
     });
@@ -218,14 +218,14 @@ describe('CreateUserUseCase - i18n Integration', () => {
       // Act
       await createUserUseCase.execute(request);
 
-      // Assert - Vérifier le message avec paramètres dynamiques
+      // Assert - Vérifier les clés i18n avec paramètres dynamiques
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'User newuser@company.com created successfully by admin@company.com',
+        'operations.user.creation_attempt',
         expect.any(Object),
       );
 
       expect(mockLogger.audit).toHaveBeenCalledWith(
-        'User created',
+        'audit.user.created', // Clé i18n
         'admin-id',
         expect.any(Object),
       );
@@ -257,7 +257,7 @@ describe('CreateUserUseCase - i18n Integration', () => {
 
       // Assert
       expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Checking permissions for CreateUser',
+        'operations.permission.check',
         expect.any(Object),
       );
     });

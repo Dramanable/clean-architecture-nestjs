@@ -106,6 +106,32 @@ export class User {
   }
 
   /**
+   * Factory method pour créer un utilisateur avec mot de passe hashé (pour le mapping ORM)
+   */
+  static createWithHashedPassword(
+    id: string,
+    email: Email,
+    name: string,
+    role: UserRole,
+    hashedPassword: string,
+    createdAt: Date,
+    updatedAt?: Date,
+    passwordChangeRequired?: boolean,
+  ): User {
+    const user = new User(email, name, role, { passwordChangeRequired });
+
+    // Assignment des propriétés readonly via Object.assign
+    Object.assign(user, {
+      id,
+      hashedPassword,
+      createdAt,
+      updatedAt,
+    });
+
+    return user;
+  }
+
+  /**
    * Crée un utilisateur temporaire qui doit changer son mot de passe
    */
   static createTemporary(email: Email, name: string, role: UserRole): User {

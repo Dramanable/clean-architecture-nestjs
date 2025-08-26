@@ -15,8 +15,8 @@ import {
 } from '../../../domain/exceptions/user.exceptions';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
-import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
 import { UserRole } from '../../../shared/enums/user-role.enum';
+import { MockI18nService } from '../../mocks/mock-i18n.service';
 import { Logger } from '../../ports/logger.port';
 import { CreateUserUseCase } from './create-user.use-case';
 
@@ -119,7 +119,7 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
       expect(mockLogger.info).toHaveBeenCalledTimes(2); // Début + succès
       expect(mockLogger.audit).toHaveBeenCalledWith(
-        'Utilisateur créé', // Message français
+        'audit.user.created', // Clé i18n au lieu du message traduit
         'admin-id',
         expect.any(Object),
       );

@@ -29,20 +29,17 @@ export class UserMapper {
    * Convertit depuis la base de données vers le domaine
    */
   static toDomain(ormEntity: UserOrmEntity): User {
-    // Reconstruction de l'entité Domain avec toutes ses invariants
-    const user = new User(
+    // Utilisation de la factory method typée pour créer l'utilisateur avec toutes ses propriétés
+    return User.createWithHashedPassword(
+      ormEntity.id,
       new Email(ormEntity.email),
       ormEntity.name,
       ormEntity.role,
+      ormEntity.hashedPassword,
+      ormEntity.createdAt,
+      ormEntity.updatedAt,
+      ormEntity.passwordChangeRequired,
     );
-
-    // Reconstitution des métadonnées via les propriétés privées
-    (user as any).id = ormEntity.id;
-    (user as any).hashedPassword = ormEntity.password;
-    (user as any).createdAt = ormEntity.createdAt;
-    (user as any).updatedAt = ormEntity.updatedAt;
-
-    return user;
   }
 
   /**
@@ -57,7 +54,7 @@ export class UserMapper {
     ormEntity.email = domainEntity.email.value;
     ormEntity.name = domainEntity.name;
     ormEntity.role = domainEntity.role;
-    ormEntity.password = domainEntity.hashedPassword || '';
+    ormEntity.hashedPassword = domainEntity.hashedPassword || '';
 
     // Métadonnées par défaut
     ormEntity.isActive = true;
@@ -90,7 +87,7 @@ export class UserMapper {
 
     // Mise à jour du mot de passe si changé
     if (domainEntity.hashedPassword) {
-      ormEntity.password = domainEntity.hashedPassword;
+      ormEntity.hashedPassword = domainEntity.hashedPassword;
     }
 
     return ormEntity;

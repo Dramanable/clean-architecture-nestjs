@@ -29,8 +29,8 @@ export class UserOrmEntity {
   @Column({ type: 'varchar', length: 100 })
   name: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  password: string;
+  @Column({ type: 'varchar', length: 255, name: 'hashedPassword' })
+  hashedPassword: string;
 
   @Column({ type: 'boolean', default: false })
   passwordChangeRequired: boolean;

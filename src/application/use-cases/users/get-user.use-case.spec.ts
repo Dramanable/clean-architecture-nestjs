@@ -1,5 +1,11 @@
 /**
- * 🧪 TDD - Get User Use Case Tests
+ * 🧪 import { UserNotFoundError } from '../../../domain/exceptions/user.exceptions';
+import { UserRepository } from '../../../domain/repositories/user.repository';
+import { Email } from '../../../domain/value-objects/email.vo';
+import { UserRole } from '../../../shared/enums/user-role.enum';
+import { MockI18nService } from '../../mocks/mock-i18n.service';
+import { Logger } from '../../ports/logger.port';
+import { GetUserUseCase } from './get-user.use-case';et User Use Case Tests
  *
  * Tests complets pour la récupération d'utilisateurs avec permissions
  */
@@ -11,7 +17,7 @@ import {
 } from '../../../domain/exceptions/user.exceptions';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
-import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
+import { MockI18nService } from '../../mocks/mock-i18n.service';
 import { UserRole } from '../../../shared/enums/user-role.enum';
 import { Logger } from '../../ports/logger.port';
 import { GetUserUseCase } from './get-user.use-case';
@@ -89,7 +95,7 @@ describe('GetUserUseCase', () => {
       });
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('récupéré avec succès'),
+        'success.user.retrieval_success',
         expect.any(Object),
       );
       expect(mockLogger.audit).toHaveBeenCalled();
@@ -193,7 +199,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Permission refusée'),
+        'warnings.permission.denied',
         expect.any(Object),
       );
     });
@@ -229,9 +235,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'ne peut pas accéder aux profils administrateurs',
-        ),
+        'warnings.permission.admin_access_denied',
         expect.any(Object),
       );
     });
@@ -253,7 +257,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('utilisateur demandeur non trouvé'),
+        'warnings.user.not_found',
         expect.any(Object),
       );
     });
@@ -282,7 +286,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Utilisateur cible invalid-target non trouvé'),
+        'warnings.user.target_not_found',
         expect.any(Object),
       );
     });
@@ -310,15 +314,15 @@ describe('GetUserUseCase', () => {
 
       // Assert
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('Tentative de récupération utilisateur'),
+        'operations.user.retrieval_attempt',
         expect.any(Object),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('récupéré avec succès'),
+        'success.user.retrieval_success',
         expect.any(Object),
       );
       expect(mockLogger.audit).toHaveBeenCalledWith(
-        'Profil utilisateur consulté',
+        'audit.user.accessed',
         'user-123',
         expect.any(Object),
       );
@@ -337,7 +341,7 @@ describe('GetUserUseCase', () => {
       await expect(getUserUseCase.execute(request)).rejects.toThrow();
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.stringContaining("Échec de l'opération GetUser"),
+        'operations.failed',
         expect.any(Error),
         expect.objectContaining({
           operation: 'GetUser',

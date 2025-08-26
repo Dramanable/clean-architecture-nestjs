@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# Resolve the absolute directory of this hook and source husky.sh reliably
+HUSKY_DIR="$(cd "$(dirname -- "$0")" && pwd)"
+. "$HUSKY_DIR/_/husky.sh"
 
 # 🔍 PRE-COMMIT HOOK - Quality Checks
 # Exécute les vérifications de qualité avant chaque commit
@@ -8,13 +10,25 @@ echo "🔍 Running pre-commit checks..."
 
 # Run lint-staged to check only staged files
 npx lint-staged
+if [ $? -ne 0 ]; then
+	echo "lint-staged failed. Commit aborted."
+	exit 1
+fi
 
-# Run unit tests to ensure nothing is broken
-echo "🧪 Running unit tests..."
-npm run test:unit
+# Run lint + architecture check
+echo "🔧 Running lint and Clean Architecture checks..."
+npm run lint:check
+if [ $? -ne 0 ]; then
+	echo "Lint or Clean Architecture check failed. Commit aborted."
+	exit 1
+fi
 
-# Check for TypeScript compilation errors
-echo "📝 Checking TypeScript compilation..."
-npx tsc --noEmit
+# Run full test suite as last gate
+echo "🧪 Running full test suite..."
+npm test --silent --passWithNoTests
+if [ $? -ne 0 ]; then
+	echo "Tests failed. Commit aborted."
+	exit 1
+fi
 
 echo "✅ Pre-commit checks completed successfully!"

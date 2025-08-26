@@ -6,19 +6,20 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import type { IConfigService } from '../../application/ports/config.port';
 import type { I18nService } from '../../application/ports/i18n.port';
 import type { Logger } from '../../application/ports/logger.port';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 
 @Injectable()
 export class BcryptPasswordService {
-  private readonly saltRounds = 12; // Sécurité renforcée
-
   constructor(
     @Inject(TOKENS.PINO_LOGGER)
     private readonly logger: Logger,
     @Inject(TOKENS.I18N_SERVICE)
     private readonly i18n: I18nService,
+    @Inject(TOKENS.APP_CONFIG)
+    private readonly config: IConfigService,
   ) {}
 
   async hash(plainPassword: string): Promise<string> {
@@ -30,11 +31,12 @@ export class BcryptPasswordService {
     this.logger.info(this.i18n.t('operations.password.hash_attempt'), context);
 
     try {
-      const hashedPassword = await bcrypt.hash(plainPassword, this.saltRounds);
+      const saltRounds = this.config.getBcryptRounds();
+      const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
 
       this.logger.info(this.i18n.t('operations.password.hash_success'), {
         ...context,
-        saltRounds: this.saltRounds,
+        saltRounds,
       });
 
       return hashedPassword;

@@ -122,7 +122,7 @@ export class LoginUseCase {
       // 3. Vérifier le mot de passe
       const isPasswordValid = await this.passwordService.compare(
         request.password,
-        user.passwordHash,
+        user.hashedPassword || '',
       );
 
       if (!isPasswordValid) {

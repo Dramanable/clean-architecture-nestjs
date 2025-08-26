@@ -39,7 +39,7 @@ export class UserMapper {
 
     // Reconstitution des métadonnées via les propriétés privées
     (user as any).id = ormEntity.id;
-    (user as any).hashedPassword = ormEntity.password;
+    (user as any).hashedPassword = ormEntity.hashedPassword;
     (user as any).createdAt = ormEntity.createdAt;
     (user as any).updatedAt = ormEntity.updatedAt;
 
@@ -73,7 +73,7 @@ export class UserMapper {
     ormEntity.id = domainEntity.id;
     ormEntity.email = domainEntity.email.value;
     ormEntity.name = domainEntity.name;
-    ormEntity.password = (domainEntity as any)._password || '';
+    ormEntity.hashedPassword = (domainEntity as any)._password || '';
     ormEntity.role = domainEntity.role;
 
     // Métadonnées de sécurité (avec accès privé)
@@ -113,7 +113,7 @@ export class UserMapper {
     // Mise à jour du mot de passe si changé
     const newPassword = (domainEntity as any)._password;
     if (newPassword) {
-      ormEntity.password = newPassword;
+      ormEntity.hashedPassword = newPassword;
     }
 
     // Métadonnées de sécurité
