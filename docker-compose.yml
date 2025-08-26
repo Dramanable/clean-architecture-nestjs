@@ -1,7 +1,7 @@
 # 🚀 Docker Compose - Mode Développement
 # Configuration optimisée pour le développement avec hot reload
 
-version: '3.8'
+ 
 
 services:
   # PostgreSQL - Base principale pour les utilisateurs

@@ -18,11 +18,17 @@
     "debug.overrideProxyUrl": ""
   },
 
+  "// 🛡️ COPILOT: Empêcher création automatique de fichiers": "",
+  "github.copilot.conversation.additionalInstructions": "Never create empty placeholder files. Only suggest existing files.",
+
   "// ===== TYPESCRIPT & NESTJS =====": "",
   "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.suggest.autoImports": true,
-  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "prompt",
   "typescript.preferences.includePackageJsonAutoImports": "on",
+  
+  "// 🛡️ EMPÊCHER LA CRÉATION AUTOMATIQUE DE FICHIERS": "",
+  "typescript.suggest.includePackageJsonAutoImports": "off",
+  "typescript.suggest.autoImports": false,
   
   "// ===== EDITOR SETTINGS =====": "",
   "editor.formatOnSave": true,

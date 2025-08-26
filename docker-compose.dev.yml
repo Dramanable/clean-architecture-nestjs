@@ -1,7 +1,7 @@
 # 🚀 Docker Compose Simple - Mode Développement
 # Configuration simplifiée pour développement rapide
 
-version: '3.8'
+
 
 services:
   # 🗄️ PostgreSQL - Base de données principale
