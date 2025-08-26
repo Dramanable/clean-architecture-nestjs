@@ -4,24 +4,135 @@
 
 Vous travaillez sur une **application enterprise NestJS** implémentant la **Clean Architecture** avec une approche **TDD rigoureuse**, les **principes SOLID de Robert C. Martin**, et les **meilleures pratiques TypeScript** strictes. L'application est **production-ready** avec sécurité, i18n, et patterns enterprise.
 
-**🚀 NOUVEAUTÉ ### 📊 **Métriques de Qualité\*\*
+## 📝 **Commits Sémantiques OBLIGATOIRES**
 
-### 🎯 **Objectifs Maintenus**
+### 🎯 **Conventional Commits avec Commitlint**
 
-- ✅ **24 tests** authentification passants (6 LoginUseCase + 5 RefreshTokenUseCase + 6 LogoutUseCase + 7 JwtTokenService)
-- ✅ **Clean Architecture** respectée dans tous les composants auth
+Ce projet utilise **[Commitlint](https://github.com/conventional-changelog/commitlint/#what-is-commitlint)** pour garantir des commits sémantiques et conventionnels standardisés.
+
+#### **✅ Format OBLIGATOIRE**
+
+```
+🎯 type(scope): description
+
+body (optionnel)
+
+footer (optionnel)
+```
+
+#### **🏷️ Types de Commits AUTORISÉS**
+
+- 🎉 **feat**: Nouvelle fonctionnalité
+- 🐛 **fix**: Correction de bug
+- 📚 **docs**: Documentation
+- 💄 **style**: Formatage, point-virgules, etc. (pas de changement de code)
+- ♻️ **refactor**: Refactoring (ni feature ni fix)
+- ⚡ **perf**: Amélioration des performances
+- ✅ **test**: Ajout/modification de tests
+- 🔧 **chore**: Tâches de maintenance, outils, etc.
+- 🚀 **ci**: Configuration CI/CD
+- ⏪ **revert**: Annulation d'un commit précédent
+- 🔐 **security**: Corrections de sécurité
+- 🌐 **i18n**: Internationalisation
+- ♿ **a11y**: Accessibilité
+- 🚨 **hotfix**: Correction urgente en production
+
+#### **📋 Exemples de Commits Valides**
+
+```bash
+🎉 feat(auth): add JWT refresh token rotation
+🐛 fix(user): resolve email validation edge case
+📚 docs(api): update authentication endpoints documentation
+♻️ refactor(repo): extract common repository patterns
+✅ test(login): add comprehensive login use case tests
+🔧 chore(deps): update NestJS to latest version
+🔐 security(jwt): implement secure token storage
+```
+
+#### **❌ Commits INTERDITS**
+
+```bash
+# Trop vague
+fix: bug fix
+update code
+improvements
+
+# Type non autorisé
+hack: quick fix
+temp: temporary solution
+```
+
+#### **🎯 Règles Commitlint Configurées**
+
+```javascript
+// .commitlintrc.js
+{
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'type-enum': [2, 'always', [
+      '🎉 feat', '🐛 fix', '📚 docs', '💄 style',
+      '♻️ refactor', '⚡ perf', '✅ test', '🔧 chore',
+      '🚀 ci', '⏪ revert', '🔐 security', '🌐 i18n',
+      '♿ a11y', '🚨 hotfix'
+    ]],
+    'subject-case': [2, 'never', ['sentence-case', 'start-case', 'pascal-case', 'upper-case']],
+    'subject-empty': [2, 'never'],
+    'subject-full-stop': [2, 'never', '.'],
+    'body-leading-blank': [1, 'always'],
+    'body-max-line-length': [2, 'always', 100],
+    'footer-leading-blank': [1, 'always'],
+    'header-max-length': [2, 'always', 100]
+  }
+}
+```
+
+**🚀 NOUVEAUTÉ : Environnement Docker Complet**
+
+### � **Docker Environment Production-Ready**
+
+- ✅ **Docker Compose** multi-services avec hot reload
+- ✅ **PostgreSQL 15** avec volume persistant et health checks
+- ✅ **MongoDB 7** pour stockage NoSQL avec réplication
+- ✅ **pgAdmin 4** interface web pour gestion PostgreSQL (localhost:5050)
+- ✅ **NestJS** containerisé avec debug ports et volumes
+- ✅ **Makefile** complet avec commandes Docker simplifiées
+
+#### **🔧 Commandes Docker Disponibles**
+
+```bash
+make start          # Démarrer tous les services Docker
+make stop           # Arrêter tous les services
+make build          # Construire les images Docker
+make logs           # Voir les logs de tous les services
+make test           # Lancer les tests dans le container
+make clean          # Nettoyer volumes et images
+make restart        # Redémarrer les services
+make status         # Statut des services
+```
+
+### 📊 **Métriques de Qualité Améliorées**
+
+### 🎯 **Objectifs Maintenus et Améliorés**
+
+- ✅ **202 tests** passants (30 suites de tests complètes) - **UPGRADE de 24 tests**
+- ✅ **Clean Architecture** respectée dans tous les composants
 - ✅ **SOLID principles** appliqués rigoureusement
 - ✅ **Security first** approach avec cookies HttpOnly
 - ✅ **Enterprise patterns** utilisés (logging, audit, i18n)
+- ✅ **Docker environment** pour développement isolé
+- ✅ **MongoDB integration** pour refresh tokens et métadonnées
+- ✅ **Code quality** avec ESLint + Prettier configurés
 
 ### 📈 **Indicateurs de Succès**
 
-- Tests continuent de passer après modifications
+- Tests continuent de passer après modifications (202/202 ✅)
 - Aucune dépendance circulaire introduite
 - Logging et audit trail présents sur toutes les opérations
 - Configuration externalisée (JWT secrets, expiration)
 - Messages i18n utilisés dans tous les Use Cases
-- Permissions vérifiées et exceptions spécifiquestification complet implémenté avec TDD !\*\*
+- Permissions vérifiées et exceptions spécifiques
+- Environnement Docker complètement fonctionnel
+- Pipeline de qualité de code opérationnel
 
 ## 🏗️ **Architecture Établie**
 
@@ -1348,6 +1459,64 @@ class PaymentService {
 - [ ] **ESLint**: Vérifier 0 erreurs
 - [ ] **Type check**: Compilation TypeScript sans erreurs
 - [ ] **Architecture**: Respect des couches
+- [ ] **Documentation**: JSDoc sur APIs publiques
+
+## 🔧 **Pipeline de Qualité de Code**
+
+### 📋 **Processus Pre-Commit**
+
+#### **🎯 Ordre des Opérations**
+
+1. **Format** : `npm run format` (Prettier pour formatage uniforme)
+2. **Lint** : `npm run lint` (ESLint pour quality gates)
+3. **Test** : `npm test` (Jest pour validation fonctionnelle)
+4. **Build** : `npm run build` (TypeScript pour validation types)
+
+#### **🚀 Commandes Disponibles**
+
+```bash
+# Formatage et organisation des imports
+npm run format
+
+# Linting avec auto-fix des erreurs
+npm run lint
+
+# Tests complets (202 tests)
+npm test
+
+# Test en mode watch
+npm run test:watch
+
+# Compilation TypeScript
+npm run build
+
+# Type checking uniquement
+npm run type-check
+
+# Tous les checks en une fois
+npm run check-all
+```
+
+#### **⚙️ Configuration Qualité**
+
+- **Prettier** : Formatage uniforme avec configuration standardisée
+- **ESLint** : 566 warnings détectés, zéro erreur tolérée
+- **TypeScript** : Mode strict avec règles de sécurité renforcées
+- **Jest** : 202 tests TDD avec couverture complète
+
+### 📈 **Métriques Actuelles**
+
+- ✅ **Tests**: 202/202 passants (30 suites)
+- ⚠️ **ESLint**: 566 warnings (principalement types `any`)
+- ✅ **Format**: Code uniformément formaté
+- ✅ **Types**: Compilation TypeScript réussie
+
+### 🎯 **Objectifs d'Amélioration**
+
+- 🔄 **Réduire warnings ESLint** : Éliminer progressivement les types `any`
+- 🔄 **Type Safety** : Renforcer la sécurité des types
+- 🔄 **Documentation** : Ajouter JSDoc sur APIs publiques
+- 🔄 **Coverage** : Maintenir couverture de tests élevée
 - [ ] **Documentation**: JSDoc sur APIs publiques
 
 ### 📈 **Métriques Actuelles**

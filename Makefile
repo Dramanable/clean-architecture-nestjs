@@ -1,166 +1,161 @@
-# 🚀 Script de Démarrage Docker pour Clean Architecture NestJS
+# 🚀 Clean Architecture NestJS - Makefile
+# Commandes pour gérer l'environnement de développement Docker
+
+.PHONY: help start start-build start-logs stop restart build test logs shell status health clean reset
+
+# 📋 Aide par défaut
+help:
+	@echo "🚀 Clean Architecture NestJS - Commandes disponibles:"
+	@echo ""
+	@echo "🐳 Gestion Docker:"
+	@echo "  start        - Démarrer l'environnement de développement"
+	@echo "  start-build  - Démarrer avec reconstruction des images"
+	@echo "  start-logs   - Démarrer avec affichage des logs"
+	@echo "  stop         - Arrêter tous les services"
+	@echo "  restart      - Redémarrer les services"
+	@echo ""
+	@echo "🏗️  Build & Test:"
+	@echo "  build        - Construire l'image Docker"
+	@echo "  test         - Exécuter les tests dans Docker"
+	@echo ""
+	@echo "🔍 Monitoring:"
+	@echo "  logs         - Afficher les logs de l'application"
+	@echo "  shell        - Ouvrir un shell dans le conteneur"
+	@echo "  status       - Statut des services"
+	@echo "  health       - Vérifier la santé de l'application"
+	@echo ""
+	@echo "🧹 Maintenance:"
+	@echo "  clean        - Nettoyer les ressources Docker"
+	@echo "  reset        - Reset complet de l'environnement"
+	@echo ""
 
 # ========================================
-# 🐳 Commandes Docker Compose
+# � Commandes Docker Compose
 # ========================================
 
-# Démarrer tous les services en mode développement
+# Démarrer l'environnement de développement
 start:
-	docker-compose -f docker-compose.dev.yml up -d
+	@echo "🚀 Démarrage de l'environnement de développement..."
+	docker compose up -d
 
-# Démarrer avec rebuild en mode développement
+# Démarrer avec reconstruction des images
 start-build:
-	docker-compose -f docker-compose.dev.yml up -d --build
+	@echo "🔨 Reconstruction et démarrage..."
+	docker compose up -d --build
 
-# Démarrer seulement les bases de données
-start-db:
-	docker-compose -f docker-compose.dev.yml up -d postgres mongodb redis
-
-# Démarrer avec les logs
+# Démarrer avec affichage des logs
 start-logs:
-	docker-compose -f docker-compose.dev.yml up
-
-# ========================================
-# 🔧 Gestion des Services
-# ========================================
+	@echo "📋 Démarrage avec logs..."
+	docker compose up
 
 # Arrêter tous les services
 stop:
-	docker-compose -f docker-compose.dev.yml down
-
-# Arrêter et supprimer les volumes
-stop-clean:
-	docker-compose -f docker-compose.dev.yml down -v
+	@echo "⏹️  Arrêt des services..."
+	docker compose down
 
 # Redémarrer les services
 restart:
-	docker-compose -f docker-compose.dev.yml restart
+	@echo "🔄 Redémarrage des services..."
+	docker compose restart
 
 # ========================================
 # 🏗️ Construction & Tests
 # ========================================
 
-# Construire l'image de l'application
+# Construire l'image Docker
 build:
-	docker build -t clean-architecture-nestjs:latest .
+	@echo "🏗️  Construction de l'image..."
+	docker compose build
 
-# Construire pour la production
-build-prod:
-	docker build --target production -t clean-architecture-nestjs:prod .
-
-# Construire pour le développement
-build-dev:
-	docker build --target development -t clean-architecture-nestjs:dev .
-
-# Tester l'application dans Docker
+# Exécuter les tests
 test:
-	docker run --rm clean-architecture-nestjs:latest npm test
-
-# ========================================
-# 🗄️ Gestion des Données
-# ========================================
-
-# Exécuter les migrations SQL
-migrate-sql:
-	docker-compose -f docker-compose.dev.yml exec app npm run migration:run
-
-# Exécuter les migrations NoSQL
-migrate-nosql:
-	docker-compose -f docker-compose.dev.yml exec app npm run migration:mongo:up
-
-# Rollback des migrations SQL
-rollback-sql:
-	docker-compose -f docker-compose.dev.yml exec app npm run migration:revert
-
-# Rollback des migrations NoSQL
-rollback-nosql:
-	docker-compose -f docker-compose.dev.yml exec app npm run migration:mongo:down
+	@echo "🧪 Exécution des tests..."
+	docker compose exec app npm test
 
 # ========================================
 # 🔍 Monitoring & Debug
 # ========================================
 
-# Voir les logs de l'application
+# Afficher les logs de l'application
 logs:
-	docker-compose -f docker-compose.dev.yml logs -f app
+	@echo "📋 Logs de l'application..."
+	docker compose logs -f app
 
-# Voir les logs de PostgreSQL
-logs-postgres:
-	docker-compose -f docker-compose.dev.yml logs -f postgres
+# Logs de PostgreSQL
+logs-db:
+	@echo "📋 Logs de PostgreSQL..."
+	docker compose logs -f postgres
 
-# Voir les logs de MongoDB
+# Logs de MongoDB
 logs-mongo:
-	docker-compose -f docker-compose.dev.yml logs -f mongodb
+	@echo "📋 Logs de MongoDB..."
+	docker compose logs -f mongodb
 
-# Entrer dans le conteneur de l'application
+# Logs de pgAdmin
+logs-pgadmin:
+	@echo "📋 Logs de pgAdmin..."
+	docker compose logs -f pgadmin
+
+# Ouvrir un shell dans le conteneur
 shell:
-	docker-compose -f docker-compose.dev.yml exec app sh
+	@echo "🐚 Ouverture du shell..."
+	docker compose exec app sh
 
-# ========================================
-# 🧹 Nettoyage
-# ========================================
-
-# Nettoyer les images non utilisées
-clean-images:
-	docker image prune -f
-
-# Nettoyer tout (images, conteneurs, volumes)
-clean-all:
-	docker system prune -a -f --volumes
-
-# Supprimer les volumes de données de développement
-clean-volumes:
-	docker volume rm testingcleanarchi_postgres_dev_data testingcleanarchi_mongodb_dev_data testingcleanarchi_redis_dev_data testingcleanarchi_pgadmin_dev_data 2>/dev/null || true
-
-# ========================================
-# 📊 Surveillance & Health Checks
-# ========================================
-
-# Vérifier le statut des services
+# Statut des services
 status:
-	docker-compose -f docker-compose.dev.yml ps
+	@echo "📊 Statut des services:"
+	docker compose ps
 
 # Vérifier la santé de l'application
 health:
-	curl -f http://localhost:3000/health || echo "Service not healthy"
-
-# Vérifier les performances
-stats:
-	docker stats
+	@echo "🏥 Vérification de la santé..."
+	@curl -f http://localhost:3000/health 2>/dev/null && echo "✅ Service en bonne santé" || echo "❌ Service non disponible"
 
 # ========================================
-# 🔐 Sécurité & Maintenance
+# 🧹 Nettoyage & Maintenance
 # ========================================
 
-# Scanner les vulnérabilités de l'image
-security-scan:
-	docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-		aquasec/trivy clean-architecture-nestjs:latest
+# Nettoyer les ressources Docker inutiles
+clean:
+	@echo "🧹 Nettoyage des ressources Docker..."
+	docker compose down
+	docker system prune -f
+	docker volume prune -f
 
-# Analyser la taille de l'image
-image-analysis:
-	docker images clean-architecture-nestjs
-
-# ========================================
-# 🎯 Raccourcis Pratiques
-# ========================================
-
-# Développement rapide (DB + logs)
-dev:
-	make start-db && sleep 5 && npm run start:dev
-
-# Production locale complète
-prod:
-	make build-prod && docker-compose -f docker-compose.prod.yml up -d
-
-# Reset complet pour nouveau démarrage
+# Reset complet de l'environnement
 reset:
-	make stop-clean && make clean-volumes && make start-build
+	@echo "🔄 Reset complet de l'environnement..."
+	docker compose down -v
+	docker system prune -a -f --volumes
+	@echo "✅ Reset terminé. Utilisez 'make start-build' pour redémarrer"
 
-.PHONY: start start-build start-db start-logs stop stop-clean restart \
-        build build-prod build-dev test \
-        migrate-sql migrate-nosql rollback-sql rollback-nosql \
-        logs logs-postgres logs-mongo shell \
-        clean-images clean-all clean-volumes \
-        status health stats security-scan image-analysis \
-        dev prod reset
+# ========================================
+# 🎯 Raccourcis Utiles
+# ========================================
+
+# Installation des dépendances
+install:
+	@echo "📦 Installation des dépendances..."
+	docker compose exec app npm install
+
+# Mode développement complet
+dev: start
+	@echo "💻 Environnement de développement prêt!"
+	@echo "🌐 Application: http://localhost:3000"
+	@echo "📚 Documentation: http://localhost:3000/api/docs"
+	@echo "💊 Health Check: http://localhost:3000/health"
+
+# Affichage des URLs utiles
+urls:
+	@echo "🔗 URLs disponibles:"
+	@echo "  🌐 Application:     http://localhost:3000"
+	@echo "  📚 Documentation:   http://localhost:3000/api/docs"
+	@echo "  💊 Health Check:    http://localhost:3000/health"
+	@echo "  🔗 API Base:        http://localhost:3000/api/v1"
+	@echo "  🗄️ PostgreSQL:      localhost:5432"
+	@echo "  🍃 MongoDB:         localhost:27017"
+	@echo "  🔧 pgAdmin:         http://localhost:5050"
+	@echo ""
+	@echo "🔑 Identifiants pgAdmin:"
+	@echo "  📧 Email:           admin@cleanarchi.dev"
+	@echo "  🔐 Mot de passe:    admin123"
