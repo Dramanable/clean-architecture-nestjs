@@ -96,6 +96,14 @@ describe('AuthController', () => {
           provide: TOKENS.I18N_SERVICE,
           useValue: mockI18nService,
         },
+        {
+          provide: TOKENS.CONFIG_SERVICE,
+          useValue: {
+            getEnvironment: jest.fn().mockReturnValue('test'),
+            getAccessTokenExpirationTime: jest.fn().mockReturnValue(3600),
+            getRefreshTokenExpirationDays: jest.fn().mockReturnValue(30),
+          },
+        },
       ],
     }).compile();
 

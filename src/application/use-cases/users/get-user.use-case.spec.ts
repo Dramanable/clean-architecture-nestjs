@@ -89,7 +89,7 @@ describe('GetUserUseCase', () => {
       });
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('retrieved successfully'),
+        expect.stringContaining('récupéré avec succès'),
         expect.any(Object),
       );
       expect(mockLogger.audit).toHaveBeenCalled();
@@ -193,7 +193,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Permission denied'),
+        expect.stringContaining('Permission refusée'),
         expect.any(Object),
       );
     });
@@ -229,7 +229,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('cannot access admin'),
+        expect.stringContaining('ne peut pas accéder aux profils administrateurs'),
         expect.any(Object),
       );
     });
@@ -251,7 +251,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('requesting user not found'),
+        expect.stringContaining('utilisateur demandeur non trouvé'),
         expect.any(Object),
       );
     });
@@ -280,7 +280,7 @@ describe('GetUserUseCase', () => {
       );
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('Target user invalid-target not found'),
+        expect.stringContaining('Utilisateur cible invalid-target non trouvé'),
         expect.any(Object),
       );
     });
@@ -308,15 +308,15 @@ describe('GetUserUseCase', () => {
 
       // Assert
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('Attempting to retrieve user'),
+        expect.stringContaining('Tentative de récupération utilisateur'),
         expect.any(Object),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('retrieved successfully'),
+        expect.stringContaining('récupéré avec succès'),
         expect.any(Object),
       );
       expect(mockLogger.audit).toHaveBeenCalledWith(
-        'User profile accessed',
+        'Profil utilisateur consulté',
         'user-123',
         expect.any(Object),
       );
@@ -335,7 +335,7 @@ describe('GetUserUseCase', () => {
       await expect(getUserUseCase.execute(request)).rejects.toThrow();
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        expect.stringContaining('Operation GetUser failed'),
+        expect.stringContaining('Échec de l\'opération GetUser'),
         expect.any(Error),
         expect.objectContaining({
           operation: 'GetUser',

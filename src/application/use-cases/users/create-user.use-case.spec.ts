@@ -128,7 +128,7 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.save).toHaveBeenCalledWith(expect.any(User));
       expect(mockLogger.info).toHaveBeenCalledTimes(2); // Début + succès
       expect(mockLogger.audit).toHaveBeenCalledWith(
-        'User created', // Traduit maintenant
+        'Utilisateur créé', // Message français
         'admin-id',
         expect.any(Object),
       );

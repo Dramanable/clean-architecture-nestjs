@@ -1,25 +1,24 @@
 /**
  * 🧪 TDD - Update User Use Case
- * 
+ *
  * Tests pour la modification d'utilisateurs avec règles métier strictes
  */
 
-import { UpdateUserUseCase } from './update-user.use-case';
-import { UserRepository } from '../../../domain/repositories/user.repository';
 import { User } from '../../../domain/entities/user.entity';
+import {
+    EmailAlreadyExistsError,
+    InsufficientPermissionsError,
+    InvalidEmailFormatError,
+    InvalidNameError,
+    RoleElevationError,
+    UserNotFoundError,
+} from '../../../domain/exceptions/user.exceptions';
+import { UserRepository } from '../../../domain/repositories/user.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
+import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
 import { UserRole } from '../../../shared/enums/user-role.enum';
 import { Logger } from '../../ports/logger.port';
-import type { I18nService } from '../../ports/i18n.port';
-import { MockI18nService } from '../../../infrastructure/i18n/i18n.service';
-import {
-  UserNotFoundError,
-  EmailAlreadyExistsError,
-  InsufficientPermissionsError,
-  InvalidEmailFormatError,
-  InvalidNameError,
-  RoleElevationError,
-} from '../../../domain/exceptions/user.exceptions';
+import { UpdateUserUseCase } from './update-user.use-case';
 
 // DTOs
 interface UpdateUserRequest {
@@ -140,11 +139,11 @@ describe('UpdateUserUseCase', () => {
         }),
       );
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringContaining('updated successfully'),
+        expect.stringContaining('modifié avec succès'),
         expect.any(Object),
       );
       expect(mockLogger.audit).toHaveBeenCalledWith(
-        'User updated',
+        'Utilisateur modifié',
         'admin-id',
         expect.any(Object),
       );
@@ -274,9 +273,9 @@ describe('UpdateUserUseCase', () => {
         .mockResolvedValueOnce(targetUser);
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(RoleElevationError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        RoleElevationError,
+      );
 
       expect(mockUserRepository.update).not.toHaveBeenCalled();
       expect(mockLogger.warn).toHaveBeenCalled();
@@ -295,9 +294,9 @@ describe('UpdateUserUseCase', () => {
         .mockResolvedValueOnce(regularUser);
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(InsufficientPermissionsError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        InsufficientPermissionsError,
+      );
 
       expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
@@ -315,9 +314,9 @@ describe('UpdateUserUseCase', () => {
       mockUserRepository.findById.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(UserNotFoundError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        UserNotFoundError,
+      );
     });
 
     it('should reject when target user not found', async () => {
@@ -333,9 +332,9 @@ describe('UpdateUserUseCase', () => {
         .mockResolvedValueOnce(null); // Target not found
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(UserNotFoundError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        UserNotFoundError,
+      );
     });
 
     it('should reject when email already exists', async () => {
@@ -358,9 +357,9 @@ describe('UpdateUserUseCase', () => {
       mockUserRepository.findByEmail.mockResolvedValue(existingUser);
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(EmailAlreadyExistsError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        EmailAlreadyExistsError,
+      );
 
       expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
@@ -378,9 +377,9 @@ describe('UpdateUserUseCase', () => {
         .mockResolvedValueOnce(targetUser);
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(InvalidEmailFormatError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        InvalidEmailFormatError,
+      );
     });
 
     it('should reject empty name', async () => {
@@ -396,9 +395,9 @@ describe('UpdateUserUseCase', () => {
         .mockResolvedValueOnce(targetUser);
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(InvalidNameError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        InvalidNameError,
+      );
     });
 
     it('should reject when regular user tries to update others', async () => {
@@ -414,9 +413,9 @@ describe('UpdateUserUseCase', () => {
         .mockResolvedValueOnce(targetUser);
 
       // Act & Assert
-      await expect(updateUserUseCase.execute(request))
-        .rejects
-        .toThrow(InsufficientPermissionsError);
+      await expect(updateUserUseCase.execute(request)).rejects.toThrow(
+        InsufficientPermissionsError,
+      );
 
       expect(mockUserRepository.update).not.toHaveBeenCalled();
     });
