@@ -49,19 +49,17 @@ export function setupSwagger(app: INestApplication): void {
     swaggerOptions: {
       filter: true,
       showRequestDuration: true,
-      docExpansion: 'none',
+      docExpansion: 'list',
       persistAuthorization: true,
       displayOperationId: false,
       displayRequestDuration: true,
+      defaultModelsExpandDepth: 2,
+      defaultModelExpandDepth: 2,
+      tryItOutEnabled: true,
     },
     customSiteTitle: 'User Management API Documentation',
     customfavIcon: '/favicon.ico',
-    customJs: [
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.min.js',
-    ],
-    customCssUrl: [
-      'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css',
-    ],
+    customJs: [],
+    customCssUrl: [],
   });
 }

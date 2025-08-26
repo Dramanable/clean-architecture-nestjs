@@ -193,6 +193,7 @@ class InfrastructureI18nService implements I18nService {
     TOKENS.PASSWORD_GENERATOR,
 
     // 🔧 Configuration & Logging
+    TOKENS.CONFIG_SERVICE,
     TypeOrmUserRepository,
     UserMapper,
     AppConfigService,

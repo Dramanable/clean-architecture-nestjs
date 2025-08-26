@@ -8,7 +8,7 @@
  * - Documentation Swagger (développement uniquement)
  */
 
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
@@ -16,6 +16,7 @@ import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AppConfigService } from './infrastructure/config/app-config.service';
 import { setupSwagger } from './infrastructure/swagger/swagger.config';
+import { I18nValidationPipe } from './infrastructure/validation/i18n-validation.pipe';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -61,22 +62,8 @@ async function bootstrap() {
   // 🎯 Global Configuration
   logger.log('Configuring global settings...');
 
-  // Global validation pipe
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-      disableErrorMessages: configService.isProduction(),
-      validationError: {
-        target: false,
-        value: false,
-      },
-    }),
-  );
+  // Global validation pipe with i18n
+  app.useGlobalPipes(new I18nValidationPipe());
 
   // Trust proxy (pour les déploiements derrière un proxy)
   if (configService.isProduction()) {

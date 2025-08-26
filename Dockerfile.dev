@@ -15,17 +15,17 @@ ENV DEBUG=*
 
 # 🛠️ Installation des outils essentiels pour le développement
 RUN apk add --no-cache \
-    dumb-init \
-    curl \
-    git \
-    bash \
-    vim \
-    nano \
-    tzdata
+  dumb-init \
+  curl \
+  git \
+  bash \
+  vim \
+  nano \
+  tzdata
 
 # 👤 Création d'un utilisateur non-root pour la sécurité
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001 -G nodejs
+  adduser -S nestjs -u 1001 -G nodejs
 
 # 📁 Répertoire de travail
 WORKDIR /app
@@ -35,20 +35,20 @@ COPY package*.json ./
 
 # 🚀 Installation de TOUTES les dépendances (dev + prod)
 RUN npm ci && \
-    npm cache clean --force
+  npm cache clean --force
 
 # 🔧 Installation des outils de développement globaux
 RUN npm install -g \
-    nodemon \
-    @nestjs/cli \
-    typescript
+  nodemon \
+  @nestjs/cli \
+  typescript
 
 # 📋 Copie du code source
 COPY --chown=nestjs:nodejs . .
 
 # 📂 Ajustement des permissions
 RUN chown -R nestjs:nodejs /app && \
-    chmod -R 755 /app
+  chmod -R 755 /app
 
 # 👤 Changement vers l'utilisateur non-root
 USER nestjs
@@ -58,7 +58,7 @@ EXPOSE 3000 9229
 
 # ❤️ Health check simple pour le développement
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+  CMD curl -f http://localhost:3000/health || exit 1
 
 # 🚀 Point d'entrée et commande par défaut
 ENTRYPOINT ["dumb-init", "--"]

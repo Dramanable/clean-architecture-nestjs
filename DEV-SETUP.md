@@ -30,8 +30,8 @@ Pour créer un super-admin dans la base de données :
 -- User: dev_user / Password: dev_password123
 
 INSERT INTO users (
-    id, email, name, password, role, 
-    "passwordChangeRequired", "isActive", "emailVerified", 
+    id, email, name, password, role,
+    "passwordChangeRequired", "isActive", "emailVerified",
     "emailVerifiedAt", "loginAttempts", version, "createdAt", "updatedAt"
 ) VALUES (
     gen_random_uuid(),
@@ -51,6 +51,7 @@ INSERT INTO users (
 ```
 
 **Connexion :**
+
 - Email : `admin@example.com`
 - Mot de passe : `superadmin`
 

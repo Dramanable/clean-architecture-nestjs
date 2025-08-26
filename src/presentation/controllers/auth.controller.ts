@@ -11,38 +11,36 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
-  InternalServerErrorException,
   Post,
   Req,
   Res,
-  UnauthorizedException
+  UnauthorizedException,
 } from '@nestjs/common';
-import type { Request, Response } from 'express';
 import {
-  InvalidCredentialsError,
-  InvalidRefreshTokenError,
-  TokenExpiredError,
-  TokenRepositoryError,
-  UserNotFoundError,
-} from '../../application/exceptions/auth.exceptions';
+  ApiCookieAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import type { Request, Response } from 'express';
+import { InvalidCredentialsError } from '../../application/exceptions/auth.exceptions';
+import type { IConfigService } from '../../application/ports/config.port';
 import type { I18nService } from '../../application/ports/i18n.port';
 import type { Logger } from '../../application/ports/logger.port';
 import { LoginUseCase } from '../../application/use-cases/auth/login.use-case';
 import { LogoutUseCase } from '../../application/use-cases/auth/logout.use-case';
 import { RefreshTokenUseCase } from '../../application/use-cases/auth/refresh-token.use-case';
 import { TOKENS } from '../../shared/constants/injection-tokens';
+import {
+  LoginDto,
+  LoginResponseDto,
+  LogoutDto,
+  LogoutResponseDto,
+  RefreshTokenResponseDto,
+  UserInfoResponseDto,
+} from '../dtos/auth.dto';
 
-// DTOs pour la validation
-interface LoginDto {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}
-
-interface LogoutDto {
-  logoutAll?: boolean;
-}
-
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -56,6 +54,8 @@ export class AuthController {
     private readonly logger: Logger,
     @Inject(TOKENS.I18N_SERVICE)
     private readonly i18n: I18nService,
+    @Inject(TOKENS.CONFIG_SERVICE)
+    private readonly configService: IConfigService,
   ) {}
 
   /**
@@ -63,11 +63,28 @@ export class AuthController {
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'User login',
+    description: 'Authenticate user with email and password',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    type: LoginResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid credentials',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - validation error',
+  })
   async login(
     @Body() loginDto: LoginDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ success: boolean; user: any }> {
+  ): Promise<LoginResponseDto> {
     try {
       const result = await this.loginUseCase.execute({
         email: loginDto.email,
@@ -77,18 +94,28 @@ export class AuthController {
       });
 
       // Set HttpOnly cookies pour sécurité
+      const isProduction = this.configService.getEnvironment() === 'production';
+      const accessTokenExpirationMs =
+        this.configService.getAccessTokenExpirationTime() * 1000; // Convert seconds to milliseconds
+      const refreshTokenExpirationMs =
+        this.configService.getRefreshTokenExpirationDays() *
+        24 *
+        60 *
+        60 *
+        1000; // Convert days to milliseconds
+
       res.cookie('accessToken', result.tokens.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction,
         sameSite: 'strict',
-        maxAge: 15 * 60 * 1000, // 15 minutes
+        maxAge: accessTokenExpirationMs,
       });
 
       res.cookie('refreshToken', result.tokens.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: isProduction,
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+        maxAge: refreshTokenExpirationMs,
       });
 
       return {
@@ -96,7 +123,14 @@ export class AuthController {
         user: result.user,
       };
     } catch (error) {
-      this.handleAuthError(error);
+      // Le Use Case a déjà fait le logging approprié
+      // Controller se contente de transformer l'exception en réponse HTTP
+      if (error instanceof InvalidCredentialsError) {
+        throw new UnauthorizedException(
+          this.i18n.t('auth.invalid_credentials', { email: loginDto.email }),
+        );
+      }
+      throw error; // Re-throw other errors as-is
     }
   }
 
@@ -105,47 +139,36 @@ export class AuthController {
    */
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  async refresh(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ success: boolean; user: any }> {
-    try {
-      const refreshToken = req.cookies?.refreshToken;
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Refresh the access token using the refresh token from cookies',
+  })
+  @ApiCookieAuth('refreshToken')
+  @ApiResponse({
+    status: 200,
+    description: 'Token refreshed successfully',
+    type: RefreshTokenResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Invalid or expired refresh token',
+  })
+  async refresh(@Req() req: Request): Promise<RefreshTokenResponseDto> {
+    const refreshToken = req.cookies?.refreshToken as string;
 
-      if (!refreshToken) {
-        throw new InvalidRefreshTokenError(
-          this.i18n.t('auth.refresh_token_missing'),
-        );
-      }
-
-      const result = await this.refreshTokenUseCase.execute({
-        refreshToken,
-        userAgent: req.headers['user-agent'],
-        ipAddress: this.extractClientIp(req),
-      });
-
-      // Mise à jour des cookies avec les nouveaux tokens
-      res.cookie('accessToken', result.tokens.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 15 * 60 * 1000, // 15 minutes
-      });
-
-      res.cookie('refreshToken', result.tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
-      });
-
-      return {
-        success: true,
-        user: result.user,
-      };
-    } catch (error) {
-      this.handleAuthError(error);
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token missing');
     }
+
+    const result = await this.refreshTokenUseCase.execute({
+      refreshToken,
+    });
+
+    return {
+      success: true,
+      user: result.user,
+    };
   }
 
   /**
@@ -153,11 +176,21 @@ export class AuthController {
    */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'User logout',
+    description: 'Logout user and invalidate tokens',
+  })
+  @ApiCookieAuth('refreshToken')
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful',
+    type: LogoutResponseDto,
+  })
   async logout(
     @Body() logoutDto: LogoutDto,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<LogoutResponseDto> {
     try {
       const refreshToken = req.cookies?.refreshToken;
 
@@ -192,7 +225,21 @@ export class AuthController {
    * 👤 GET USER INFO ENDPOINT
    */
   @Get('me')
-  async me(@Req() req: Request): Promise<{ user: any }> {
+  @ApiOperation({
+    summary: 'Get current user information',
+    description: 'Get information about the currently authenticated user',
+  })
+  @ApiCookieAuth('accessToken')
+  @ApiResponse({
+    status: 200,
+    description: 'User information retrieved successfully',
+    type: UserInfoResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Authentication required',
+  })
+  me(@Req() _req: Request): UserInfoResponseDto {
     // Cette méthode nécessiterait un middleware d'authentification
     // pour extraire l'utilisateur du token JWT
     // Pour l'instant, retournons un mock
@@ -218,40 +265,5 @@ export class AuthController {
       : req.connection.remoteAddress || req.socket.remoteAddress;
 
     return ip || 'unknown';
-  }
-
-  private handleAuthError(error: any): never {
-    this.logger.error(this.i18n.t('errors.auth.controller_error'), error, {
-      operation: 'AUTH_CONTROLLER_ERROR',
-      timestamp: new Date().toISOString(),
-    });
-
-    if (error instanceof InvalidCredentialsError) {
-      throw new UnauthorizedException(this.i18n.t('auth.invalid_credentials'));
-    }
-
-    if (
-      error instanceof InvalidRefreshTokenError ||
-      error instanceof TokenExpiredError
-    ) {
-      throw new UnauthorizedException(
-        this.i18n.t('auth.invalid_refresh_token'),
-      );
-    }
-
-    if (error instanceof UserNotFoundError) {
-      throw new UnauthorizedException(this.i18n.t('auth.user_not_found'));
-    }
-
-    if (error instanceof TokenRepositoryError) {
-      throw new InternalServerErrorException(
-        this.i18n.t('auth.service_unavailable'),
-      );
-    }
-
-    // Erreur générique
-    throw new InternalServerErrorException(
-      this.i18n.t('auth.unexpected_error'),
-    );
   }
 }

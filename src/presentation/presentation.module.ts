@@ -12,6 +12,7 @@ import { PinoLoggerModule } from '../infrastructure/logging/pino-logger.module';
 import { TOKENS } from '../shared/constants/injection-tokens';
 import { AuthController } from './controllers/auth.controller';
 import { HealthController } from './controllers/health.controller';
+import { TestController } from './controllers/test.controller';
 import { UserController } from './controllers/user.controller';
 
 /**
@@ -25,12 +26,12 @@ class TemporaryI18nService implements I18nService {
       'operations.user.creation_attempt': 'User creation attempt',
       'operations.user.get_attempt': 'User get attempt',
       // Auth translations
-      'auth.login_attempt': 'Login attempt for {email}',
-      'auth.user_not_found': 'User not found for email {email}',
-      'auth.invalid_credentials': 'Invalid credentials for {email}',
-      'auth.login_successful': 'Login successful for user {userId}',
-      'auth.login_error': 'Login error for {email}: {error}',
-      'auth.login_failed': 'Login failed',
+      'auth.login_attempt': 'Tentative de connexion pour {email}',
+      'auth.user_not_found': "Utilisateur non trouvé pour l'email {email}",
+      'auth.invalid_credentials': 'Identifiants invalides pour {email}',
+      'auth.login_successful': "Connexion réussie pour l'utilisateur {userId}",
+      'auth.login_error': 'Erreur de connexion pour {email}: {error}',
+      'auth.login_failed': 'Échec de la connexion',
       'auth.refresh_attempt': 'Token refresh attempt',
       'auth.refresh_successful': 'Token refreshed successfully',
       'auth.refresh_error': 'Token refresh error: {error}',
@@ -76,12 +77,12 @@ class TemporaryI18nService implements I18nService {
       'operations.user.creation_attempt': 'User creation attempt',
       'operations.user.get_attempt': 'User get attempt',
       // Auth translations
-      'auth.login_attempt': 'Login attempt for {email}',
-      'auth.user_not_found': 'User not found for email {email}',
-      'auth.invalid_credentials': 'Invalid credentials for {email}',
-      'auth.login_successful': 'Login successful for user {userId}',
-      'auth.login_error': 'Login error for {email}: {error}',
-      'auth.login_failed': 'Login failed',
+      'auth.login_attempt': 'Tentative de connexion pour {email}',
+      'auth.user_not_found': "Utilisateur non trouvé pour l'email {email}",
+      'auth.invalid_credentials': 'Identifiants invalides pour {email}',
+      'auth.login_successful': "Connexion réussie pour l'utilisateur {userId}",
+      'auth.login_error': 'Erreur de connexion pour {email}: {error}',
+      'auth.login_failed': 'Échec de la connexion',
       'auth.refresh_attempt': 'Token refresh attempt',
       'auth.refresh_successful': 'Token refreshed successfully',
       'auth.refresh_error': 'Token refresh error: {error}',
@@ -115,6 +116,7 @@ class TemporaryI18nService implements I18nService {
     HealthController,
     UserController,
     AuthController,
+    TestController, // Controller de test pour Swagger
   ],
   providers: [
     // 🌍 Services de la couche présentation

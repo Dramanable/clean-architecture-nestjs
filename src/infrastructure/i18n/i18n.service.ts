@@ -19,7 +19,7 @@ import type { I18nService } from '../../application/ports/i18n.port';
 
 // Version Mock pour les tests (simplifié)
 export class MockI18nService implements I18nService {
-  private defaultLang = 'en';
+  private defaultLang = 'fr';
 
   // Mock basique avec les clés principales pour les tests
   private mockTranslations: Record<string, Record<string, string>> = {
@@ -93,6 +93,13 @@ export class MockI18nService implements I18nService {
       'audit.user.accessed': 'User profile accessed',
       'audit.auth.user_logged_in': 'User logged in',
       'audit.permission.denied': 'Permission denied',
+
+      // Auth messages (specific to auth controller)
+      'auth.invalid_credentials': 'Invalid credentials for {email}',
+      'auth.invalid_refresh_token': 'Invalid refresh token',
+      'auth.user_not_found': 'User not found',
+      'auth.service_unavailable': 'Service unavailable',
+      'auth.unexpected_error': 'Unexpected error',
     },
     fr: {
       // Domain messages (business rules)
@@ -159,6 +166,13 @@ export class MockI18nService implements I18nService {
       'audit.user.deleted': 'Utilisateur supprimé',
       'audit.user.accessed': 'Profil utilisateur consulté',
       'audit.permission.denied': 'Permission refusée',
+
+      // Auth messages (specific to auth controller)
+      'auth.invalid_credentials': 'Identifiants invalides pour {email}',
+      'auth.invalid_refresh_token': 'Token de rafraîchissement invalide',
+      'auth.user_not_found': 'Utilisateur non trouvé',
+      'auth.service_unavailable': 'Service indisponible',
+      'auth.unexpected_error': 'Erreur inattendue',
     },
   };
 
