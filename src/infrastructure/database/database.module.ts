@@ -56,11 +56,11 @@ export class DatabaseModule {
   /**
    * 🐘 Configuration SQL (TypeORM)
    */
-  private static createSqlModule(baseModule: any): DynamicModule {
+  private static createSqlModule(baseModule: DynamicModule): DynamicModule {
     return {
       ...baseModule,
       imports: [
-        ...baseModule.imports,
+        ...(baseModule.imports || []),
         TypeOrmModule.forRootAsync({
           imports: [ConfigModule],
           useFactory: (configService: ConfigService) => {
@@ -116,19 +116,23 @@ export class DatabaseModule {
         }),
         TypeOrmModule.forFeature([UserOrmEntity, RefreshTokenOrmEntity]),
       ],
-      providers: [...baseModule.providers, DatabaseConfigService],
-      exports: [...baseModule.exports, DatabaseConfigService, TypeOrmModule],
+      providers: [...(baseModule.providers || []), DatabaseConfigService],
+      exports: [
+        ...(baseModule.exports || []),
+        DatabaseConfigService,
+        TypeOrmModule,
+      ],
     };
   }
 
   /**
    * 🍃 Configuration MongoDB (Mongoose)
    */
-  private static createMongoModule(baseModule: any): DynamicModule {
+  private static createMongoModule(baseModule: DynamicModule): DynamicModule {
     return {
       ...baseModule,
       imports: [
-        ...baseModule.imports,
+        ...(baseModule.imports || []),
         MongooseModule.forRootAsync({
           imports: [ConfigModule],
           useClass: MongoConfigService,
@@ -139,8 +143,12 @@ export class DatabaseModule {
           { name: MongoRefreshToken.name, schema: RefreshTokenSchema },
         ]),
       ],
-      providers: [...baseModule.providers, MongoConfigService],
-      exports: [...baseModule.exports, MongoConfigService, MongooseModule],
+      providers: [...(baseModule.providers || []), MongoConfigService],
+      exports: [
+        ...(baseModule.exports || []),
+        MongoConfigService,
+        MongooseModule,
+      ],
     };
   }
 

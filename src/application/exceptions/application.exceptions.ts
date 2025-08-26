@@ -12,14 +12,14 @@ export abstract class ApplicationException extends Error {
 
   constructor(
     message: string,
-    code: string,
-    i18nKey: string,
-    context?: Record<string, any>,
+    code?: string,
+    i18nKey?: string,
+    context?: Record<string, unknown>,
   ) {
     super(message);
     this.name = this.constructor.name;
-    this.code = code;
-    this.i18nKey = i18nKey;
+    this.code = code || 'APPLICATION_ERROR';
+    this.i18nKey = i18nKey || 'errors.application.general_error';
     this.context = context;
   }
 }

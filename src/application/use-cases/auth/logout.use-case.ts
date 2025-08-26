@@ -12,7 +12,10 @@ import type { Logger } from '../../ports/logger.port';
 
 // Interfaces pour les ports
 export interface RefreshTokenRepository {
-  findByToken(token: string): Promise<any>;
+  findByToken(token: string): Promise<{
+    userId: string;
+    isValid(): boolean;
+  } | null>;
   revokeAllByUserId(userId: string): Promise<void>;
   revokeByToken(token: string): Promise<void>;
 }

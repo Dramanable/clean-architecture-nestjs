@@ -45,13 +45,13 @@ export class ApiErrorResponseDto {
     description: 'HTTP status code',
     example: 400,
   })
-  statusCode: number;
+  statusCode!: number;
 
   @ApiProperty({
     description: 'Error message',
     example: 'Validation failed',
   })
-  message: string;
+  message!: string;
 
   @ApiProperty({
     description: 'Detailed error information',
@@ -73,13 +73,13 @@ export class ApiErrorResponseDto {
     example: '2024-01-15T10:00:00.000Z',
     format: 'date-time',
   })
-  timestamp: string;
+  timestamp!: string;
 
   @ApiProperty({
     description: 'Request path that caused the error',
     example: '/api/users',
   })
-  path: string;
+  path!: string;
 }
 
 /**
@@ -92,12 +92,12 @@ export class ApiSuccessResponseDto {
     description: 'Success message',
     example: 'Operation completed successfully',
   })
-  message: string;
+  message!: string;
 
   @ApiProperty({
     description: 'Timestamp of the operation',
     example: '2024-01-15T10:00:00.000Z',
     format: 'date-time',
   })
-  timestamp: string;
+  timestamp!: string;
 }

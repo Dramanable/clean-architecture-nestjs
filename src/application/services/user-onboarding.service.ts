@@ -15,6 +15,7 @@ export interface OnboardingContext {
   userName: string;
   userEmail: string;
   requestingUserId: string;
+  [key: string]: unknown;
 }
 
 export interface OnboardingResult {

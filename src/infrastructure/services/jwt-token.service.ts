@@ -100,7 +100,7 @@ export class JwtTokenService {
     }
   }
 
-  verifyToken(token: string, secret: string): any {
+  verifyToken(token: string, secret: string): unknown {
     const context = {
       operation: 'VERIFY_TOKEN',
       timestamp: new Date().toISOString(),

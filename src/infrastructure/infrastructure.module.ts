@@ -30,7 +30,7 @@ import { JwtTokenService } from './services/jwt-token.service';
  * 🌍 Mock I18n Service pour Infrastructure
  */
 class InfrastructureI18nService implements I18nService {
-  t(key: string, params?: Record<string, any>): string {
+  t(key: string, params?: Record<string, unknown>): string {
     const translations: Record<string, string> = {
       // Auth operations
       'operations.refresh_token.lookup_attempt': 'Looking up refresh token',
@@ -59,7 +59,7 @@ class InfrastructureI18nService implements I18nService {
     return result;
   }
 
-  translate(key: string, params?: Record<string, any>): string {
+  translate(key: string, params?: Record<string, unknown>): string {
     return this.t(key, params);
   }
 

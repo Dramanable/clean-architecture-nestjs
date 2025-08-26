@@ -16,13 +16,13 @@ export type RefreshTokenDocument = RefreshToken & Document;
 })
 export class RefreshToken {
   @Prop({ required: true, type: String })
-  _id: string;
+  _id!: string;
 
   @Prop({ required: true, maxlength: 500 })
-  tokenHash: string;
+  tokenHash!: string;
 
   @Prop({ required: true, type: String })
-  userId: string;
+  userId!: string;
 
   @Prop({ maxlength: 100, default: null })
   deviceId?: string;
@@ -34,10 +34,10 @@ export class RefreshToken {
   ipAddress?: string;
 
   @Prop({ required: true, type: Date })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Prop({ default: false })
-  isRevoked: boolean;
+  isRevoked!: boolean;
 
   @Prop({ type: Date, default: null })
   revokedAt?: Date;

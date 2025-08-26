@@ -38,26 +38,32 @@ export class UserMapper {
     );
 
     // Reconstitution des métadonnées via les propriétés privées
-    (user as any).id = ormEntity.id;
-    (user as any).hashedPassword = ormEntity.hashedPassword;
-    (user as any).createdAt = ormEntity.createdAt;
-    (user as any).updatedAt = ormEntity.updatedAt;
+    (user as unknown as { id: string }).id = ormEntity.id;
+    (user as unknown as { hashedPassword: string }).hashedPassword =
+      ormEntity.hashedPassword;
+    (user as unknown as { createdAt: Date }).createdAt = ormEntity.createdAt;
+    (user as unknown as { updatedAt: Date }).updatedAt = ormEntity.updatedAt;
 
     // 🔐 Métadonnées de sécurité (préservation depuis la BDD)
     if (ormEntity.lastLoginAt) {
-      (user as any)._lastLoginAt = ormEntity.lastLoginAt;
+      (user as unknown as { _lastLoginAt: Date })._lastLoginAt =
+        ormEntity.lastLoginAt;
     }
     if (ormEntity.lastLoginIp) {
-      (user as any)._lastLoginIp = ormEntity.lastLoginIp;
+      (user as unknown as { _lastLoginIp: string })._lastLoginIp =
+        ormEntity.lastLoginIp;
     }
     if (ormEntity.loginAttempts !== undefined) {
-      (user as any)._loginAttempts = ormEntity.loginAttempts;
+      (user as unknown as { _loginAttempts: number })._loginAttempts =
+        ormEntity.loginAttempts;
     }
     if (ormEntity.lockedUntil) {
-      (user as any)._lockedUntil = ormEntity.lockedUntil;
+      (user as unknown as { _lockedUntil: Date })._lockedUntil =
+        ormEntity.lockedUntil;
     }
     if (ormEntity.emailVerified !== undefined) {
-      (user as any)._emailVerified = ormEntity.emailVerified;
+      (user as unknown as { _emailVerified: boolean })._emailVerified =
+        ormEntity.emailVerified;
     }
 
     return user;
@@ -73,25 +79,40 @@ export class UserMapper {
     ormEntity.id = domainEntity.id;
     ormEntity.email = domainEntity.email.value;
     ormEntity.name = domainEntity.name;
-    ormEntity.hashedPassword = (domainEntity as any)._password || '';
+    ormEntity.hashedPassword =
+      (domainEntity as unknown as { _password: string })._password || '';
     ormEntity.role = domainEntity.role;
 
     // Métadonnées de sécurité (avec accès privé)
-    ormEntity.lastLoginAt = (domainEntity as any)._lastLoginAt;
-    ormEntity.lastLoginIp = (domainEntity as any)._lastLoginIp;
-    ormEntity.loginAttempts = (domainEntity as any)._loginAttempts || 0;
-    ormEntity.lockedUntil = (domainEntity as any)._lockedUntil;
-    ormEntity.emailVerified = (domainEntity as any)._emailVerified || false;
+    ormEntity.lastLoginAt = (
+      domainEntity as unknown as { _lastLoginAt: Date }
+    )._lastLoginAt;
+    ormEntity.lastLoginIp = (
+      domainEntity as unknown as { _lastLoginIp: string }
+    )._lastLoginIp;
+    ormEntity.loginAttempts =
+      (domainEntity as unknown as { _loginAttempts: number })._loginAttempts ||
+      0;
+    ormEntity.lockedUntil = (
+      domainEntity as unknown as { _lockedUntil: Date }
+    )._lockedUntil;
+    ormEntity.emailVerified =
+      (domainEntity as unknown as { _emailVerified: boolean })._emailVerified ||
+      false;
 
     // Status
     ormEntity.isActive = true; // Par défaut actif
 
     // Timestamps (préservés si existants)
-    if ((domainEntity as any)._createdAt) {
-      ormEntity.createdAt = (domainEntity as any)._createdAt;
+    if ((domainEntity as unknown as { _createdAt: Date })._createdAt) {
+      ormEntity.createdAt = (
+        domainEntity as unknown as { _createdAt: Date }
+      )._createdAt;
     }
-    if ((domainEntity as any)._updatedAt) {
-      ormEntity.updatedAt = (domainEntity as any)._updatedAt;
+    if ((domainEntity as unknown as { _updatedAt: Date })._updatedAt) {
+      ormEntity.updatedAt = (
+        domainEntity as unknown as { _updatedAt: Date }
+      )._updatedAt;
     }
 
     return ormEntity;
@@ -111,17 +132,28 @@ export class UserMapper {
     ormEntity.role = domainEntity.role;
 
     // Mise à jour du mot de passe si changé
-    const newPassword = (domainEntity as any)._password;
+    const newPassword = (domainEntity as unknown as { _password: string })
+      ._password;
     if (newPassword) {
       ormEntity.hashedPassword = newPassword;
     }
 
     // Métadonnées de sécurité
-    ormEntity.lastLoginAt = (domainEntity as any)._lastLoginAt;
-    ormEntity.lastLoginIp = (domainEntity as any)._lastLoginIp;
-    ormEntity.loginAttempts = (domainEntity as any)._loginAttempts || 0;
-    ormEntity.lockedUntil = (domainEntity as any)._lockedUntil;
-    ormEntity.emailVerified = (domainEntity as any)._emailVerified || false;
+    ormEntity.lastLoginAt = (
+      domainEntity as unknown as { _lastLoginAt: Date }
+    )._lastLoginAt;
+    ormEntity.lastLoginIp = (
+      domainEntity as unknown as { _lastLoginIp: string }
+    )._lastLoginIp;
+    ormEntity.loginAttempts =
+      (domainEntity as unknown as { _loginAttempts: number })._loginAttempts ||
+      0;
+    ormEntity.lockedUntil = (
+      domainEntity as unknown as { _lockedUntil: Date }
+    )._lockedUntil;
+    ormEntity.emailVerified =
+      (domainEntity as unknown as { _emailVerified: boolean })._emailVerified ||
+      false;
 
     // updatedAt sera automatiquement mis à jour par TypeORM
     return ormEntity;

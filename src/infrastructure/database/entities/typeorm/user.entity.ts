@@ -21,29 +21,29 @@ import { UserRole } from '../../../../shared/enums/user-role.enum';
 @Index('IDX_USER_CREATED_AT', ['createdAt'])
 export class UserOrmEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
-  email: string;
+  email!: string;
 
   @Column({ type: 'varchar', length: 100 })
-  name: string;
+  name!: string;
 
   @Column({ type: 'varchar', length: 255, name: 'hashedPassword' })
-  hashedPassword: string;
+  hashedPassword!: string;
 
   @Column({ type: 'boolean', default: false })
-  passwordChangeRequired: boolean;
+  passwordChangeRequired!: boolean;
 
   @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.USER,
   })
-  role: UserRole;
+  role!: UserRole;
 
   @Column({ type: 'boolean', default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   // 🔐 Sécurité
   @Column({ type: 'timestamp', nullable: true })
@@ -53,14 +53,14 @@ export class UserOrmEntity {
   lastLoginIp?: string;
 
   @Column({ type: 'int', default: 0 })
-  loginAttempts: number;
+  loginAttempts!: number;
 
   @Column({ type: 'timestamp', nullable: true })
   lockedUntil?: Date;
 
   // 📧 Email verification
   @Column({ type: 'boolean', default: false })
-  emailVerified: boolean;
+  emailVerified!: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
   emailVerifiedAt?: Date;
@@ -81,16 +81,16 @@ export class UserOrmEntity {
 
   // 📊 Métadonnées
   @Column({ type: 'jsonb', nullable: true })
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   // 📅 Timestamps
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // 🔒 Optimistic locking
   @Column({ type: 'int', default: 1 })
-  version: number;
+  version!: number;
 }

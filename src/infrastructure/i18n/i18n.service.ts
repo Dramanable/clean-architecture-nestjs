@@ -176,7 +176,11 @@ export class MockI18nService implements I18nService {
     },
   };
 
-  translate(key: string, params?: Record<string, any>, lang?: string): string {
+  translate(
+    key: string,
+    params?: Record<string, unknown>,
+    lang?: string,
+  ): string {
     const currentLang = lang || this.defaultLang;
     const langTranslations =
       this.mockTranslations[currentLang] || this.mockTranslations.en;
@@ -196,7 +200,7 @@ export class MockI18nService implements I18nService {
     return translation;
   }
 
-  t(key: string, params?: Record<string, any>, lang?: string): string {
+  t(key: string, params?: Record<string, unknown>, lang?: string): string {
     return this.translate(key, params, lang);
   }
 

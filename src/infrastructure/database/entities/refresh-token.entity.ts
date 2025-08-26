@@ -18,13 +18,13 @@ import {
 @Index(['token'], { unique: true })
 export class RefreshTokenEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
-  token: string;
+  token!: string;
 
   @Column({ type: 'uuid' })
-  userId: string;
+  userId!: string;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   userAgent?: string;
@@ -33,19 +33,19 @@ export class RefreshTokenEntity {
   ipAddress?: string;
 
   @Column({ type: 'timestamp' })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Column({ type: 'boolean', default: false })
-  isRevoked: boolean;
+  isRevoked!: boolean;
 
   @Column({ type: 'timestamp', nullable: true })
   revokedAt?: Date;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   // Méthodes métier
   isValid(): boolean {

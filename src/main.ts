@@ -46,18 +46,25 @@ async function bootstrap() {
   });
 
   // Helmet for security headers
-  app.use(helmet(configService.getHelmetConfig()));
+  app.use(helmet(configService.getHelmetConfig() as Record<string, unknown>));
 
   // ⚡ Performance Middlewares
   logger.log('Configuring performance middlewares...');
 
   // Compression
-  app.use(compression(configService.getCompressionConfig()));
+  app.use(
+    compression(
+      configService.getCompressionConfig() as Record<string, unknown>,
+    ),
+  );
 
   // Body parser limits
-  const bodyConfig = configService.getBodyParserConfig();
-  app.useBodyParser('json', bodyConfig.json);
-  app.useBodyParser('urlencoded', bodyConfig.urlencoded);
+  const bodyConfig = configService.getBodyParserConfig() as {
+    json?: Record<string, unknown>;
+    urlencoded?: Record<string, unknown>;
+  };
+  app.useBodyParser('json', bodyConfig.json || {});
+  app.useBodyParser('urlencoded', bodyConfig.urlencoded || {});
 
   // 🎯 Global Configuration
   logger.log('Configuring global settings...');

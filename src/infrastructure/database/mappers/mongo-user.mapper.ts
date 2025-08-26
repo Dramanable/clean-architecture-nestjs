@@ -22,19 +22,26 @@ export class MongoUserMapper {
     );
 
     // Reconstitution des propriétés privées
-    (user as any).id = mongoDoc._id;
-    (user as any)._password = mongoDoc.password;
+    (user as unknown as { id: string }).id = mongoDoc._id;
+    (user as unknown as { _password: string })._password = mongoDoc.password;
 
     // Métadonnées de sécurité
-    (user as any)._lastLoginAt = mongoDoc.lastLoginAt;
-    (user as any)._lastLoginIp = mongoDoc.lastLoginIp;
-    (user as any)._loginAttempts = mongoDoc.loginAttempts || 0;
-    (user as any)._lockedUntil = mongoDoc.lockedUntil;
-    (user as any)._emailVerified = mongoDoc.emailVerified || false;
+    (user as unknown as { _lastLoginAt: Date | null })._lastLoginAt =
+      mongoDoc.lastLoginAt || null;
+    (user as unknown as { _lastLoginIp: string | null })._lastLoginIp =
+      mongoDoc.lastLoginIp || null;
+    (user as unknown as { _loginAttempts: number })._loginAttempts =
+      mongoDoc.loginAttempts || 0;
+    (user as unknown as { _lockedUntil: Date | null })._lockedUntil =
+      mongoDoc.lockedUntil || null;
+    (user as unknown as { _emailVerified: boolean })._emailVerified =
+      mongoDoc.emailVerified || false;
 
     // Timestamps
-    (user as any)._createdAt = mongoDoc.createdAt;
-    (user as any)._updatedAt = mongoDoc.updatedAt;
+    (user as unknown as { _createdAt: Date })._createdAt =
+      mongoDoc.createdAt || new Date();
+    (user as unknown as { _updatedAt: Date })._updatedAt =
+      mongoDoc.updatedAt || new Date();
 
     return user;
   }
@@ -47,23 +54,40 @@ export class MongoUserMapper {
       _id: domainEntity.id,
       email: domainEntity.email.value, // Utilisation de .value pour Email VO
       name: domainEntity.name,
-      password: (domainEntity as any)._password || '',
+      password:
+        (domainEntity as unknown as { _password: string })._password || '',
       role: domainEntity.role,
       isActive: true,
 
       // Métadonnées de sécurité
-      lastLoginAt: (domainEntity as any)._lastLoginAt,
-      lastLoginIp: (domainEntity as any)._lastLoginIp,
-      loginAttempts: (domainEntity as any)._loginAttempts || 0,
-      lockedUntil: (domainEntity as any)._lockedUntil,
-      emailVerified: (domainEntity as any)._emailVerified || false,
-      emailVerifiedAt: (domainEntity as any)._emailVerifiedAt,
+      lastLoginAt:
+        (domainEntity as unknown as { _lastLoginAt: Date | null })
+          ._lastLoginAt || undefined,
+      lastLoginIp:
+        (domainEntity as unknown as { _lastLoginIp: string | null })
+          ._lastLoginIp || undefined,
+      loginAttempts:
+        (domainEntity as unknown as { _loginAttempts: number })
+          ._loginAttempts || 0,
+      lockedUntil:
+        (domainEntity as unknown as { _lockedUntil: Date | null })
+          ._lockedUntil || undefined,
+      emailVerified:
+        (domainEntity as unknown as { _emailVerified: boolean })
+          ._emailVerified || false,
+      emailVerifiedAt:
+        (domainEntity as unknown as { _emailVerifiedAt: Date | null })
+          ._emailVerifiedAt || undefined,
 
       // Multi-tenant (optionnel)
-      tenantId: (domainEntity as any)._tenantId,
+      tenantId:
+        (domainEntity as unknown as { _tenantId: string | null })._tenantId ||
+        undefined,
 
       // Métadonnées
-      metadata: (domainEntity as any)._metadata,
+      metadata: (
+        domainEntity as unknown as { _metadata: Record<string, unknown> }
+      )._metadata,
     };
   }
 
@@ -80,17 +104,28 @@ export class MongoUserMapper {
     mongoDoc.role = domainEntity.role;
 
     // Mise à jour du mot de passe si changé
-    const newPassword = (domainEntity as any)._password;
+    const newPassword = (domainEntity as unknown as { _password: string })
+      ._password;
     if (newPassword) {
       mongoDoc.password = newPassword;
     }
 
     // Métadonnées de sécurité
-    mongoDoc.lastLoginAt = (domainEntity as any)._lastLoginAt;
-    mongoDoc.lastLoginIp = (domainEntity as any)._lastLoginIp;
-    mongoDoc.loginAttempts = (domainEntity as any)._loginAttempts || 0;
-    mongoDoc.lockedUntil = (domainEntity as any)._lockedUntil;
-    mongoDoc.emailVerified = (domainEntity as any)._emailVerified || false;
+    mongoDoc.lastLoginAt =
+      (domainEntity as unknown as { _lastLoginAt: Date | null })._lastLoginAt ||
+      undefined;
+    mongoDoc.lastLoginIp =
+      (domainEntity as unknown as { _lastLoginIp: string | null })
+        ._lastLoginIp || undefined;
+    mongoDoc.loginAttempts =
+      (domainEntity as unknown as { _loginAttempts: number })._loginAttempts ||
+      0;
+    mongoDoc.lockedUntil =
+      (domainEntity as unknown as { _lockedUntil: Date | null })._lockedUntil ||
+      undefined;
+    mongoDoc.emailVerified =
+      (domainEntity as unknown as { _emailVerified: boolean })._emailVerified ||
+      false;
 
     // updatedAt sera automatiquement mis à jour par Mongoose
     return mongoDoc;

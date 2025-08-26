@@ -9,30 +9,38 @@ export interface Logger {
   /**
    * Log de niveau info
    */
-  info(message: string, context?: Record<string, any>): void;
+  info(message: string, context?: Record<string, unknown>): void;
 
   /**
    * Log de niveau warning
    */
-  warn(message: string, context?: Record<string, any>): void;
+  warn(message: string, context?: Record<string, unknown>): void;
 
   /**
    * Log de niveau error
    */
-  error(message: string, error?: Error, context?: Record<string, any>): void;
+  error(
+    message: string,
+    error?: Error,
+    context?: Record<string, unknown>,
+  ): void;
 
   /**
    * Log de niveau debug (dev uniquement)
    */
-  debug(message: string, context?: Record<string, any>): void;
+  debug(message: string, context?: Record<string, unknown>): void;
 
   /**
    * Log pour audit trail (actions importantes)
    */
-  audit(action: string, userId: string, context?: Record<string, any>): void;
+  audit(
+    action: string,
+    userId: string,
+    context?: Record<string, unknown>,
+  ): void;
 
   /**
    * Crée un logger avec contexte pré-rempli
    */
-  child(context: Record<string, any>): Logger;
+  child(context: Record<string, unknown>): Logger;
 }

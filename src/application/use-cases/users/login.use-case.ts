@@ -214,7 +214,7 @@ export class LoginUseCase {
    */
   private async revokeExistingTokens(
     userId: string,
-    requestContext: Record<string, any>,
+    requestContext: Record<string, unknown>,
   ): Promise<void> {
     try {
       this.logger.debug(

@@ -28,7 +28,7 @@ export interface LoginResponse {
     sessionId: string;
     createdAt: string;
     expiresAt: string;
-    deviceInfo?: any;
+    deviceInfo?: unknown;
   };
 }
 

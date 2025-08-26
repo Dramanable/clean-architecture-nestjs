@@ -13,17 +13,17 @@ import {
 @Entity('password_reset_tokens')
 export class PasswordResetTokenEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'user_id', type: 'uuid' })
-  userId: string;
+  userId!: string;
 
   @Column({ unique: true, length: 255 })
-  token: string;
+  token!: string;
 
   @Column({ name: 'expires_at' })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 }

@@ -16,30 +16,30 @@ import { UserRole } from '../../shared/enums/user-role.enum';
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true, length: 255 })
-  email: string;
+  email!: string;
 
   @Column({ length: 100 })
-  name: string;
+  name!: string;
 
   @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.USER,
   })
-  role: UserRole;
+  role!: UserRole;
 
   @Column({ name: 'hashed_password', nullable: true })
   hashedPassword?: string;
 
   @Column({ name: 'password_change_required', default: false })
-  passwordChangeRequired: boolean;
+  passwordChangeRequired!: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }

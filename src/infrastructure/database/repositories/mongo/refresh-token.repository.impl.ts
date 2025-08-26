@@ -57,7 +57,7 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
     } catch (error) {
       this.logger.error(
         this.i18n.t('operations.refresh_token.save_failed'),
-        error,
+        error instanceof Error ? error : new Error(String(error)),
         { tokenId: token.id },
       );
       throw error;
@@ -76,7 +76,7 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
     } catch (error) {
       this.logger.error(
         this.i18n.t('operations.refresh_token.find_failed'),
-        error,
+        error instanceof Error ? error : new Error(String(error)),
       );
       return null;
     }
@@ -96,7 +96,7 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
     } catch (error) {
       this.logger.error(
         this.i18n.t('operations.refresh_token.find_by_user_failed'),
-        error,
+        error instanceof Error ? error : new Error(String(error)),
         { userId },
       );
       return [];
@@ -117,7 +117,7 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
     } catch (error) {
       this.logger.error(
         this.i18n.t('operations.refresh_token.revoke_failed'),
-        error,
+        error instanceof Error ? error : new Error(String(error)),
         { userId },
       );
       throw error;
@@ -139,7 +139,7 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
     } catch (error) {
       this.logger.error(
         this.i18n.t('operations.refresh_token.cleanup_failed'),
-        error,
+        error instanceof Error ? error : new Error(String(error)),
       );
       return 0;
     }

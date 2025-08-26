@@ -37,7 +37,7 @@ export class TestController {
   })
   testLogin(@Body() loginDto: LoginDto): {
     message: string;
-    receivedData: any;
+    receivedData: unknown;
   } {
     return {
       message: 'Test endpoint working! Data received successfully.',

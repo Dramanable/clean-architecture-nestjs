@@ -8,12 +8,16 @@ export interface I18nService {
   /**
    * Traduit une clé avec paramètres optionnels
    */
-  translate(key: string, params?: Record<string, any>, lang?: string): string;
+  translate(
+    key: string,
+    params?: Record<string, unknown>,
+    lang?: string,
+  ): string;
 
   /**
-   * Traduit une clé courte (alias pour translate)
+   * Alias for translate method
    */
-  t(key: string, params?: Record<string, any>, lang?: string): string;
+  t(key: string, params?: Record<string, unknown>, lang?: string): string;
 
   /**
    * Définit la langue par défaut

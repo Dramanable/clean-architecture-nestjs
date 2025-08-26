@@ -20,7 +20,7 @@ export interface DatabaseConfig {
   database: string;
   poolSize: number;
   ssl?: boolean | object;
-  options?: Record<string, any>;
+  options?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -106,7 +106,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
 
   private getDatabaseSpecificOptions(
     dbType: DatabaseType,
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     switch (dbType) {
       case 'postgresql':
         return {

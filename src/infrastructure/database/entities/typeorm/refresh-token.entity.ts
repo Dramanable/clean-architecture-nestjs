@@ -20,19 +20,19 @@ import {
 @Index('IDX_REFRESH_TOKEN_DEVICE_ID', ['deviceId'])
 export class RefreshTokenOrmEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'uuid' })
-  userId: string;
+  userId!: string;
 
   @Column({ type: 'text' })
-  tokenHash: string;
+  tokenHash!: string;
 
   @Column({ type: 'timestamp with time zone' })
-  expiresAt: Date;
+  expiresAt!: Date;
 
   @Column({ type: 'boolean', default: false })
-  isRevoked: boolean;
+  isRevoked!: boolean;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   deviceId?: string;
@@ -47,10 +47,10 @@ export class RefreshTokenOrmEntity {
   lastUsedAt?: Date;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamp with time zone' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   revokedAt?: Date;

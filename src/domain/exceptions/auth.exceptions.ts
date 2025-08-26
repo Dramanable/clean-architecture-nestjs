@@ -6,9 +6,13 @@
 
 export class AuthenticationError extends Error {
   public readonly code: string;
-  public readonly context?: Record<string, any>;
+  public readonly context?: Record<string, unknown>;
 
-  constructor(message: string, code: string, context?: Record<string, any>) {
+  constructor(
+    message: string,
+    code: string,
+    context?: Record<string, unknown>,
+  ) {
     super(message);
     this.name = 'AuthenticationError';
     this.code = code;

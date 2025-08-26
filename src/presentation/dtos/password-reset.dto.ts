@@ -16,7 +16,7 @@ export class PasswordResetRequestDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   @Transform(({ value }: { value: string }) => value?.toLowerCase().trim())
-  email: string;
+  email!: string;
 }
 
 /**
@@ -32,7 +32,7 @@ export class PasswordResetConfirmDto {
   @IsString({ message: 'Token must be a string' })
   @IsNotEmpty({ message: 'Token is required' })
   @Transform(({ value }: { value: string }) => value?.trim())
-  token: string;
+  token!: string;
 
   @ApiProperty({
     description: 'New password for the user',
@@ -42,7 +42,7 @@ export class PasswordResetConfirmDto {
   @IsString({ message: 'Password must be a string' })
   @IsNotEmpty({ message: 'Password is required' })
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  newPassword: string;
+  newPassword!: string;
 }
 
 /**
@@ -55,20 +55,20 @@ export class PasswordResetResponseDto {
     description: 'Whether the operation was successful',
     example: true,
   })
-  success: boolean;
+  success!: boolean;
 
   @ApiProperty({
     description: 'Success or error message',
     example: 'Password reset email sent successfully',
   })
-  message: string;
+  message!: string;
 
   @ApiProperty({
     description: 'Timestamp of the operation',
     example: '2024-01-15T10:00:00.000Z',
     format: 'date-time',
   })
-  timestamp: string;
+  timestamp!: string;
 }
 
 /**
@@ -81,7 +81,7 @@ export class TokenValidationResponseDto {
     description: 'Whether the token is valid',
     example: true,
   })
-  isValid: boolean;
+  isValid!: boolean;
 
   @ApiProperty({
     description: 'Error message if token is invalid',
@@ -95,5 +95,5 @@ export class TokenValidationResponseDto {
     example: '2024-01-15T10:00:00.000Z',
     format: 'date-time',
   })
-  timestamp: string;
+  timestamp!: string;
 }

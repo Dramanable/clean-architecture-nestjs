@@ -49,7 +49,7 @@ export class ValidationI18nService {
   getValidationMessage(
     key: string,
     locale: string = 'fr',
-    params?: Record<string, any>,
+    params?: Record<string, unknown>,
   ): string {
     const messages =
       this.validationMessages[locale] || this.validationMessages.en;

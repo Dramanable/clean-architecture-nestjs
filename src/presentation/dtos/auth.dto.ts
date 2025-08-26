@@ -25,7 +25,7 @@ export class LoginDto {
   })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: 'User password',
@@ -35,7 +35,7 @@ export class LoginDto {
   @IsString({ message: 'Password must be a string' })
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   @IsNotEmpty({ message: 'Password is required' })
-  password: string;
+  password!: string;
 
   @ApiPropertyOptional({
     description: 'Remember me option for extended session',
@@ -82,7 +82,7 @@ export class LoginResponseDto {
     description: 'Login success status',
     example: true,
   })
-  success: boolean;
+  success!: boolean;
 
   @ApiProperty({
     description: 'User information',
@@ -93,7 +93,7 @@ export class LoginResponseDto {
       role: 'USER',
     },
   })
-  user: {
+  user!: {
     id: string;
     email: string;
     name: string;
@@ -109,7 +109,7 @@ export class RefreshTokenResponseDto {
     description: 'Refresh success status',
     example: true,
   })
-  success: boolean;
+  success!: boolean;
 
   @ApiProperty({
     description: 'User information',
@@ -120,7 +120,7 @@ export class RefreshTokenResponseDto {
       role: 'USER',
     },
   })
-  user: {
+  user!: {
     id: string;
     email: string;
     name: string;
@@ -136,13 +136,13 @@ export class LogoutResponseDto {
     description: 'Logout success status',
     example: true,
   })
-  success: boolean;
+  success!: boolean;
 
   @ApiProperty({
     description: 'Logout confirmation message',
     example: 'Successfully logged out',
   })
-  message: string;
+  message!: string;
 }
 
 /**
@@ -158,7 +158,7 @@ export class UserInfoResponseDto {
       role: 'USER',
     },
   })
-  user: {
+  user!: {
     id: string;
     email: string;
     name: string;
@@ -179,7 +179,7 @@ export class LoginCleanResponseDto {
       role: 'USER',
     },
   })
-  user: {
+  user!: {
     id: string;
     email: string;
     name: string;
@@ -198,7 +198,7 @@ export class LoginCleanResponseDto {
       },
     },
   })
-  session: {
+  session!: {
     sessionId: string;
     createdAt: string;
     expiresAt: string;

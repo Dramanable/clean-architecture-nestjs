@@ -201,7 +201,7 @@ export class AppConfigService implements IConfigService {
     return this.configService.get<boolean>('CORS_CREDENTIALS', true);
   }
 
-  getHelmetConfig(): any {
+  getHelmetConfig(): unknown {
     return {
       crossOriginEmbedderPolicy: false,
       contentSecurityPolicy: false,
@@ -209,14 +209,14 @@ export class AppConfigService implements IConfigService {
   }
 
   // 🚀 Performance Configuration
-  getCompressionConfig(): any {
+  getCompressionConfig(): unknown {
     return {
       level: this.configService.get<number>('COMPRESSION_LEVEL', 6),
       threshold: this.configService.get<number>('COMPRESSION_THRESHOLD', 1024),
     };
   }
 
-  getRateLimitConfig(): any {
+  getRateLimitConfig(): unknown {
     return {
       windowMs: this.getRateLimitWindowMs(),
       max: this.getRateLimitMax(),
@@ -224,7 +224,7 @@ export class AppConfigService implements IConfigService {
     };
   }
 
-  getBodyParserConfig(): any {
+  getBodyParserConfig(): unknown {
     return {
       limit: this.configService.get<string>('BODY_PARSER_LIMIT', '50mb'),
       extended: true,

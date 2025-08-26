@@ -21,17 +21,18 @@ export interface DatabaseRepositoryFactory {
 export class SqlRepositoryFactory implements DatabaseRepositoryFactory {
   createUserRepository(): UserRepository {
     // Lazy loading pour éviter les dépendances circulaires
-    const {
-      TypeOrmUserRepository,
-    } = require('../repositories/sql/user.repository.impl');
-    return new TypeOrmUserRepository();
+    const module = require('../repositories/sql/user.repository.impl') as {
+      TypeOrmUserRepository: new () => UserRepository;
+    };
+    return new module.TypeOrmUserRepository();
   }
 
   createRefreshTokenRepository(): RefreshTokenRepository {
-    const {
-      TypeOrmRefreshTokenRepository,
-    } = require('../repositories/sql/refresh-token.repository.impl');
-    return new TypeOrmRefreshTokenRepository();
+    const module =
+      require('../repositories/sql/refresh-token.repository.impl') as {
+        TypeOrmRefreshTokenRepository: new () => RefreshTokenRepository;
+      };
+    return new module.TypeOrmRefreshTokenRepository();
   }
 }
 
@@ -39,17 +40,18 @@ export class SqlRepositoryFactory implements DatabaseRepositoryFactory {
 @Injectable()
 export class MongoRepositoryFactory implements DatabaseRepositoryFactory {
   createUserRepository(): UserRepository {
-    const {
-      MongoUserRepository,
-    } = require('../repositories/mongo/user.repository.impl');
-    return new MongoUserRepository();
+    const module = require('../repositories/mongo/user.repository.impl') as {
+      MongoUserRepository: new () => UserRepository;
+    };
+    return new module.MongoUserRepository();
   }
 
   createRefreshTokenRepository(): RefreshTokenRepository {
-    const {
-      MongoRefreshTokenRepository,
-    } = require('../repositories/mongo/refresh-token.repository.impl');
-    return new MongoRefreshTokenRepository();
+    const module =
+      require('../repositories/mongo/refresh-token.repository.impl') as {
+        MongoRefreshTokenRepository: new () => RefreshTokenRepository;
+      };
+    return new module.MongoRefreshTokenRepository();
   }
 }
 

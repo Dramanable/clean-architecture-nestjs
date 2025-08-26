@@ -19,7 +19,7 @@ import { UserController } from './controllers/user.controller';
  * 🎭 Mock I18n Service temporaire
  */
 class TemporaryI18nService implements I18nService {
-  t(key: string, params?: Record<string, any>): string {
+  t(key: string, params?: Record<string, unknown>): string {
     const translations: Record<string, string> = {
       'success.user.created': 'User created successfully',
       'success.user.retrieved': 'User retrieved successfully',
@@ -62,7 +62,7 @@ class TemporaryI18nService implements I18nService {
     return result;
   }
 
-  translate(key: string, params?: Record<string, any>): string {
+  translate(key: string, params?: Record<string, unknown>): string {
     return this.t(key, params);
   }
 

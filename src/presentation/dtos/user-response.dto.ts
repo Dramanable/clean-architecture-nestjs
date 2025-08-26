@@ -35,7 +35,7 @@ export class UserResponseDto {
   })
   @Expose()
   @IsString()
-  id: string;
+  id!: string;
 
   @ApiProperty({
     description: "Adresse email de l'utilisateur",
@@ -45,7 +45,7 @@ export class UserResponseDto {
   @Expose()
   @IsEmail()
   @Transform(({ obj }) => obj.email?.value || obj.email)
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: "Nom complet de l'utilisateur",
@@ -55,7 +55,7 @@ export class UserResponseDto {
   })
   @Expose()
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: "Rôle de l'utilisateur dans le système",
@@ -65,7 +65,7 @@ export class UserResponseDto {
   })
   @Expose()
   @IsEnum(UserRole)
-  role: UserRole;
+  role!: UserRole;
 
   @ApiProperty({
     description: 'Date de création du compte utilisateur',
@@ -74,7 +74,7 @@ export class UserResponseDto {
   })
   @Expose()
   @IsDateString()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty({
     description: 'Date de dernière modification du compte',
@@ -94,7 +94,7 @@ export class UserResponseDto {
   })
   @Expose()
   @IsBoolean()
-  passwordChangeRequired: boolean;
+  passwordChangeRequired!: boolean;
 }
 
 /**
@@ -109,7 +109,7 @@ export class UserDetailResponseDto extends UserResponseDto {
   })
   @Expose()
   @IsBoolean()
-  emailVerified: boolean;
+  emailVerified!: boolean;
 
   @ApiProperty({
     description: 'Date de dernière connexion',
@@ -143,7 +143,7 @@ export class PaginatedUserResponseDto {
     isArray: true,
   })
   @Expose()
-  data: UserResponseDto[];
+  data!: UserResponseDto[];
 
   @ApiProperty({
     description: 'Métadonnées de pagination',
@@ -187,7 +187,7 @@ export class PaginatedUserResponseDto {
     },
   })
   @Expose()
-  meta: {
+  meta!: {
     currentPage: number;
     itemsPerPage: number;
     totalItems: number;

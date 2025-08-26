@@ -18,7 +18,7 @@ export type UserDocument = User & Document;
 })
 export class User {
   @Prop({ required: true, type: String })
-  _id: string;
+  _id!: string;
 
   @Prop({
     required: true,
@@ -27,30 +27,30 @@ export class User {
     trim: true,
     maxlength: 255,
   })
-  email: string;
+  email!: string;
 
   @Prop({
     required: true,
     trim: true,
     maxlength: 100,
   })
-  name: string;
+  name!: string;
 
   @Prop({
     required: true,
     maxlength: 255,
   })
-  password: string;
+  password!: string;
 
   @Prop({
     type: String,
     enum: Object.values(UserRole),
     default: UserRole.USER,
   })
-  role: UserRole;
+  role!: UserRole;
 
   @Prop({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   // 🔐 Sécurité
   @Prop({ type: Date, default: null })
@@ -60,14 +60,14 @@ export class User {
   lastLoginIp?: string;
 
   @Prop({ default: 0 })
-  loginAttempts: number;
+  loginAttempts!: number;
 
   @Prop({ type: Date, default: null })
   lockedUntil?: Date;
 
   // 📧 Email verification
   @Prop({ default: false })
-  emailVerified: boolean;
+  emailVerified!: boolean;
 
   @Prop({ type: Date, default: null })
   emailVerifiedAt?: Date;
@@ -99,8 +99,8 @@ UserSchema.index({ tenantId: 1, role: 1 });
 UserSchema.index({ isActive: 1, tenantId: 1 });
 
 // 🛡️ Sécurité : Ne jamais retourner le mot de passe
-UserSchema.methods.toJSON = function () {
-  const obj = this.toObject();
-  delete obj.password;
+UserSchema.methods.toJSON = function (): unknown {
+  const obj = this.toObject() as Record<string, unknown>;
+  delete (obj as { password?: unknown }).password;
   return obj;
 };

@@ -244,7 +244,7 @@ export class AppConfigService implements IConfigService {
     return this.configService.get<boolean>('CORS_CREDENTIALS', true);
   }
 
-  getHelmetConfig(): any {
+  getHelmetConfig(): unknown {
     return {
       contentSecurityPolicy: {
         directives: {
@@ -258,21 +258,21 @@ export class AppConfigService implements IConfigService {
   }
 
   // ⚡ Performance Configuration
-  getCompressionConfig(): any {
+  getCompressionConfig(): unknown {
     return {
       level: 6,
       threshold: 1024,
     };
   }
 
-  getRateLimitConfig(): any {
+  getRateLimitConfig(): unknown {
     return {
       windowMs: 15 * 60 * 1000, // 15 minutes
       max: 100, // limit each IP to 100 requests per windowMs
     };
   }
 
-  getBodyParserConfig(): any {
+  getBodyParserConfig(): unknown {
     return {
       limit: '10mb',
     };

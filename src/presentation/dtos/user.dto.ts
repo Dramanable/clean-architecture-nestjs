@@ -28,7 +28,7 @@ export class CreateUserDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   @Transform(({ value }: { value: string }) => value?.toLowerCase().trim())
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: 'User full name',
@@ -41,7 +41,7 @@ export class CreateUserDto {
   @MinLength(2, { message: 'Name must be at least 2 characters long' })
   @MaxLength(100, { message: 'Name must not exceed 100 characters' })
   @Transform(({ value }: { value: string }) => value?.trim())
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'User role in the system',
@@ -51,7 +51,7 @@ export class CreateUserDto {
   })
   @IsEnum(UserRole, { message: 'Role must be a valid user role' })
   @IsNotEmpty({ message: 'Role is required' })
-  role: UserRole;
+  role!: UserRole;
 
   @ApiPropertyOptional({
     description: 'Whether the user must change their password on next login',
@@ -125,7 +125,7 @@ export class UserResponseDto {
     format: 'uuid',
   })
   @IsUUID(4, { message: 'ID must be a valid UUID' })
-  id: string;
+  id!: string;
 
   @ApiProperty({
     description: 'User email address',
@@ -133,14 +133,14 @@ export class UserResponseDto {
     format: 'email',
   })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: 'User full name',
     example: 'John Doe',
   })
   @IsString()
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'User role in the system',
@@ -149,14 +149,14 @@ export class UserResponseDto {
     enumName: 'UserRole',
   })
   @IsEnum(UserRole)
-  role: UserRole;
+  role!: UserRole;
 
   @ApiProperty({
     description: 'Whether the user must change their password on next login',
     example: false,
   })
   @IsBoolean()
-  passwordChangeRequired: boolean;
+  passwordChangeRequired!: boolean;
 
   @ApiProperty({
     description: 'Date when the user was created',
@@ -164,7 +164,7 @@ export class UserResponseDto {
     format: 'date-time',
   })
   @IsDateString()
-  createdAt: string;
+  createdAt!: string;
 
   @ApiProperty({
     description: 'Date when the user was last updated',
@@ -172,7 +172,7 @@ export class UserResponseDto {
     format: 'date-time',
   })
   @IsDateString()
-  updatedAt: string;
+  updatedAt!: string;
 }
 
 /**
@@ -185,41 +185,41 @@ export class UserListResponseDto {
     description: 'List of users',
     type: [UserResponseDto],
   })
-  users: UserResponseDto[];
+  users!: UserResponseDto[];
 
   @ApiProperty({
     description: 'Total number of users',
     example: 150,
   })
-  total: number;
+  total!: number;
 
   @ApiProperty({
     description: 'Current page number',
     example: 1,
   })
-  page: number;
+  page!: number;
 
   @ApiProperty({
     description: 'Number of items per page',
     example: 10,
   })
-  limit: number;
+  limit!: number;
 
   @ApiProperty({
     description: 'Total number of pages',
     example: 15,
   })
-  totalPages: number;
+  totalPages!: number;
 
   @ApiProperty({
     description: 'Whether there is a next page',
     example: true,
   })
-  hasNext: boolean;
+  hasNext!: boolean;
 
   @ApiProperty({
     description: 'Whether there is a previous page',
     example: false,
   })
-  hasPrevious: boolean;
+  hasPrevious!: boolean;
 }

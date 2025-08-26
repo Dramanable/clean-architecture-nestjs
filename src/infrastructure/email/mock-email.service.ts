@@ -112,7 +112,7 @@ export class MockEmailService implements IEmailService {
     return [...this.sentEmails];
   }
 
-  getLastEmailTo(email: string): any {
+  getLastEmailTo(email: string): unknown {
     return this.sentEmails
       .filter((e) => e.to === email)
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0];

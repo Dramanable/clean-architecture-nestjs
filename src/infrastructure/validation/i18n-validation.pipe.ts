@@ -82,7 +82,7 @@ export class I18nValidationPipe extends ValidationPipe {
   private getTranslatedMessage(
     property: string,
     originalMessage: string,
-    value?: any,
+    value?: unknown,
   ): string {
     // Messages traduits pour chaque champ
     const translatedMessages: Record<string, Record<string, string>> = {
@@ -151,7 +151,7 @@ export class I18nValidationPipe extends ValidationPipe {
     return originalMessage;
   }
 
-  async transform(value: any, metadata: ArgumentMetadata) {
+  async transform(value: unknown, metadata: ArgumentMetadata) {
     try {
       return await super.transform(value, metadata);
     } catch (error) {
