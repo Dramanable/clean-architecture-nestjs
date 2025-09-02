@@ -1,4 +1,4 @@
-import { UserEntity } from '../../infrastructure/entities/user.entity';
+import { UserOrmEntity } from '../../infrastructure/database/entities/typeorm/user.entity';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -16,7 +16,7 @@ export class UserMapper {
   /**
    * Convertit un DTO de création en entité infrastructure
    */
-  static createDtoToEntity(dto: CreateUserDto): Partial<UserEntity> {
+  static createDtoToEntity(dto: CreateUserDto): Partial<UserOrmEntity> {
     return {
       email: dto.email,
       name: dto.name,
@@ -28,8 +28,8 @@ export class UserMapper {
   /**
    * Convertit un DTO de mise à jour en données pour l'entité infrastructure
    */
-  static updateDtoToEntityData(dto: UpdateUserDto): Partial<UserEntity> {
-    const entityData: Partial<UserEntity> = {};
+  static updateDtoToEntityData(dto: UpdateUserDto): Partial<UserOrmEntity> {
+    const entityData: Partial<UserOrmEntity> = {};
 
     if (dto.name !== undefined) {
       entityData.name = dto.name;
@@ -49,7 +49,7 @@ export class UserMapper {
   /**
    * Convertit une entité infrastructure en DTO de réponse
    */
-  static toResponseDto(entity: UserEntity): UserResponseDto {
+  static toResponseDto(entity: UserOrmEntity): UserResponseDto {
     return {
       id: entity.id,
       email: entity.email,
@@ -65,7 +65,7 @@ export class UserMapper {
    * Convertit une liste d'entités infrastructure en DTO de liste avec pagination
    */
   static toListResponseDto(
-    entities: UserEntity[],
+    entities: UserOrmEntity[],
     total: number,
     page: number,
     limit: number,

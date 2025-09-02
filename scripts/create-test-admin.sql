@@ -11,7 +11,7 @@ INSERT INTO users (
     id,
     email,
     name,
-    password,
+    "hashedPassword",
     "passwordChangeRequired",
     role,
     "isActive",
@@ -54,7 +54,7 @@ INSERT INTO users (
 )
 ON CONFLICT (email) DO UPDATE SET
     name = EXCLUDED.name,
-    password = EXCLUDED.password,
+    "hashedPassword" = EXCLUDED."hashedPassword",
     "passwordChangeRequired" = EXCLUDED."passwordChangeRequired",
     role = EXCLUDED.role,
     "isActive" = EXCLUDED."isActive",

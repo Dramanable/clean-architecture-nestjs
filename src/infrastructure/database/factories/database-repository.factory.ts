@@ -6,7 +6,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { RefreshTokenRepository } from '../../../application/use-cases/users/login.use-case';
+import { RefreshTokenRepository } from '../../../application/use-cases/auth/logout.use-case';
 import { UserRepository } from '../../../domain/repositories/user.repository';
 import type { DatabaseType } from '../config/database-config.service';
 
