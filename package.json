@@ -23,6 +23,7 @@
     "test:unit": "jest --testPathPatterns=spec.ts",
     "test:unit:watch": "jest --testPathPatterns=spec.ts --watch",
     "test:coverage": "jest --coverage --coverageReporters=text-lcov",
+    "create-admin": "cat scripts/create-test-admin.md",
     "commitlint": "commitlint --edit",
     "commit": "npx git-cz",
     "prepare": "husky install",
