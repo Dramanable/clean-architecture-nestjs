@@ -30,7 +30,7 @@ describe('UserOnboardingApplicationService - Clean Architecture', () => {
     // Mock du use case de création d'utilisateur
     mockCreateUserUseCase = {
       execute: jest.fn(),
-    } as any;
+    } as unknown;
 
     // Mock email service
     mockEmailService = {

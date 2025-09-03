@@ -14,7 +14,10 @@ import {
   ForbiddenError,
   UserNotFoundError,
 } from '../../exceptions/auth.exceptions';
-import type { UserQueryParams } from '../../../shared/types/user-query.types';
+import type {
+  UserQueryParams,
+  UserSortField,
+} from '../../../shared/types/user-query.types';
 
 /**
  * 📋 Request pour la recherche d'utilisateurs
@@ -83,7 +86,7 @@ export class SearchUsersUseCase {
 
     this.logger.info(
       this.i18n.t('operations.user.search_attempt'),
-      context as any,
+      context as unknown as Record<string, unknown>,
     );
 
     try {
@@ -130,7 +133,7 @@ export class SearchUsersUseCase {
       this.logger.error(
         this.i18n.t('operations.user.search_failed'),
         error as Error,
-        context as any,
+        context as unknown as Record<string, unknown>,
       );
       throw error;
     }
@@ -151,7 +154,7 @@ export class SearchUsersUseCase {
     return {
       page: Math.max(request.page ?? 1, 1),
       limit: Math.min(Math.max(request.limit ?? 20, 1), 100),
-      sortBy: (request.sortBy as any) ?? 'createdAt',
+      sortBy: (request.sortBy as UserSortField | undefined) ?? 'createdAt',
       sortOrder: request.sortOrder === 'asc' ? 'ASC' : 'DESC',
       search: request.searchTerm?.trim()
         ? {

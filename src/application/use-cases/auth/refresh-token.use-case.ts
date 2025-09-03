@@ -15,6 +15,8 @@ import {
 import type { IConfigService } from '../../ports/config.port';
 import type { I18nService } from '../../ports/i18n.port';
 import type { Logger } from '../../ports/logger.port';
+import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
+import { User } from '../../../domain/entities/user.entity';
 
 // Interfaces pour les ports
 export interface RefreshTokenRepository {
@@ -91,7 +93,7 @@ export class RefreshTokenUseCase {
 
     try {
       // 1. Valider le refresh token
-      let storedToken;
+      let storedToken: RefreshToken | null;
       try {
         storedToken = await this.refreshTokenRepository.findByToken(
           request.refreshToken,
@@ -139,7 +141,7 @@ export class RefreshTokenUseCase {
       }
 
       // 2. Récupérer l'utilisateur
-      let user;
+      let user: User | null;
       try {
         user = await this.userRepository.findById(storedToken.userId);
       } catch (error) {
@@ -169,7 +171,7 @@ export class RefreshTokenUseCase {
       // 3. Révoquer l'ancien refresh token (rotation de sécurité)
       try {
         if (storedToken.revoke) {
-          storedToken.revoke();
+          storedToken.revoke('token_refreshed');
         }
       } catch (error) {
         this.logger.warn(this.i18n.t('warnings.refresh_token.revoke_failed'), {
@@ -185,7 +187,7 @@ export class RefreshTokenUseCase {
 
       const newAccessToken = this.tokenService.generateAccessToken(
         user.id,
-        user.email,
+        user.email.value,
         user.role,
         accessTokenSecret,
         expiresIn,
@@ -232,7 +234,7 @@ export class RefreshTokenUseCase {
         },
         user: {
           id: user.id,
-          email: user.email,
+          email: user.email.value,
           name: user.name,
           role: user.role,
         },

@@ -63,7 +63,7 @@ describe('MongoUserMapper', () => {
   describe('MongoDB Document → Domain Entity', () => {
     it('should convert MongoDB document to domain entity', () => {
       // Act
-      const result = MongoUserMapper.toDomain(mongoDoc as any);
+      const result = MongoUserMapper.toDomain(mongoDoc as unknown);
 
       // Assert
       expect(result).toBeInstanceOf(User);
@@ -80,13 +80,13 @@ describe('MongoUserMapper', () => {
       mongoDoc.emailVerified = true;
 
       // Act
-      const result = MongoUserMapper.toDomain(mongoDoc as any);
+      const result = MongoUserMapper.toDomain(mongoDoc as unknown);
 
       // Assert
-      expect((result as any)._lastLoginAt).toEqual(new Date('2023-01-03'));
-      expect((result as any)._lastLoginIp).toBe('10.0.0.1');
-      expect((result as any)._loginAttempts).toBe(1);
-      expect((result as any)._emailVerified).toBe(true);
+      expect((result as unknown)._lastLoginAt).toEqual(new Date('2023-01-03'));
+      expect((result as unknown)._lastLoginIp).toBe('10.0.0.1');
+      expect((result as unknown)._loginAttempts).toBe(1);
+      expect((result as unknown)._emailVerified).toBe(true);
     });
 
     it('should handle all user roles from MongoDB', () => {
@@ -97,7 +97,7 @@ describe('MongoUserMapper', () => {
         mongoDoc.role = role;
 
         // Act
-        const result = MongoUserMapper.toDomain(mongoDoc as any);
+        const result = MongoUserMapper.toDomain(mongoDoc as unknown);
 
         // Assert
         expect(result.role).toBe(role);
@@ -121,13 +121,13 @@ describe('MongoUserMapper', () => {
       } as MockUserDocument;
 
       // Act
-      const result = MongoUserMapper.toDomain(mongoDoc as any);
+      const result = MongoUserMapper.toDomain(mongoDoc as unknown);
 
       // Assert - MongoDB specific fields available in User
-      expect((result as any)._emailVerified).toBe(true);
-      expect((result as any)._loginAttempts).toBe(2);
-      expect((result as any)._lastLoginAt).toEqual(new Date('2024-01-15'));
-      expect((result as any)._lastLoginIp).toBe('192.168.1.1');
+      expect((result as unknown)._emailVerified).toBe(true);
+      expect((result as unknown)._loginAttempts).toBe(2);
+      expect((result as unknown)._lastLoginAt).toEqual(new Date('2024-01-15'));
+      expect((result as unknown)._lastLoginIp).toBe('192.168.1.1');
     });
   });
 
@@ -146,10 +146,10 @@ describe('MongoUserMapper', () => {
 
     it('should handle domain user with security data', () => {
       // Arrange
-      (domainUser as any)._password = 'mongoHashedPassword';
-      (domainUser as any)._lastLoginAt = new Date('2023-01-04');
-      (domainUser as any)._loginAttempts = 2;
-      (domainUser as any)._emailVerified = true;
+      (domainUser as unknown)._password = 'mongoHashedPassword';
+      (domainUser as unknown)._lastLoginAt = new Date('2023-01-04');
+      (domainUser as unknown)._loginAttempts = 2;
+      (domainUser as unknown)._emailVerified = true;
 
       // Act
       const result = MongoUserMapper.toMongo(domainUser);
@@ -174,8 +174,8 @@ describe('MongoUserMapper', () => {
 
     it('should handle multi-tenant fields', () => {
       // Arrange
-      (domainUser as any)._tenantId = 'enterprise-corp';
-      (domainUser as any)._metadata = { department: 'IT' };
+      (domainUser as unknown)._tenantId = 'enterprise-corp';
+      (domainUser as unknown)._metadata = { department: 'IT' };
 
       // Act
       const result = MongoUserMapper.toMongo(domainUser);
@@ -194,10 +194,13 @@ describe('MongoUserMapper', () => {
         'Jane Updated',
         UserRole.SUPER_ADMIN,
       );
-      (updatedUser as any)._password = 'newMongoPassword';
+      (updatedUser as unknown)._password = 'newMongoPassword';
 
       // Act
-      const result = MongoUserMapper.updateMongo(mongoDoc as any, updatedUser);
+      const result = MongoUserMapper.updateMongo(
+        mongoDoc as unknown,
+        updatedUser,
+      );
 
       // Assert
       expect(result.email).toBe('jane.updated@company.com');
@@ -220,7 +223,10 @@ describe('MongoUserMapper', () => {
       );
 
       // Act
-      const result = MongoUserMapper.updateMongo(mongoDoc as any, updatedUser);
+      const result = MongoUserMapper.updateMongo(
+        mongoDoc as unknown,
+        updatedUser,
+      );
 
       // Assert
       expect(result.password).toBe(originalPassword);
@@ -233,11 +239,14 @@ describe('MongoUserMapper', () => {
         'Jane Doe',
         UserRole.MANAGER,
       );
-      (updatedUser as any)._loginAttempts = 5;
-      (updatedUser as any)._emailVerified = true;
+      (updatedUser as unknown)._loginAttempts = 5;
+      (updatedUser as unknown)._emailVerified = true;
 
       // Act
-      const result = MongoUserMapper.updateMongo(mongoDoc as any, updatedUser);
+      const result = MongoUserMapper.updateMongo(
+        mongoDoc as unknown,
+        updatedUser,
+      );
 
       // Assert
       expect(result.loginAttempts).toBe(5);
@@ -251,7 +260,7 @@ describe('MongoUserMapper', () => {
       const mongoDocs = [mongoDoc];
 
       // Act
-      const result = MongoUserMapper.toDomainList(mongoDocs as any[]);
+      const result = MongoUserMapper.toDomainList(mongoDocs as unknown[]);
 
       // Assert
       expect(result).toHaveLength(1);

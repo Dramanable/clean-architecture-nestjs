@@ -43,7 +43,7 @@ describe('CreateUserUseCase', () => {
       findById: jest.fn(),
       findByEmail: jest.fn(),
       save: jest.fn(),
-    } as any;
+    } as unknown;
 
     // Mock du logger
     mockLogger = {
@@ -53,7 +53,7 @@ describe('CreateUserUseCase', () => {
       debug: jest.fn(),
       audit: jest.fn(),
       child: jest.fn(),
-    } as any;
+    } as unknown;
 
     // Mock i18n (vraie instance pour tester les traductions)
     mockI18n = new MockI18nService();

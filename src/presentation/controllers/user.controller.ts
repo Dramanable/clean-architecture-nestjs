@@ -427,7 +427,8 @@ export class UserController {
         name: updateDto.name,
         role: updateDto.role,
         passwordChangeRequired: updateDto.passwordChangeRequired,
-        requestingUserId: (request as any).user.sub,
+        requestingUserId: (request as Request & { user: { sub: string } }).user
+          .sub,
       });
       this.logger.info('✅ HTTP PUT /users/:id - User updated successfully', {
         operation: 'HTTP_UpdateUser',

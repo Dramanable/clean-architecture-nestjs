@@ -3,13 +3,10 @@
  */
 
 import { Module } from '@nestjs/common';
-// import { RedisCacheService } from '../services/redis-cache.service';
+import { SimpleCacheService } from '../services/simple-cache.service';
 import { CookieService } from '../services/cookie.service';
 import { PinoLoggerModule } from '../logging/pino-logger.module';
-import {
-  TOKENS,
-  APPLICATION_TOKENS,
-} from '../../shared/constants/injection-tokens';
+import { TOKENS } from '../../shared/constants/injection-tokens';
 import type { I18nService } from '../../application/ports/i18n.port';
 
 /**
@@ -84,23 +81,20 @@ class InfrastructureI18nService implements I18nService {
   providers: [
     // 🌍 Service I18n pour l'infrastructure
     {
-      provide: APPLICATION_TOKENS.I18N_SERVICE,
+      provide: TOKENS.I18N_SERVICE,
       useClass: InfrastructureI18nService,
     },
-    // 🗄️ Service de cache Redis - Temporairement désactivé
-    // {
-    //   provide: TOKENS.CACHE_SERVICE,
-    //   useClass: RedisCacheService,
-    // },
+    // 🗄️ Service de cache simple
+    {
+      provide: TOKENS.CACHE_SERVICE,
+      useClass: SimpleCacheService,
+    },
     // 🍪 Service de gestion des cookies
     {
       provide: TOKENS.COOKIE_SERVICE,
       useClass: CookieService,
     },
   ],
-  exports: [
-    // TOKENS.CACHE_SERVICE, // Temporairement désactivé
-    TOKENS.COOKIE_SERVICE,
-  ],
+  exports: [TOKENS.CACHE_SERVICE, TOKENS.COOKIE_SERVICE],
 })
 export class CacheModule {}

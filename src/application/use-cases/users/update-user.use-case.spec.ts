@@ -46,7 +46,7 @@ describe('UpdateUserUseCase', () => {
       findByEmail: jest.fn(),
       save: jest.fn(),
       update: jest.fn(),
-    } as any;
+    } as unknown;
 
     // Mock du logger
     mockLogger = {
@@ -56,7 +56,7 @@ describe('UpdateUserUseCase', () => {
       debug: jest.fn(),
       audit: jest.fn(),
       child: jest.fn(),
-    } as any;
+    } as unknown;
 
     // Mock i18n
     mockI18n = new MockI18nService();
@@ -74,28 +74,28 @@ describe('UpdateUserUseCase', () => {
       'Super Admin',
       UserRole.SUPER_ADMIN,
     );
-    (superAdminUser as any).id = 'admin-id';
+    (superAdminUser as unknown).id = 'admin-id';
 
     managerUser = new User(
       new Email('manager@company.com'),
       'Manager User',
       UserRole.MANAGER,
     );
-    (managerUser as any).id = 'manager-id';
+    (managerUser as unknown).id = 'manager-id';
 
     regularUser = new User(
       new Email('user@company.com'),
       'Regular User',
       UserRole.USER,
     );
-    (regularUser as any).id = 'user-id';
+    (regularUser as unknown).id = 'user-id';
 
     targetUser = new User(
       new Email('target@company.com'),
       'Target User',
       UserRole.USER,
     );
-    (targetUser as any).id = 'target-id';
+    (targetUser as unknown).id = 'target-id';
   });
 
   describe('Successful User Updates', () => {

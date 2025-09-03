@@ -46,18 +46,18 @@ export class PasswordResetService {
   /**
    * Initie le processus de réinitialisation de mot de passe
    */
-  async initiatePasswordReset(
+  async requestPasswordReset(
     email: Email,
-    lang = 'en',
+    _lang = 'en',
   ): Promise<PasswordResetResult> {
     this.logger.log('Attempting to initiate password reset');
 
     // Trouve l'utilisateur
-    const user = await this.userRepository.findByEmail(email);
+    const _user = await this.userRepository.findByEmail(email);
 
     // Pour des raisons de sécurité, on retourne toujours success
     // même si l'utilisateur n'existe pas
-    if (!user) {
+    if (!_user) {
       this.logger.warn('Password reset failed: user not found');
       return {
         success: true,
@@ -66,12 +66,12 @@ export class PasswordResetService {
     }
 
     // Nettoie les anciens tokens de cet utilisateur
-    await this.tokenRepository.deleteByUserId(user.id);
+    await this.tokenRepository.deleteByUserId(_user.id);
 
     this.logger.log('Generating password reset token');
 
     // Génère un nouveau token
-    const resetToken = PasswordResetTokenFactory.create(user.id);
+    const resetToken = PasswordResetTokenFactory.create(_user.id);
 
     // Sauvegarde le token
     await this.tokenRepository.save(resetToken);
@@ -104,7 +104,7 @@ export class PasswordResetService {
    */
   async validateResetToken(
     token: string,
-    lang = 'en',
+    _lang = 'en',
   ): Promise<TokenValidationResult> {
     const resetToken = await this.tokenRepository.findByToken(token);
 
@@ -134,10 +134,10 @@ export class PasswordResetService {
   async confirmPasswordReset(
     token: string,
     newPassword: string,
-    lang = 'en',
+    _lang = 'en',
   ): Promise<PasswordResetResult> {
     // Valide le token
-    const validation = await this.validateResetToken(token, lang);
+    const validation = await this.validateResetToken(token, _lang);
     if (!validation.isValid) {
       return {
         success: false,
@@ -154,8 +154,8 @@ export class PasswordResetService {
     }
 
     // Trouve l'utilisateur
-    const user = await this.userRepository.findById(validation.userId!);
-    if (!user) {
+    const _user = await this.userRepository.findById(validation.userId!);
+    if (!_user) {
       return {
         success: false,
         error: 'User not found',
@@ -163,13 +163,13 @@ export class PasswordResetService {
     }
 
     // Met à jour le mot de passe et supprime l'exigence de changement
-    const updatedUser = user.clearPasswordChangeRequirement();
+    const updatedUser = _user.clearPasswordChangeRequirement();
     // Note: Dans une vraie implémentation, on hasherait le password ici
 
     await this.userRepository.save(updatedUser);
 
     // Nettoie le token utilisé
-    await this.tokenRepository.deleteByUserId(user.id);
+    await this.tokenRepository.deleteByUserId(_user.id);
 
     return {
       success: true,

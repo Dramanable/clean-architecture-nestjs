@@ -72,7 +72,7 @@ export const createThrottlerConfig = (
     throttlers:
       configs[environment as keyof typeof configs] || configs.development,
     // Skip rate limiting pour les health checks
-    skipIf: (context): boolean => {
+    skipIf: (context: ExecutionContext): boolean => {
       const request = context.switchToHttp().getRequest<Request>();
       return request.url?.includes('/health') ?? false;
     },

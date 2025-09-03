@@ -226,8 +226,8 @@ describe('AuthController I18n Tests', () => {
     // Act - Call the method
     await testController.login(
       loginDto,
-      mockRequest as any,
-      mockResponse as any,
+      mockRequest as unknown,
+      mockResponse as unknown,
     );
 
     // Assert - Verify that the login use case was called (which internally uses i18n)

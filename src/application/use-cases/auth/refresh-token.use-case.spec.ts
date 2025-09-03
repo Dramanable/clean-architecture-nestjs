@@ -107,7 +107,7 @@ describe('RefreshTokenUseCase (TDD)', () => {
 
       const mockUser = {
         id: 'user-456',
-        email: 'user@example.com',
+        email: { value: 'user@example.com' }, // Mock du Value Object Email
         name: 'John Doe',
         role: 'USER',
       };
@@ -149,7 +149,12 @@ describe('RefreshTokenUseCase (TDD)', () => {
       };
 
       mockRefreshTokenRepository.findByToken.mockResolvedValue(mockStoredToken);
-      mockUserRepository.findById.mockResolvedValue({ id: 'user-456' });
+      mockUserRepository.findById.mockResolvedValue({
+        id: 'user-456',
+        email: { value: 'user@example.com' }, // Mock du Value Object Email
+        name: 'John Doe',
+        role: 'USER',
+      });
 
       // Act
       await useCase.execute(request);

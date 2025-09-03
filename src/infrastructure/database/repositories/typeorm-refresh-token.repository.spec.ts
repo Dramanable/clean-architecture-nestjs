@@ -82,8 +82,8 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
       // Assert
       expect(result).toBeDefined();
       expect(result).toBeTruthy();
-      expect((result as any).token).toBe(tokenString);
-      expect((result as any).userId).toBe('user-789');
+      expect((result as unknown).token).toBe(tokenString);
+      expect((result as unknown).userId).toBe('user-789');
       expect(mockTypeOrmRepository.findOne).toHaveBeenCalledWith({
         where: { tokenHash: tokenString },
       });
@@ -127,7 +127,7 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
 
       // Assert
       expect(result).toBeDefined();
-      expect((result as any).token).toBe(refreshTokenData.token);
+      expect((result as unknown).token).toBe(refreshTokenData.token);
       expect(mockTypeOrmRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
           tokenHash: refreshTokenData.token,

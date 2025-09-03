@@ -33,9 +33,9 @@ describe('🔍 SearchUsersUseCase', () => {
 
   beforeEach(() => {
     useCase = new SearchUsersUseCase(
-      mockUserRepository as any,
-      mockLogger as any,
-      mockI18n as any,
+      mockUserRepository as unknown,
+      mockLogger as unknown,
+      mockI18n as unknown,
     );
 
     // Création des utilisateurs de test

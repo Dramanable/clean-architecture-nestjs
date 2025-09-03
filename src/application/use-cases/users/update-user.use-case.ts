@@ -113,20 +113,19 @@ export class UpdateUserUseCase {
         updateData.role = request.role;
       }
 
-      // 6. Mise à jour de l'utilisateur - Construction du User mis à jour
-      const updatedUser = new User(
+      // 6. Mise à jour de l'utilisateur - Reconstruction avec l'ID existant
+      const updatedUser = User.restore(
+        targetUser.id,
         request.email !== undefined
-          ? new Email(request.email.trim())
-          : targetUser.email,
+          ? request.email.trim()
+          : targetUser.email.value,
         request.name !== undefined ? request.name.trim() : targetUser.name,
         request.role !== undefined ? request.role : targetUser.role,
+        targetUser.createdAt,
+        new Date(), // updatedAt
+        targetUser.hashedPassword,
+        targetUser.passwordChangeRequired,
       );
-
-      // Copie de l'ID existant si disponible
-      if (targetUser.id) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        (updatedUser as any).id = targetUser.id;
-      }
 
       const savedUser = await this.userRepository.update(updatedUser);
 

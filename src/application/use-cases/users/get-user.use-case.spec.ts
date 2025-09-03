@@ -40,7 +40,7 @@ describe('GetUserUseCase', () => {
       findByEmail: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
-    } as any;
+    } as unknown;
 
     // Mock du logger
     mockLogger = {
@@ -50,7 +50,7 @@ describe('GetUserUseCase', () => {
       debug: jest.fn(),
       audit: jest.fn(),
       child: jest.fn(),
-    } as any;
+    } as unknown;
 
     // Service i18n
     mockI18n = new MockI18nService();
