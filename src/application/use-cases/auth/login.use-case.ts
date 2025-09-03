@@ -13,12 +13,11 @@ import {
 import type { IConfigService } from '../../ports/config.port';
 import type { I18nService } from '../../ports/i18n.port';
 import type { Logger } from '../../ports/logger.port';
+import type { ICacheService } from '../../ports/cache.port';
+import type { UserRepository } from '../../../domain/repositories/user.repository';
+import { Email } from '../../../domain/value-objects/email.vo';
 
-// Interfaces pour les ports
-export interface UserRepository {
-  findByEmail(email: string): Promise<any>;
-}
-
+// Interfaces pour les ports (qui ne sont pas dans le domaine)
 export interface RefreshTokenRepository {
   save(refreshToken: any): Promise<any>;
   revokeAllByUserId(userId: string): Promise<void>;
@@ -72,6 +71,8 @@ export class LoginUseCase {
     private readonly tokenService: TokenService,
     @Inject(TOKENS.BCRYPT_PASSWORD_SERVICE)
     private readonly passwordService: PasswordService,
+    @Inject(TOKENS.CACHE_SERVICE)
+    private readonly cacheService: ICacheService,
     @Inject(TOKENS.PINO_LOGGER)
     private readonly logger: Logger,
     @Inject(TOKENS.I18N_SERVICE)
@@ -95,7 +96,8 @@ export class LoginUseCase {
       // 1. Rechercher l'utilisateur par email
       let user;
       try {
-        user = await this.userRepository.findByEmail(request.email);
+        const emailVO = new Email(request.email);
+        user = await this.userRepository.findByEmail(emailVO);
       } catch (error) {
         this.logger.error(
           this.i18n.t('errors.login.user_lookup_failed'),
@@ -156,7 +158,7 @@ export class LoginUseCase {
 
       const accessToken = this.tokenService.generateAccessToken(
         user.id,
-        user.email,
+        user.email.value,
         user.role,
         accessTokenSecret,
         expiresIn,
@@ -190,7 +192,45 @@ export class LoginUseCase {
         );
       }
 
-      // 7. Logging de succès avec audit
+      // 7. Stocker l'utilisateur connecté dans le cache Redis
+      try {
+        const userCacheKey = `connected_user:${user.id}`;
+        const sessionDurationMinutes =
+          this.config.getUserSessionDurationMinutes();
+        const sessionTtlSeconds = sessionDurationMinutes * 60;
+
+        const userCacheData = JSON.stringify({
+          id: user.id,
+          email: user.email.value,
+          name: user.name,
+          role: user.role,
+          connectedAt: new Date().toISOString(),
+          userAgent: request.userAgent,
+          ipAddress: request.ipAddress,
+        });
+
+        await this.cacheService.set(
+          userCacheKey,
+          userCacheData,
+          sessionTtlSeconds,
+        );
+
+        this.logger.info(this.i18n.t('operations.login.user_cached'), {
+          ...operationContext,
+          userId: user.id,
+          sessionDurationMinutes,
+          cacheKey: userCacheKey,
+        });
+      } catch (error) {
+        // Log l'erreur mais ne pas faire échouer la connexion
+        this.logger.warn(this.i18n.t('warnings.login.user_cache_failed'), {
+          ...operationContext,
+          userId: user.id,
+          error: (error as Error).message,
+        });
+      }
+
+      // 8. Logging de succès avec audit
       const successContext = {
         ...operationContext,
         result: 'success',
@@ -203,7 +243,7 @@ export class LoginUseCase {
         success: true,
         user: {
           id: user.id,
-          email: user.email,
+          email: user.email.value,
           name: user.name,
           role: user.role,
         },

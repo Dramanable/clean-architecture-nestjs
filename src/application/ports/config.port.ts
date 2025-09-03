@@ -18,6 +18,12 @@ export interface IConfigService {
   getRefreshTokenExpirationDays(): number;
 
   /**
+   * Durée de session utilisateur en cache (en minutes)
+   * @default 60 (1 heure)
+   */
+  getUserSessionDurationMinutes(): number;
+
+  /**
    * Secret pour signer les Access Tokens (JWT)
    */
   getAccessTokenSecret(): string;

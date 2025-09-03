@@ -1,18 +1,14 @@
 /**
- * 🧪 LoginUseCase - TDD RED Phase
+ * 🧪 LOGIN USE CASE - Test de mise en cache utilisateur
  *
- * Tests avant implémentation pour login workflow
+ * Test spécifique pour valider que l'utilisateur est mis en cache après login
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
-import {
-  InvalidCredentialsError,
-  TokenRepositoryError,
-} from '../../exceptions/auth.exceptions';
 import { LoginUseCase } from './login.use-case';
 
-describe('LoginUseCase (TDD)', () => {
+describe('LoginUseCase - User Caching', () => {
   let useCase: LoginUseCase;
   let mockUserRepository: any;
   let mockRefreshTokenRepository: any;
@@ -63,7 +59,7 @@ describe('LoginUseCase (TDD)', () => {
       getAccessTokenExpirationTime: jest.fn().mockReturnValue(900),
       getRefreshTokenSecret: jest.fn().mockReturnValue('refresh-secret'),
       getRefreshTokenExpirationDays: jest.fn().mockReturnValue(7),
-      getUserSessionDurationMinutes: jest.fn().mockReturnValue(60),
+      getUserSessionDurationMinutes: jest.fn().mockReturnValue(30), // 30 minutes
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -107,8 +103,8 @@ describe('LoginUseCase (TDD)', () => {
     useCase = module.get<LoginUseCase>(LoginUseCase);
   });
 
-  describe('Successful Login', () => {
-    it('should authenticate user with valid credentials', async () => {
+  describe('User Caching after Login', () => {
+    it('should cache user data in Redis after successful login', async () => {
       // Arrange
       const request = {
         email: 'user@example.com',
@@ -119,7 +115,7 @@ describe('LoginUseCase (TDD)', () => {
 
       const mockUser = {
         id: 'user-456',
-        email: 'user@example.com',
+        email: { value: 'user@example.com' },
         name: 'John Doe',
         role: 'USER',
         hashedPassword: 'hashedPassword',
@@ -139,17 +135,42 @@ describe('LoginUseCase (TDD)', () => {
 
       // Assert
       expect(result.success).toBe(true);
-      expect(result.user.id).toBe('user-456');
-      expect(result.tokens.accessToken).toBe('access_token_123');
-      expect(result.tokens.refreshToken).toBe('refresh_token_456');
-      expect(mockPasswordService.compare).toHaveBeenCalledWith(
-        'validPassword123',
-        'hashedPassword',
+
+      // Vérifier que l'utilisateur a été mis en cache
+      expect(mockCacheService.set).toHaveBeenCalledWith(
+        'connected_user:user-456',
+        expect.stringContaining('"id":"user-456"'),
+        1800, // 30 minutes * 60 seconds
       );
-      expect(mockRefreshTokenRepository.save).toHaveBeenCalled();
+
+      // Vérifier que les données cachées sont correctes
+      const [cacheKey, cacheData, ttl] = mockCacheService.set.mock.calls[0];
+      const cachedUser = JSON.parse(cacheData);
+
+      expect(cacheKey).toBe('connected_user:user-456');
+      expect(ttl).toBe(1800); // 30 minutes en secondes
+      expect(cachedUser).toEqual({
+        id: 'user-456',
+        email: 'user@example.com',
+        name: 'John Doe',
+        role: 'USER',
+        connectedAt: expect.any(String),
+        userAgent: 'Mozilla/5.0',
+        ipAddress: '192.168.1.1',
+      });
+
+      // Vérifier que la connexion a été loggée
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Mock message',
+        expect.objectContaining({
+          userId: 'user-456',
+          sessionDurationMinutes: 30,
+          cacheKey: 'connected_user:user-456',
+        }),
+      );
     });
 
-    it('should revoke old refresh tokens on login', async () => {
+    it('should continue login even if caching fails', async () => {
       // Arrange
       const request = {
         email: 'user@example.com',
@@ -160,119 +181,76 @@ describe('LoginUseCase (TDD)', () => {
 
       const mockUser = {
         id: 'user-456',
-        email: 'user@example.com',
+        email: { value: 'user@example.com' },
+        name: 'John Doe',
+        role: 'USER',
         hashedPassword: 'hashedPassword',
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockPasswordService.compare.mockResolvedValue(true);
-      mockTokenService.generateAccessToken.mockReturnValue('access_token');
-      mockTokenService.generateRefreshToken.mockReturnValue('refresh_token');
+      mockTokenService.generateAccessToken.mockReturnValue('access_token_123');
+      mockTokenService.generateRefreshToken.mockReturnValue(
+        'refresh_token_456',
+      );
+      mockRefreshTokenRepository.save.mockResolvedValue(undefined);
+
+      // Simuler une erreur de cache
+      mockCacheService.set.mockRejectedValue(
+        new Error('Redis connection failed'),
+      );
 
       // Act
-      await useCase.execute(request);
+      const result = await useCase.execute(request);
 
       // Assert
-      expect(mockRefreshTokenRepository.revokeAllByUserId).toHaveBeenCalledWith(
-        'user-456',
-      );
-    });
-  });
+      expect(result.success).toBe(true);
+      expect(result.user.id).toBe('user-456');
 
-  describe('Authentication Failures', () => {
-    it('should reject when user not found', async () => {
-      // Arrange
-      const request = {
-        email: 'unknown@example.com',
-        password: 'anyPassword',
-        userAgent: 'Mozilla/5.0',
-        ipAddress: '192.168.1.1',
-      };
-
-      mockUserRepository.findByEmail.mockResolvedValue(null);
-
-      // Act & Assert
-      await expect(useCase.execute(request)).rejects.toThrow(
-        InvalidCredentialsError,
-      );
-    });
-
-    it('should reject when password is invalid', async () => {
-      // Arrange
-      const request = {
-        email: 'user@example.com',
-        password: 'wrongPassword',
-        userAgent: 'Mozilla/5.0',
-        ipAddress: '192.168.1.1',
-      };
-
-      const mockUser = {
-        id: 'user-456',
-        email: 'user@example.com',
-        hashedPassword: 'hashedPassword',
-      };
-
-      mockUserRepository.findByEmail.mockResolvedValue(mockUser);
-      mockPasswordService.compare.mockResolvedValue(false);
-
-      // Act & Assert
-      await expect(useCase.execute(request)).rejects.toThrow(
-        InvalidCredentialsError,
-      );
-    });
-
-    it('should handle repository errors gracefully', async () => {
-      // Arrange
-      const request = {
-        email: 'user@example.com',
-        password: 'validPassword',
-        userAgent: 'Mozilla/5.0',
-        ipAddress: '192.168.1.1',
-      };
-
-      mockUserRepository.findByEmail.mockRejectedValue(
-        new Error('Database error'),
-      );
-
-      // Act & Assert
-      await expect(useCase.execute(request)).rejects.toThrow(
-        TokenRepositoryError,
-      );
-    });
-  });
-
-  describe('Security Auditing', () => {
-    it('should log login attempts with context', async () => {
-      // Arrange
-      const request = {
-        email: 'user@example.com',
-        password: 'validPassword',
-        userAgent: 'Mozilla/5.0',
-        ipAddress: '192.168.1.1',
-      };
-
-      const mockUser = {
-        id: 'user-456',
-        email: 'user@example.com',
-        hashedPassword: 'hashedPassword',
-      };
-
-      mockUserRepository.findByEmail.mockResolvedValue(mockUser);
-      mockPasswordService.compare.mockResolvedValue(true);
-      mockTokenService.generateAccessToken.mockReturnValue('access_token');
-      mockTokenService.generateRefreshToken.mockReturnValue('refresh_token');
-
-      // Act
-      await useCase.execute(request);
-
-      // Assert
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.any(String),
+      // Vérifier que l'erreur de cache a été loggée mais n'a pas fait échouer le login
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Mock message',
         expect.objectContaining({
-          operation: 'LOGIN',
-          result: 'success',
           userId: 'user-456',
+          error: 'Redis connection failed',
         }),
+      );
+    });
+
+    it('should use configurable session duration from config service', async () => {
+      // Arrange - Modifier la durée de session
+      mockConfig.getUserSessionDurationMinutes.mockReturnValue(120); // 2 heures
+
+      const request = {
+        email: 'user@example.com',
+        password: 'validPassword123',
+      };
+
+      const mockUser = {
+        id: 'user-456',
+        email: { value: 'user@example.com' },
+        name: 'John Doe',
+        role: 'USER',
+        hashedPassword: 'hashedPassword',
+      };
+
+      mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+      mockPasswordService.compare.mockResolvedValue(true);
+      mockTokenService.generateAccessToken.mockReturnValue('access_token_123');
+      mockTokenService.generateRefreshToken.mockReturnValue(
+        'refresh_token_456',
+      );
+      mockRefreshTokenRepository.save.mockResolvedValue(undefined);
+      mockCacheService.set.mockResolvedValue(undefined);
+
+      // Act
+      await useCase.execute(request);
+
+      // Assert
+      expect(mockCacheService.set).toHaveBeenCalledWith(
+        'connected_user:user-456',
+        expect.any(String),
+        7200, // 120 minutes * 60 seconds = 2 heures
       );
     });
   });

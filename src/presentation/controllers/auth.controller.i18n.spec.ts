@@ -124,6 +124,14 @@ describe('AuthController I18n Tests', () => {
           provide: TOKENS.CONFIG_SERVICE,
           useValue: mockConfigService,
         },
+        {
+          provide: TOKENS.COOKIE_SERVICE,
+          useValue: {
+            setCookie: jest.fn(),
+            getCookie: jest.fn(),
+            clearCookie: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -201,6 +209,14 @@ describe('AuthController I18n Tests', () => {
         {
           provide: TOKENS.CONFIG_SERVICE,
           useValue: mockConfigService,
+        },
+        {
+          provide: TOKENS.COOKIE_SERVICE,
+          useValue: {
+            setCookie: jest.fn(),
+            getCookie: jest.fn(),
+            clearCookie: jest.fn(),
+          },
         },
       ],
     }).compile();

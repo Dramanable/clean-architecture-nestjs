@@ -8,12 +8,15 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Inject,
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,19 +27,27 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { I18nService } from '../../application/ports/i18n.port';
+import type { ICacheService } from '../../application/ports/cache.port';
 import type { Logger } from '../../application/ports/logger.port';
 import { UserOnboardingApplicationService } from '../../application/services/user-onboarding.application-service';
 import { GetUserUseCase } from '../../application/use-cases/users/get-user.use-case';
+import { SearchUsersUseCase } from '../../application/use-cases/users/search-users.use-case';
+import { UpdateUserUseCase } from '../../application/use-cases/users/update-user.use-case';
+import { DeleteUserUseCase } from '../../application/use-cases/users/delete-user.use-case';
 import type { UserRepository } from '../../domain/repositories/user.repository';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 import { ApiErrorResponseDto } from '../dtos/common.dto';
 import { CreateUserDto, UserResponseDto } from '../dtos/user.dto';
+import { SearchUsersSimpleDto } from '../dtos/search-users.dto';
 
 @ApiTags('users')
 @Controller('users')
 @ApiBearerAuth('JWT-auth')
 export class UserController {
   private readonly getUserUseCase: GetUserUseCase;
+  private readonly searchUsersUseCase: SearchUsersUseCase;
+  private readonly updateUserUseCase: UpdateUserUseCase;
+  private readonly deleteUserUseCase: DeleteUserUseCase;
 
   constructor(
     // 🔧 Injection des dépendances via tokens centralisés (Clean Architecture)
@@ -46,6 +57,8 @@ export class UserController {
     private readonly logger: Logger,
     @Inject(TOKENS.I18N_SERVICE)
     private readonly i18n: I18nService,
+    @Inject(TOKENS.CACHE_SERVICE)
+    private readonly cacheService: ICacheService,
     // 🎯 Service d'orchestration pour création d'utilisateurs
     @Inject(TOKENS.USER_ONBOARDING_SERVICE)
     private readonly userOnboardingService: UserOnboardingApplicationService,
@@ -55,6 +68,26 @@ export class UserController {
       this.userRepository,
       this.logger,
       this.i18n,
+    );
+
+    this.searchUsersUseCase = new SearchUsersUseCase(
+      this.userRepository,
+      this.logger,
+      this.i18n,
+    );
+
+    this.updateUserUseCase = new UpdateUserUseCase(
+      this.userRepository,
+      this.logger,
+      this.i18n,
+      this.cacheService,
+    );
+
+    this.deleteUserUseCase = new DeleteUserUseCase(
+      this.userRepository,
+      this.logger,
+      this.i18n,
+      this.cacheService,
     );
   }
 
@@ -188,6 +221,305 @@ export class UserController {
         {
           operation: 'HTTP_GetUser',
           userId: id,
+        },
+      );
+
+      throw error;
+    }
+  }
+
+  /**
+   * 🔍 Rechercher et filtrer les utilisateurs (POST)
+   * Accès SUPER_ADMIN uniquement
+   */
+  @Post('search')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '🔍 Search and filter users',
+    description: `
+      Recherche avancée d'utilisateurs avec filtres et pagination.
+      
+      **Accès:** SUPER_ADMIN uniquement
+      
+      **Fonctionnalités:**
+      - Recherche textuelle dans nom et email
+      - Filtres par rôles, statut actif, dates de création
+      - Pagination avec tri personnalisable
+      - Audit et logging complets
+      
+      **Utilise POST** pour permettre des critères de recherche complexes.
+    `,
+  })
+  @ApiBody({
+    description: 'Critères de recherche et filtres',
+    examples: {
+      basic_search: {
+        summary: 'Recherche basique',
+        value: {
+          searchTerm: 'john',
+          page: 1,
+          limit: 20,
+        },
+      },
+      advanced_filters: {
+        summary: 'Filtres avancés',
+        value: {
+          searchTerm: 'manager',
+          roles: ['MANAGER'],
+          isActive: true,
+          page: 1,
+          limit: 50,
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Résultats de recherche avec pagination',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès interdit - SUPER_ADMIN requis',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Paramètres de recherche invalides',
+  })
+  async searchUsers(@Body() searchDto: SearchUsersSimpleDto): Promise<any> {
+    this.logger.info('🎯 HTTP POST /users/search - Search users request', {
+      operation: 'HTTP_SearchUsers',
+      requestData: searchDto,
+    });
+
+    try {
+      const result = await this.searchUsersUseCase.execute({
+        requestingUserId: 'system', // TODO: À récupérer du JWT
+        searchTerm: searchDto.searchTerm,
+        roles: searchDto.roles,
+        isActive: searchDto.isActive,
+        createdAfter: searchDto.createdAfter
+          ? new Date(searchDto.createdAfter)
+          : undefined,
+        createdBefore: searchDto.createdBefore
+          ? new Date(searchDto.createdBefore)
+          : undefined,
+        page: searchDto.page,
+        limit: searchDto.limit,
+        sortBy: searchDto.sortBy,
+        sortOrder: searchDto.sortOrder,
+      });
+
+      this.logger.info(
+        '✅ HTTP POST /users/search - Users searched successfully',
+        {
+          operation: 'HTTP_SearchUsers',
+          resultCount: result.users.length,
+          totalItems: result.pagination.totalItems,
+        },
+      );
+
+      return {
+        users: result.users,
+        pagination: result.pagination,
+        appliedFilters: result.appliedFilters,
+      };
+    } catch (error) {
+      this.logger.error(
+        '❌ HTTP POST /users/search - User search failed',
+        error as Error,
+        {
+          operation: 'HTTP_SearchUsers',
+          requestData: searchDto,
+        },
+      );
+
+      throw error;
+    }
+  }
+
+  /**
+   * ✏️ Mettre à jour un utilisateur (PUT)
+   * Accès SUPER_ADMIN uniquement
+   */
+  @Put(':id')
+  @ApiOperation({
+    summary: '✏️ Update user',
+    description: `
+      Mettre à jour les informations d'un utilisateur.
+      
+      **Accès:** SUPER_ADMIN uniquement
+      
+      **Fonctionnalités:**
+      - Modification des informations de base (nom, email)
+      - Changement de rôle
+      - Validation des règles métier
+      - Audit et logging complets
+    `,
+  })
+  @ApiParam({
+    name: 'id',
+    description: "ID de l'utilisateur à modifier",
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiBody({
+    description: 'Nouvelles données utilisateur (partielles)',
+    examples: {
+      update_name: {
+        summary: 'Modifier le nom',
+        value: {
+          name: 'John Smith',
+        },
+      },
+      update_email: {
+        summary: "Modifier l'email",
+        value: {
+          email: 'john.smith@company.com',
+        },
+      },
+      change_role: {
+        summary: 'Changer le rôle',
+        value: {
+          role: 'MANAGER',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Utilisateur mis à jour avec succès',
+    type: UserResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Utilisateur non trouvé',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Données invalides',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès interdit - SUPER_ADMIN requis',
+  })
+  async updateUser(
+    @Param('id', ParseUUIDPipe) userId: string,
+    @Body() updateDto: any,
+  ): Promise<UserResponseDto> {
+    this.logger.info('🎯 HTTP PUT /users/:id - Update user request', {
+      operation: 'HTTP_UpdateUser',
+      userId,
+      updateData: updateDto,
+    });
+
+    try {
+      const result = await this.updateUserUseCase.execute({
+        requestingUserId: 'system', // TODO: À récupérer du JWT
+        userId: userId,
+        name: updateDto.name,
+        email: updateDto.email,
+        role: updateDto.role,
+      });
+
+      this.logger.info('✅ HTTP PUT /users/:id - User updated successfully', {
+        operation: 'HTTP_UpdateUser',
+        userId,
+      });
+
+      return {
+        id: result.id,
+        email: result.email,
+        name: result.name,
+        role: result.role,
+        passwordChangeRequired: false, // Default from UpdateUserResponse
+        createdAt: new Date().toISOString(), // Not in UpdateUserResponse
+        updatedAt: result.updatedAt.toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(
+        '❌ HTTP PUT /users/:id - User update failed',
+        error as Error,
+        {
+          operation: 'HTTP_UpdateUser',
+          userId,
+          updateData: updateDto,
+        },
+      );
+
+      throw error;
+    }
+  }
+
+  /**
+   * 🗑️ Supprimer un utilisateur (DELETE)
+   * Accès SUPER_ADMIN uniquement
+   */
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: '🗑️ Delete user',
+    description: `
+      Supprimer un utilisateur du système.
+      
+      **Accès:** SUPER_ADMIN uniquement
+      
+      **Attention:** Cette action est irréversible.
+      
+      **Règles métier:**
+      - Impossible de supprimer le dernier SUPER_ADMIN
+      - Audit de l'opération de suppression
+    `,
+  })
+  @ApiParam({
+    name: 'id',
+    description: "ID de l'utilisateur à supprimer",
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Utilisateur supprimé avec succès',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Utilisateur non trouvé',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Impossible de supprimer (ex: dernier super admin)',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès interdit - SUPER_ADMIN requis',
+  })
+  async deleteUser(@Param('id', ParseUUIDPipe) userId: string): Promise<void> {
+    this.logger.info('🎯 HTTP DELETE /users/:id - Delete user request', {
+      operation: 'HTTP_DeleteUser',
+      userId,
+    });
+
+    try {
+      await this.deleteUserUseCase.execute({
+        requestingUserId: 'system', // TODO: À récupérer du JWT
+        userId: userId,
+      });
+
+      this.logger.info(
+        '✅ HTTP DELETE /users/:id - User deleted successfully',
+        {
+          operation: 'HTTP_DeleteUser',
+          userId,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        '❌ HTTP DELETE /users/:id - User deletion failed',
+        error as Error,
+        {
+          operation: 'HTTP_DeleteUser',
+          userId,
         },
       );
 

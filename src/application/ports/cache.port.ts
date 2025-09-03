@@ -27,4 +27,9 @@ export interface ICacheService {
    * Supprime toutes les clés correspondant au pattern
    */
   deletePattern(pattern: string): Promise<void>;
+
+  /**
+   * Invalide tout le cache d'un utilisateur spécifique
+   */
+  invalidateUserCache(userId: string): Promise<void>;
 }

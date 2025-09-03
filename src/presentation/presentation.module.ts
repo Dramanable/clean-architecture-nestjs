@@ -12,7 +12,6 @@ import { PinoLoggerModule } from '../infrastructure/logging/pino-logger.module';
 import { TOKENS } from '../shared/constants/injection-tokens';
 import { AuthController } from './controllers/auth.controller';
 import { HealthController } from './controllers/health.controller';
-import { TestController } from './controllers/test.controller';
 import { UserController } from './controllers/user.controller';
 
 /**
@@ -116,7 +115,6 @@ class TemporaryI18nService implements I18nService {
     HealthController,
     UserController,
     AuthController,
-    TestController, // Controller de test pour Swagger
   ],
   providers: [
     // 🌍 Services de la couche présentation

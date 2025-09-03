@@ -7,15 +7,18 @@ import { RedisCacheService } from '../services/redis-cache.service';
 import { UserSessionService } from '../services/user-session.service';
 import { CookieService } from '../services/cookie.service';
 import { PinoLoggerModule } from '../logging/pino-logger.module';
-import { TOKENS } from '../../shared/constants/injection-tokens';
+import {
+  TOKENS,
+  APPLICATION_TOKENS,
+} from '../../shared/constants/injection-tokens';
+import type { I18nService } from '../../application/ports/i18n.port';
 
 /**
- * 🌍 Cache I18n Service - Service I18n pour le module de cache
+ * 🌍 Infrastructure I18n Service - Service I18n simplifié pour l'infrastructure
  */
-class CacheI18nService {
+class InfrastructureI18nService implements I18nService {
   t(key: string, params?: Record<string, unknown>): string {
     const translations: Record<string, string> = {
-      // Cache operations
       'infrastructure.cache.set_success': 'Cache SET successful',
       'infrastructure.cache.set_failed': 'Cache SET failed',
       'infrastructure.cache.get_attempt': 'Cache GET attempt',
@@ -24,13 +27,22 @@ class CacheI18nService {
       'infrastructure.cache.delete_failed': 'Cache DELETE failed',
       'infrastructure.cache.exists_success': 'Cache EXISTS successful',
       'infrastructure.cache.exists_failed': 'Cache EXISTS failed',
-      'infrastructure.cache.keys_success': 'Cache KEYS successful',
-      'infrastructure.cache.keys_failed': 'Cache KEYS failed',
-      'infrastructure.cache.connection_success': 'Redis connection established',
+      'infrastructure.cache.pattern_delete_success':
+        'Cache pattern DELETE successful',
+      'infrastructure.cache.pattern_delete_failed':
+        'Cache pattern DELETE failed',
+      'infrastructure.cache.connection_established':
+        'Redis connection established',
       'infrastructure.cache.connection_failed': 'Redis connection failed',
       'infrastructure.cache.connection_closed': 'Redis connection closed',
       'infrastructure.cache.connection_error': 'Redis connection error',
-      // Session operations
+      'infrastructure.cache.reconnecting': 'Redis reconnecting',
+      'infrastructure.cache.invalid_user_id':
+        'Invalid user ID for cache invalidation',
+      'infrastructure.cache.user_cache_invalidated':
+        'User cache invalidated successfully',
+      'infrastructure.cache.user_cache_invalidation_failed':
+        'Failed to invalidate user cache',
       'infrastructure.session.create_attempt': 'Creating user session',
       'infrastructure.session.create_success': 'User session created',
       'infrastructure.session.create_failed': 'Failed to create user session',
@@ -51,6 +63,18 @@ class CacheI18nService {
     }
     return result;
   }
+
+  translate(key: string, params?: Record<string, unknown>): string {
+    return this.t(key, params);
+  }
+
+  setDefaultLanguage(_language: string): void {
+    // Infrastructure layer doesn't need language switching
+  }
+
+  exists(key: string): boolean {
+    return key.startsWith('infrastructure.');
+  }
 }
 
 @Module({
@@ -59,10 +83,10 @@ class CacheI18nService {
     PinoLoggerModule,
   ],
   providers: [
-    // 🌍 Service I18n pour le cache
+    // 🌍 Service I18n pour l'infrastructure
     {
-      provide: TOKENS.I18N_SERVICE,
-      useClass: CacheI18nService,
+      provide: APPLICATION_TOKENS.I18N_SERVICE,
+      useClass: InfrastructureI18nService,
     },
     // 🗄️ Service de cache Redis
     {

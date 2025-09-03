@@ -33,7 +33,7 @@ INSERT INTO users (
     gen_random_uuid(), -- Génère automatiquement un UUID
     'test@admin.com',
     'Test Super Admin',
-    '$2b$12$z4FrwFFpbdX0wWXQo9DPQuKcRfISZAMZbKk/ikdNBw/UhXn1NS7Nq', -- bcrypt hash de "amadou"
+    '$2b$12$OCOfEYGvLhTp2h40Cy5k6evQ.Mf4mM5T1YzN4Jc8k/af7fk7OEP/C', -- bcrypt hash de "amadou"
     false,
     'SUPER_ADMIN',
     true,

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './infrastructure/database/database.module';
+import { SecurityModule } from './infrastructure/security/security.module';
 import { PresentationModule } from './presentation/presentation.module';
 
 @Module({
@@ -11,6 +12,9 @@ import { PresentationModule } from './presentation/presentation.module';
       envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env'],
       expandVariables: true,
     }),
+
+    // 🛡️ Sécurité globale (guards, authentification)
+    SecurityModule,
 
     // 🗄️ Configuration base de données
     DatabaseModule.forRoot(),

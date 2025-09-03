@@ -10,6 +10,7 @@ import { Email } from '../../../domain/value-objects/email.vo';
 import { UserRole, Permission } from '../../../shared/enums/user-role.enum';
 import { Logger } from '../../ports/logger.port';
 import type { I18nService } from '../../ports/i18n.port';
+import type { ICacheService } from '../../ports/cache.port';
 import {
   UserNotFoundError,
   EmailAlreadyExistsError,
@@ -41,6 +42,7 @@ export class UpdateUserUseCase {
     private readonly userRepository: UserRepository,
     private readonly logger: Logger,
     private readonly i18n: I18nService,
+    private readonly cacheService: ICacheService,
   ) {}
 
   async execute(request: UpdateUserRequest): Promise<UpdateUserResponse> {
@@ -121,10 +123,32 @@ export class UpdateUserUseCase {
 
       // Copie de l'ID existant si disponible
       if (targetUser.id) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         (updatedUser as any).id = targetUser.id;
       }
 
       const savedUser = await this.userRepository.update(updatedUser);
+
+      // 🗑️ Invalider le cache de l'utilisateur modifié
+      try {
+        await this.cacheService.invalidateUserCache(savedUser.id);
+        this.logger.debug(
+          this.i18n.t('infrastructure.cache.user_cache_invalidated'),
+          {
+            ...requestContext,
+            invalidatedUserId: savedUser.id,
+          },
+        );
+      } catch (cacheError) {
+        // Ne pas faire échouer l'opération si le cache échoue
+        this.logger.warn(
+          this.i18n.t('infrastructure.cache.user_cache_invalidation_failed'),
+          {
+            ...requestContext,
+            cacheError: (cacheError as Error).message,
+          },
+        );
+      }
 
       const duration = Date.now() - startTime;
 

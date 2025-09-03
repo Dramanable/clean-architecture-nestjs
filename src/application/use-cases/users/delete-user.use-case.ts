@@ -9,6 +9,7 @@ import { User } from '../../../domain/entities/user.entity';
 import { UserRole, Permission } from '../../../shared/enums/user-role.enum';
 import { Logger } from '../../ports/logger.port';
 import type { I18nService } from '../../ports/i18n.port';
+import type { ICacheService } from '../../ports/cache.port';
 import {
   UserNotFoundError,
   InsufficientPermissionsError,
@@ -32,6 +33,7 @@ export class DeleteUserUseCase {
     private readonly userRepository: UserRepository,
     private readonly logger: Logger,
     private readonly i18n: I18nService,
+    private readonly cacheService: ICacheService,
   ) {}
 
   async execute(request: DeleteUserRequest): Promise<DeleteUserResponse> {
@@ -86,7 +88,28 @@ export class DeleteUserUseCase {
       );
       this.validatePermissions(requestingUser, targetUser);
 
-      // 4. Suppression de l'utilisateur
+      // 4. Invalider le cache de l'utilisateur avant suppression
+      try {
+        await this.cacheService.invalidateUserCache(request.userId);
+        this.logger.debug(
+          this.i18n.t('infrastructure.cache.user_cache_invalidated'),
+          {
+            ...requestContext,
+            invalidatedUserId: request.userId,
+          },
+        );
+      } catch (cacheError) {
+        // Ne pas faire échouer l'opération si le cache échoue
+        this.logger.warn(
+          this.i18n.t('infrastructure.cache.user_cache_invalidation_failed'),
+          {
+            ...requestContext,
+            cacheError: (cacheError as Error).message,
+          },
+        );
+      }
+
+      // 5. Suppression de l'utilisateur
       await this.userRepository.delete(request.userId);
 
       const duration = Date.now() - startTime;

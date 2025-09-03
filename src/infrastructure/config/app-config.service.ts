@@ -20,6 +20,10 @@ export class AppConfigService implements IConfigService {
     return this.configService.get<number>('REFRESH_TOKEN_EXPIRATION_DAYS', 30);
   }
 
+  getUserSessionDurationMinutes(): number {
+    return this.configService.get<number>('USER_SESSION_DURATION_MINUTES', 60);
+  }
+
   getAccessTokenSecret(): string {
     const secret = this.configService.get<string>('ACCESS_TOKEN_SECRET');
     if (!secret) {
@@ -192,7 +196,7 @@ export class AppConfigService implements IConfigService {
   getCorsOrigins(): string[] {
     const origins = this.configService.get<string>(
       'CORS_ORIGINS',
-      'http://localhost:3000',
+      'http://localhost:3000,http://localhost:5173,http://localhost:4173',
     );
     return origins.split(',').map((origin) => origin.trim());
   }

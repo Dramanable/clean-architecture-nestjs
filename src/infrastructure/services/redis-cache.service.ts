@@ -2,7 +2,14 @@
  * 🗄️ REDIS CACHE SERVICE - Implémentation Redis pour le cache
  */
 
-import { Injectable, Inject } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
+
+import {
+  Injectable,
+  Inject,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { ICacheService } from '../../application/ports/cache.port';
@@ -15,8 +22,12 @@ import {
 } from '../../application/exceptions/cache.exceptions';
 
 @Injectable()
-export class RedisCacheService implements ICacheService {
-  private readonly client: Redis;
+export class RedisCacheService
+  implements ICacheService, OnModuleInit, OnModuleDestroy
+{
+  private client: any = null;
+  private isConnected = false;
+  private connectionPromise: Promise<void> | null = null;
 
   constructor(
     private readonly configService: ConfigService,
@@ -24,12 +35,76 @@ export class RedisCacheService implements ICacheService {
     private readonly logger: Logger,
     @Inject(APPLICATION_TOKENS.I18N_SERVICE)
     private readonly i18n: I18nService,
-  ) {
-    this.client = this.createRedisClient();
-    this.setupEventHandlers();
+  ) {}
+
+  /**
+   * 🚀 Initialisation asynchrone du module
+   */
+  async onModuleInit(): Promise<void> {
+    await this.connect();
+  }
+
+  /**
+   * 🔌 Connexion asynchrone à Redis
+   */
+  private async connect(): Promise<void> {
+    if (this.connectionPromise) {
+      return this.connectionPromise;
+    }
+
+    this.connectionPromise = this.establishConnection();
+    return this.connectionPromise;
+  }
+
+  /**
+   * 🔗 Établit la connexion Redis
+   */
+  private async establishConnection(): Promise<void> {
+    try {
+      this.client = this.createRedisClient();
+      this.setupEventHandlers();
+
+      // Tentative de connexion
+      await this.client.connect();
+      this.isConnected = true;
+
+      this.logger.info(
+        this.i18n.t('infrastructure.cache.connection_established'),
+        {
+          host: this.configService.get<string>('REDIS_HOST', 'localhost'),
+          port: this.configService.get<number>('REDIS_PORT', 6379),
+        },
+      );
+    } catch (error) {
+      this.isConnected = false;
+      this.logger.error(
+        this.i18n.t('infrastructure.cache.connection_failed'),
+        undefined,
+        {
+          host: this.configService.get<string>('REDIS_HOST', 'localhost'),
+          port: this.configService.get<number>('REDIS_PORT', 6379),
+          error: (error as Error).message,
+          stack: (error as Error).stack,
+        },
+      );
+      throw new CacheConnectionException('Failed to connect to Redis', {
+        originalError: (error as Error).message,
+      });
+    }
+  }
+
+  /**
+   * ⏳ Assure que la connexion est établie
+   */
+  private async ensureConnection(): Promise<void> {
+    if (!this.isConnected || !this.client) {
+      await this.connect();
+    }
   }
 
   async set(key: string, value: string, ttlSeconds: number): Promise<void> {
+    await this.ensureConnection();
+
     try {
       await this.client.setex(key, ttlSeconds, value);
 
@@ -48,6 +123,8 @@ export class RedisCacheService implements ICacheService {
   }
 
   async get(key: string): Promise<string | null> {
+    await this.ensureConnection();
+
     try {
       const value = await this.client.get(key);
 
@@ -68,6 +145,8 @@ export class RedisCacheService implements ICacheService {
   }
 
   async delete(key: string): Promise<void> {
+    await this.ensureConnection();
+
     try {
       const deleted = await this.client.del(key);
 
@@ -86,6 +165,8 @@ export class RedisCacheService implements ICacheService {
   }
 
   async exists(key: string): Promise<boolean> {
+    await this.ensureConnection();
+
     try {
       const exists = await this.client.exists(key);
       return exists === 1;
@@ -99,7 +180,60 @@ export class RedisCacheService implements ICacheService {
     }
   }
 
+  /**
+   * 🗑️ Invalide tout le cache d'un utilisateur spécifique
+   */
+  async invalidateUserCache(userId: string): Promise<void> {
+    if (!userId?.trim()) {
+      this.logger.warn(this.i18n.t('infrastructure.cache.invalid_user_id'), {
+        userId,
+      });
+      return;
+    }
+
+    await this.ensureConnection();
+
+    try {
+      // Pattern pour tous les caches liés à cet utilisateur
+      const userPattern = `user:${userId}:*`;
+      const sessionPattern = `session:${userId}:*`;
+      const profilePattern = `profile:${userId}`;
+
+      const patterns = [userPattern, sessionPattern, profilePattern];
+      let totalKeysDeleted = 0;
+
+      for (const pattern of patterns) {
+        const keys = await this.client.keys(pattern);
+        if (keys.length > 0) {
+          await this.client.del(...keys);
+          totalKeysDeleted += keys.length;
+        }
+      }
+
+      this.logger.info(
+        this.i18n.t('infrastructure.cache.user_cache_invalidated'),
+        {
+          userId,
+          keysDeleted: totalKeysDeleted,
+          patterns,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        this.i18n.t('infrastructure.cache.user_cache_invalidation_failed'),
+        error as Error,
+        { userId },
+      );
+      throw new CacheOperationException(
+        `Failed to invalidate cache for user ${userId}`,
+        { userId, originalError: (error as Error).message },
+      );
+    }
+  }
+
   async deletePattern(pattern: string): Promise<void> {
+    await this.ensureConnection();
+
     try {
       const keys = await this.client.keys(pattern);
 
@@ -123,7 +257,7 @@ export class RedisCacheService implements ICacheService {
   /**
    * 🔧 Crée le client Redis avec configuration
    */
-  private createRedisClient(): Redis {
+  private createRedisClient(): any {
     const host = this.configService.get<string>('REDIS_HOST', 'localhost');
     const port = this.configService.get<number>('REDIS_PORT', 6379);
     const password = this.configService.get<string>('REDIS_PASSWORD');
@@ -169,7 +303,9 @@ export class RedisCacheService implements ICacheService {
    * 🧹 Ferme la connexion Redis
    */
   async onModuleDestroy(): Promise<void> {
-    await this.client.quit();
-    this.logger.info(this.i18n.t('infrastructure.cache.disconnected'));
+    if (this.client) {
+      await this.client.quit();
+      this.logger.info(this.i18n.t('infrastructure.cache.disconnected'));
+    }
   }
 }

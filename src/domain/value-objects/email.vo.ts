@@ -17,6 +17,13 @@ export class Email {
     this.value = email.trim().toLowerCase();
   }
 
+  /**
+   * Factory method pour créer un Email
+   */
+  static create(email: string): Email {
+    return new Email(email);
+  }
+
   private validateNotEmpty(email: string): void {
     if (!email || email.trim().length === 0) {
       throw new Error('Email cannot be empty');

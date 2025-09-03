@@ -24,7 +24,7 @@ services:
       MONGODB_DATABASE: ${MONGO_DB:-cleanarchi_dev}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis123}
+      REDIS_PASSWORD: redis123
       USER_SESSION_DURATION_MINUTES: 30
     ports:
       - "3000:3000"

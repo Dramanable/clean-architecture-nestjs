@@ -1,7 +1,24 @@
 /**
  * 🏗️ INFRASTRUCTURE MODULE - Repository Configuration
  *
- * Module NestJS pour configurer les repositories avec injection correcte
+ * Module Ne@Module({
+  imports: [
+    // 🗄️ Configuration TypeORM pour les entités
+    TypeOrmModule.forFeature([UserOrmEntity, RefreshTokenOrmEntity]),
+
+    // 🔒 Module de sécurité global
+    SecurityModule,
+
+    // 🔑 JWT Module
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET || 'default-secret-key',
+      signOptions: { expiresIn: '1h' },
+    }),
+
+    // 📝 Module de logging
+    PinoLoggerModule,
+  ],gurer les repositories avec injection correcte
  * Respecte la Clean Architecture en gérant les dépendances dans la couche présentation
  */
 
@@ -22,9 +39,12 @@ import { TypeOrmRefreshTokenRepository } from './database/repositories/typeorm-r
 import { TypeOrmUserRepository } from './database/repositories/typeorm-user.repository';
 import { MockEmailService } from './email/mock-email.service';
 import { PinoLoggerModule } from './logging/pino-logger.module';
+import { SecurityModule } from './security/security.module';
 import { MockPasswordGenerator } from './security/mock-password-generator.service';
 import { BcryptPasswordService } from './services/bcrypt-password.service';
+import { CookieService } from './services/cookie.service';
 import { JwtTokenService } from './services/jwt-token.service';
+import { CacheModule } from './cache/cache.module';
 
 /**
  * 🌍 Mock I18n Service pour Infrastructure
@@ -41,13 +61,27 @@ class InfrastructureI18nService implements I18nService {
         'Refresh token saved successfully',
       'operations.refresh_token.find_by_token_attempt': 'Finding token by hash',
       'operations.refresh_token.find_by_token_success': 'Token found by hash',
+      // Login operations
+      'operations.login.attempt': 'User login attempt',
+      'operations.login.success': 'User login successful',
+      'operations.login.user_cached': 'User cached in Redis after login',
       // Warnings
       'warnings.refresh_token.token_not_found': 'Refresh token not found',
+      'warnings.login.user_not_found': 'User not found during login',
+      'warnings.login.invalid_password': 'Invalid password during login',
+      'warnings.login.token_revocation_failed':
+        'Failed to revoke old tokens during login',
+      'warnings.login.user_cache_failed':
+        'Failed to cache user in Redis after login',
       // Errors
       'errors.refresh_token.lookup_failed': 'Failed to lookup refresh token',
       'errors.refresh_token.save_failed': 'Failed to save refresh token',
       'errors.refresh_token.find_by_token_failed':
         'Failed to find token by hash',
+      'errors.login.user_lookup_failed': 'Failed to lookup user during login',
+      'errors.login.invalid_credentials': 'Invalid credentials provided',
+      'errors.login.token_save_failed': 'Failed to save refresh token',
+      'errors.login.unexpected_error': 'Unexpected error during login',
     };
 
     let result = translations[key] || key;
@@ -77,14 +111,17 @@ class InfrastructureI18nService implements I18nService {
     // 🗄️ Configuration TypeORM pour les entités
     TypeOrmModule.forFeature([UserOrmEntity, RefreshTokenOrmEntity]),
 
-    // � JWT Module
+    // 🗄️ Module de cache Redis
+    CacheModule,
+
+    // 🔑 JWT Module
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET || 'default-secret-key',
       signOptions: { expiresIn: '1h' },
     }),
 
-    // �📝 Module de logging
+    // 📝 Module de logging
     PinoLoggerModule,
   ],
   providers: [
@@ -166,7 +203,13 @@ class InfrastructureI18nService implements I18nService {
       useClass: AppConfigService,
     },
 
-    // 🌍 I18n Service (Infrastructure Mock)
+    // � Cookie Service
+    {
+      provide: TOKENS.COOKIE_SERVICE,
+      useClass: CookieService,
+    },
+
+    // �🌍 I18n Service (Infrastructure Mock)
     {
       provide: TOKENS.I18N_SERVICE,
       useClass: InfrastructureI18nService,
@@ -194,6 +237,7 @@ class InfrastructureI18nService implements I18nService {
 
     // 🔧 Configuration & Logging
     TOKENS.CONFIG_SERVICE,
+    TOKENS.COOKIE_SERVICE,
     TypeOrmUserRepository,
     UserMapper,
     AppConfigService,

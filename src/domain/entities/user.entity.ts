@@ -106,6 +106,33 @@ export class User {
   }
 
   /**
+   * Factory method pour restaurer un utilisateur depuis des données persistées
+   */
+  static restore(
+    id: string,
+    email: string,
+    name: string,
+    role: UserRole,
+    createdAt: Date,
+    updatedAt?: Date,
+    hashedPassword?: string,
+    passwordChangeRequired?: boolean,
+  ): User {
+    const emailVo = Email.create(email);
+    const user = new User(emailVo, name, role, { passwordChangeRequired });
+
+    // Assignment des propriétés readonly via Object.assign
+    Object.assign(user, {
+      id,
+      hashedPassword,
+      createdAt,
+      updatedAt,
+    });
+
+    return user;
+  }
+
+  /**
    * Factory method pour créer un utilisateur avec mot de passe hashé (pour le mapping ORM)
    */
   static createWithHashedPassword(

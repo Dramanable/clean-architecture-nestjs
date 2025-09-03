@@ -32,6 +32,10 @@ export const APPLICATION_TOKENS = {
   AUTH_TOKEN_SERVICE: 'AuthTokenService',
   AUTH_SERVICE: 'AuthService',
   JWT_SERVICE: 'JwtService',
+
+  // Session & Cache Services
+  USER_SESSION_SERVICE: 'UserSessionService',
+  CACHE_SERVICE: 'CacheService',
 } as const;
 
 // 🏛️ Domain Layer Tokens
@@ -64,6 +68,7 @@ export const INFRASTRUCTURE_TOKENS = {
   SMTP_EMAIL_SERVICE: 'SmtpEmailService',
   BCRYPT_PASSWORD_SERVICE: 'BcryptPasswordService',
   JWT_TOKEN_SERVICE: 'JwtTokenService',
+  COOKIE_SERVICE: 'CookieService',
 
   // Mappers
   USER_MAPPER: 'UserMapper',

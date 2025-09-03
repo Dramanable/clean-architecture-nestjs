@@ -12,6 +12,7 @@ import {
   HttpStatus,
   Inject,
   Post,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -25,16 +26,17 @@ import {
 import type { Request, Response } from 'express';
 import { InvalidCredentialsError } from '../../application/exceptions/auth.exceptions';
 import type { IConfigService } from '../../application/ports/config.port';
+import type { ICookieService } from '../../application/ports/cookie.port';
 import type { I18nService } from '../../application/ports/i18n.port';
 import type { Logger } from '../../application/ports/logger.port';
 import { LoginUseCase } from '../../application/use-cases/auth/login.use-case';
 import { LogoutUseCase } from '../../application/use-cases/auth/logout.use-case';
 import { RefreshTokenUseCase } from '../../application/use-cases/auth/refresh-token.use-case';
+import { Public } from '../../infrastructure/security/public.decorator';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 import {
   LoginDto,
   LoginResponseDto,
-  LogoutDto,
   LogoutResponseDto,
   RefreshTokenResponseDto,
   UserInfoResponseDto,
@@ -56,11 +58,14 @@ export class AuthController {
     private readonly i18n: I18nService,
     @Inject(TOKENS.CONFIG_SERVICE)
     private readonly configService: IConfigService,
+    @Inject(TOKENS.COOKIE_SERVICE)
+    private readonly cookieService: ICookieService,
   ) {}
 
   /**
    * 🔑 LOGIN ENDPOINT
    */
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -93,30 +98,33 @@ export class AuthController {
         ipAddress: this.extractClientIp(req),
       });
 
-      // Set HttpOnly cookies pour sécurité
-      const isProduction = this.configService.getEnvironment() === 'production';
+      // Set HttpOnly cookies using CookieService adapter
       const accessTokenExpirationMs =
-        this.configService.getAccessTokenExpirationTime() * 1000; // Convert seconds to milliseconds
+        this.configService.getAccessTokenExpirationTime() * 1000;
       const refreshTokenExpirationMs =
         this.configService.getRefreshTokenExpirationDays() *
         24 *
         60 *
         60 *
-        1000; // Convert days to milliseconds
+        1000;
 
-      res.cookie('accessToken', result.tokens.accessToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: 'strict',
-        maxAge: accessTokenExpirationMs,
-      });
+      this.cookieService.setCookie(
+        res,
+        'accessToken',
+        result.tokens.accessToken,
+        {
+          maxAge: accessTokenExpirationMs,
+        },
+      );
 
-      res.cookie('refreshToken', result.tokens.refreshToken, {
-        httpOnly: true,
-        secure: isProduction,
-        sameSite: 'strict',
-        maxAge: refreshTokenExpirationMs,
-      });
+      this.cookieService.setCookie(
+        res,
+        'refreshToken',
+        result.tokens.refreshToken,
+        {
+          maxAge: refreshTokenExpirationMs,
+        },
+      );
 
       return {
         success: true,
@@ -137,7 +145,8 @@ export class AuthController {
   /**
    * 🔄 REFRESH TOKEN ENDPOINT
    */
-  @Post('refresh')
+  @Public()
+  @Get('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Refresh access token',
@@ -155,7 +164,7 @@ export class AuthController {
     description: 'Invalid or expired refresh token',
   })
   async refresh(@Req() req: Request): Promise<RefreshTokenResponseDto> {
-    const refreshToken = req.cookies?.refreshToken as string;
+    const refreshToken = this.cookieService.getCookie(req, 'refreshToken');
 
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token missing');
@@ -174,7 +183,7 @@ export class AuthController {
   /**
    * 🚪 LOGOUT ENDPOINT
    */
-  @Post('logout')
+  @Get('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'User logout',
@@ -187,32 +196,32 @@ export class AuthController {
     type: LogoutResponseDto,
   })
   async logout(
-    @Body() logoutDto: LogoutDto,
+    @Query('logoutAll') logoutAll: string,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<LogoutResponseDto> {
     try {
-      const refreshToken = req.cookies?.refreshToken;
+      const refreshToken = this.cookieService.getCookie(req, 'refreshToken');
 
       await this.logoutUseCase.execute({
         refreshToken: refreshToken || '',
-        logoutAll: logoutDto.logoutAll || false,
+        logoutAll: logoutAll === 'true',
         userAgent: req.headers['user-agent'],
         ipAddress: this.extractClientIp(req),
       });
 
-      // Clear cookies
-      res.clearCookie('accessToken');
-      res.clearCookie('refreshToken');
+      // Clear cookies using CookieService adapter
+      this.cookieService.clearCookie(res, 'accessToken');
+      this.cookieService.clearCookie(res, 'refreshToken');
 
       return {
         success: true,
         message: this.i18n.t('auth.logout_success'),
       };
-    } catch (error) {
+    } catch {
       // Le logout réussit toujours pour des raisons de sécurité
-      res.clearCookie('accessToken');
-      res.clearCookie('refreshToken');
+      this.cookieService.clearCookie(res, 'accessToken');
+      this.cookieService.clearCookie(res, 'refreshToken');
 
       return {
         success: true,
@@ -239,7 +248,7 @@ export class AuthController {
     status: 401,
     description: 'Authentication required',
   })
-  me(@Req() _req: Request): UserInfoResponseDto {
+  me(): UserInfoResponseDto {
     // Cette méthode nécessiterait un middleware d'authentification
     // pour extraire l'utilisateur du token JWT
     // Pour l'instant, retournons un mock

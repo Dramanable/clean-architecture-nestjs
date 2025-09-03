@@ -3,8 +3,10 @@
  */
 
 import { Controller, Get } from '@nestjs/common';
+import { Public } from '../../infrastructure/security/public.decorator';
 
 @Controller()
+@Public() // Tout le contrôleur est public
 export class HealthController {
   @Get('health')
   getHealth() {

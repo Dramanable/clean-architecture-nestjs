@@ -159,3 +159,5 @@ urls:
 	@echo "🔑 Identifiants pgAdmin:"
 	@echo "  📧 Email:           admin@cleanarchi.dev"
 	@echo "  🔐 Mot de passe:    admin123"
+
+ 
