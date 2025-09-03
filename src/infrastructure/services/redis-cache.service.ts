@@ -257,20 +257,64 @@ export class RedisCacheService
   /**
    * 🔧 Crée le client Redis avec configuration
    */
+  /**
+   * 🔧 Crée le client Redis avec configuration environnement-spécifique
+   */
   private createRedisClient(): any {
     const host = this.configService.get<string>('REDIS_HOST', 'localhost');
     const port = this.configService.get<number>('REDIS_PORT', 6379);
-    const password = this.configService.get<string>('REDIS_PASSWORD');
     const db = this.configService.get<number>('REDIS_DB', 0);
+    const environment = this.configService.get<string>(
+      'NODE_ENV',
+      'development',
+    );
 
-    return new Redis({
+    // 🔧 Configuration de base
+    const config: any = {
       host,
       port,
-      password,
       db,
-      maxRetriesPerRequest: 3,
+      retryDelayOnFailover: 100,
+      enableReadyCheck: false,
+      maxRetriesPerRequest: null,
       lazyConnect: true,
-    });
+    };
+
+    // 🏗️ Mode développement : pas de password, pas de SSL
+    if (environment === 'development' || environment === 'test') {
+      this.logger.info(
+        '🔧 Redis: Mode développement - sans authentification ni SSL',
+      );
+    } else {
+      // 🏭 Mode production : password obligatoire et SSL activé
+      const password = this.configService.get<string>('REDIS_PASSWORD');
+      const sslEnabled = this.configService.get<boolean>('SSL_ENABLED', true);
+
+      if (!password) {
+        throw new CacheConnectionException(
+          'REDIS_PASSWORD is required in production mode',
+          { environment },
+        );
+      }
+
+      config.password = password;
+
+      if (sslEnabled) {
+        config.tls = {
+          // Accepter les certificats auto-signés en développement uniquement
+          rejectUnauthorized: environment === 'production',
+        };
+        this.logger.info(
+          '🔐 Redis: Mode production - avec authentification et SSL activé',
+        );
+      } else {
+        this.logger.info(
+          '🔐 Redis: Mode production - avec authentification, SSL désactivé',
+        );
+      }
+    }
+
+    return new Redis(config);
   }
 
   /**
@@ -304,8 +348,15 @@ export class RedisCacheService
    */
   async onModuleDestroy(): Promise<void> {
     if (this.client) {
-      await this.client.quit();
-      this.logger.info(this.i18n.t('infrastructure.cache.disconnected'));
+      try {
+        await this.client.disconnect();
+        this.logger.info(this.i18n.t('infrastructure.cache.connection_closed'));
+      } catch (error) {
+        this.logger.error(
+          this.i18n.t('infrastructure.cache.connection_error'),
+          error as Error,
+        );
+      }
     }
   }
 }

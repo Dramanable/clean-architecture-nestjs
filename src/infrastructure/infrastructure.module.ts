@@ -1,25 +1,5 @@
 /**
  * 🏗️ INFRASTRUCTURE MODULE - Repository Configuration
- *
- * Module Ne@Module({
-  imports: [
-    // 🗄️ Configuration TypeORM pour les entités
-    TypeOrmModule.forFeature([UserOrmEntity, RefreshTokenOrmEntity]),
-
-    // 🔒 Module de sécurité global
-    SecurityModule,
-
-    // 🔑 JWT Module
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET || 'default-secret-key',
-      signOptions: { expiresIn: '1h' },
-    }),
-
-    // 📝 Module de logging
-    PinoLoggerModule,
-  ],gurer les repositories avec injection correcte
- * Respecte la Clean Architecture en gérant les dépendances dans la couche présentation
  */
 
 import { Module } from '@nestjs/common';
@@ -39,20 +19,14 @@ import { TypeOrmRefreshTokenRepository } from './database/repositories/typeorm-r
 import { TypeOrmUserRepository } from './database/repositories/typeorm-user.repository';
 import { MockEmailService } from './email/mock-email.service';
 import { PinoLoggerModule } from './logging/pino-logger.module';
-import { SecurityModule } from './security/security.module';
 import { MockPasswordGenerator } from './security/mock-password-generator.service';
 import { BcryptPasswordService } from './services/bcrypt-password.service';
-import { CookieService } from './services/cookie.service';
 import { JwtTokenService } from './services/jwt-token.service';
 import { CacheModule } from './cache/cache.module';
 
-/**
- * 🌍 Mock I18n Service pour Infrastructure
- */
 class InfrastructureI18nService implements I18nService {
   t(key: string, params?: Record<string, unknown>): string {
     const translations: Record<string, string> = {
-      // Auth operations
       'operations.refresh_token.lookup_attempt': 'Looking up refresh token',
       'operations.refresh_token.lookup_success':
         'Refresh token found successfully',
@@ -61,11 +35,9 @@ class InfrastructureI18nService implements I18nService {
         'Refresh token saved successfully',
       'operations.refresh_token.find_by_token_attempt': 'Finding token by hash',
       'operations.refresh_token.find_by_token_success': 'Token found by hash',
-      // Login operations
       'operations.login.attempt': 'User login attempt',
       'operations.login.success': 'User login successful',
       'operations.login.user_cached': 'User cached in Redis after login',
-      // Warnings
       'warnings.refresh_token.token_not_found': 'Refresh token not found',
       'warnings.login.user_not_found': 'User not found during login',
       'warnings.login.invalid_password': 'Invalid password during login',
@@ -73,7 +45,6 @@ class InfrastructureI18nService implements I18nService {
         'Failed to revoke old tokens during login',
       'warnings.login.user_cache_failed':
         'Failed to cache user in Redis after login',
-      // Errors
       'errors.refresh_token.lookup_failed': 'Failed to lookup refresh token',
       'errors.refresh_token.save_failed': 'Failed to save refresh token',
       'errors.refresh_token.find_by_token_failed':
@@ -101,143 +72,66 @@ class InfrastructureI18nService implements I18nService {
     // Mock implementation
   }
 
-  exists(key: string): boolean {
+  exists(): boolean {
     return true; // Mock - always exists
   }
 }
 
 @Module({
   imports: [
-    // 🗄️ Configuration TypeORM pour les entités
     TypeOrmModule.forFeature([UserOrmEntity, RefreshTokenOrmEntity]),
-
-    // 🗄️ Module de cache Redis
     CacheModule,
-
-    // 🔑 JWT Module
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET || 'default-secret-key',
       signOptions: { expiresIn: '1h' },
     }),
-
-    // 📝 Module de logging
     PinoLoggerModule,
   ],
   providers: [
-    // 🗂️ Mappers
     UserMapper,
-    {
-      provide: TOKENS.USER_MAPPER,
-      useClass: UserMapper,
-    },
-
-    // 🏗️ Repositories
+    { provide: TOKENS.USER_MAPPER, useClass: UserMapper },
     TypeOrmUserRepository,
-    {
-      provide: TOKENS.USER_REPOSITORY,
-      useClass: TypeOrmUserRepository,
-    },
+    { provide: TOKENS.USER_REPOSITORY, useClass: TypeOrmUserRepository },
     TypeOrmRefreshTokenRepository,
     {
       provide: TOKENS.REFRESH_TOKEN_REPOSITORY,
       useClass: TypeOrmRefreshTokenRepository,
     },
-
-    // 🔐 Auth Use Cases
-    {
-      provide: TOKENS.LOGIN_USE_CASE,
-      useClass: LoginUseCase,
-    },
-    {
-      provide: TOKENS.REFRESH_TOKEN_USE_CASE,
-      useClass: RefreshTokenUseCase,
-    },
-    {
-      provide: TOKENS.LOGOUT_USE_CASE,
-      useClass: LogoutUseCase,
-    },
-
-    // 🔑 Security Services
-    {
-      provide: TOKENS.JWT_TOKEN_SERVICE,
-      useClass: JwtTokenService,
-    },
-    {
-      provide: TOKENS.TOKEN_SERVICE,
-      useClass: JwtTokenService,
-    },
-    {
-      provide: TOKENS.PASSWORD_SERVICE,
-      useClass: BcryptPasswordService,
-    },
+    { provide: TOKENS.LOGIN_USE_CASE, useClass: LoginUseCase },
+    { provide: TOKENS.REFRESH_TOKEN_USE_CASE, useClass: RefreshTokenUseCase },
+    { provide: TOKENS.LOGOUT_USE_CASE, useClass: LogoutUseCase },
+    { provide: TOKENS.JWT_TOKEN_SERVICE, useClass: JwtTokenService },
+    { provide: TOKENS.TOKEN_SERVICE, useClass: JwtTokenService },
+    { provide: TOKENS.PASSWORD_SERVICE, useClass: BcryptPasswordService },
     {
       provide: TOKENS.BCRYPT_PASSWORD_SERVICE,
       useClass: BcryptPasswordService,
     },
-
-    // 🎯 Application Services
     {
       provide: TOKENS.USER_ONBOARDING_SERVICE,
       useClass: UserOnboardingApplicationService,
     },
-
-    // 📧 External Services (Mocks for development)
-    {
-      provide: TOKENS.EMAIL_SERVICE,
-      useClass: MockEmailService,
-    },
-    {
-      provide: TOKENS.PASSWORD_GENERATOR,
-      useClass: MockPasswordGenerator,
-    },
-
-    // 🔧 Configuration Service
+    { provide: TOKENS.EMAIL_SERVICE, useClass: MockEmailService },
+    { provide: TOKENS.PASSWORD_GENERATOR, useClass: MockPasswordGenerator },
     AppConfigService,
-    {
-      provide: TOKENS.APP_CONFIG,
-      useClass: AppConfigService,
-    },
-    {
-      provide: TOKENS.CONFIG_SERVICE,
-      useClass: AppConfigService,
-    },
-
-    // � Cookie Service
-    {
-      provide: TOKENS.COOKIE_SERVICE,
-      useClass: CookieService,
-    },
-
-    // �🌍 I18n Service (Infrastructure Mock)
-    {
-      provide: TOKENS.I18N_SERVICE,
-      useClass: InfrastructureI18nService,
-    },
+    { provide: TOKENS.APP_CONFIG, useClass: AppConfigService },
+    { provide: TOKENS.CONFIG_SERVICE, useClass: AppConfigService },
+    { provide: TOKENS.I18N_SERVICE, useClass: InfrastructureI18nService },
   ],
   exports: [
-    // 🗂️ Repositories
     TOKENS.USER_REPOSITORY,
     TOKENS.USER_MAPPER,
     TOKENS.REFRESH_TOKEN_REPOSITORY,
-
-    // 🔐 Auth Use Cases
     TOKENS.LOGIN_USE_CASE,
     TOKENS.REFRESH_TOKEN_USE_CASE,
     TOKENS.LOGOUT_USE_CASE,
-
-    // 🔑 Security Services
     TOKENS.JWT_TOKEN_SERVICE,
     TOKENS.PASSWORD_SERVICE,
-
-    // 🎯 Application Services
     TOKENS.USER_ONBOARDING_SERVICE,
     TOKENS.EMAIL_SERVICE,
     TOKENS.PASSWORD_GENERATOR,
-
-    // 🔧 Configuration & Logging
     TOKENS.CONFIG_SERVICE,
-    TOKENS.COOKIE_SERVICE,
     TypeOrmUserRepository,
     UserMapper,
     AppConfigService,

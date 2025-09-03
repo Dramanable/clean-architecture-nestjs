@@ -8,6 +8,7 @@
 import { Module } from '@nestjs/common';
 import type { I18nService } from '../application/ports/i18n.port';
 import { InfrastructureModule } from '../infrastructure/infrastructure.module';
+import { CacheModule } from '../infrastructure/cache/cache.module';
 import { PinoLoggerModule } from '../infrastructure/logging/pino-logger.module';
 import { TOKENS } from '../shared/constants/injection-tokens';
 import { AuthController } from './controllers/auth.controller';
@@ -107,7 +108,9 @@ class TemporaryI18nService implements I18nService {
   imports: [
     // 🏗️ Import du module infrastructure (repositories, logging, etc.)
     InfrastructureModule,
-    // 📝 Import du module de logging Pino
+    // �️ Import du module cache pour les services de cache
+    CacheModule,
+    // �📝 Import du module de logging Pino
     PinoLoggerModule,
   ],
   controllers: [

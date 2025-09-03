@@ -28,7 +28,8 @@ help:
 	@echo "  clean        - Nettoyer les ressources Docker"
 	@echo "  reset        - Reset complet de l'environnement"
 	@echo ""
-
+redis:
+	docker exec -it cleanarchi_redis_dev redis-cli -a redis123
 # ========================================
 # � Commandes Docker Compose
 # ========================================
