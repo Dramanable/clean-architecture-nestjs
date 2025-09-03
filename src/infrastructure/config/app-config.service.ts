@@ -17,11 +17,10 @@ export class AppConfigService implements IConfigService {
   }
 
   getRefreshTokenExpirationDays(): number {
-    return this.configService.get<number>('REFRESH_TOKEN_EXPIRATION_DAYS', 30);
-  }
-
-  getUserSessionDurationMinutes(): number {
-    return this.configService.get<number>('USER_SESSION_DURATION_MINUTES', 60);
+    return this.configService.get<number>(
+      'REFRESH_TOKEN_EXPIRATION_DAYS',
+      7, // 7 jours par défaut
+    );
   }
 
   getAccessTokenSecret(): string {
@@ -205,7 +204,7 @@ export class AppConfigService implements IConfigService {
     return this.configService.get<boolean>('CORS_CREDENTIALS', true);
   }
 
-  getHelmetConfig(): unknown {
+  getHelmetConfig(): Record<string, unknown> {
     return {
       crossOriginEmbedderPolicy: false,
       contentSecurityPolicy: false,
@@ -213,14 +212,14 @@ export class AppConfigService implements IConfigService {
   }
 
   // 🚀 Performance Configuration
-  getCompressionConfig(): unknown {
+  getCompressionConfig(): Record<string, unknown> {
     return {
       level: this.configService.get<number>('COMPRESSION_LEVEL', 6),
       threshold: this.configService.get<number>('COMPRESSION_THRESHOLD', 1024),
     };
   }
 
-  getRateLimitConfig(): unknown {
+  getRateLimitConfig(): Record<string, unknown> {
     return {
       windowMs: this.getRateLimitWindowMs(),
       max: this.getRateLimitMax(),
@@ -228,7 +227,7 @@ export class AppConfigService implements IConfigService {
     };
   }
 
-  getBodyParserConfig(): unknown {
+  getBodyParserConfig(): Record<string, unknown> {
     return {
       limit: this.configService.get<string>('BODY_PARSER_LIMIT', '50mb'),
       extended: true,

@@ -28,6 +28,7 @@ import { InvalidCredentialsError } from '../../application/exceptions/auth.excep
 import type { IConfigService } from '../../application/ports/config.port';
 import type { ICookieService } from '../../application/ports/cookie.port';
 import type { I18nService } from '../../application/ports/i18n.port';
+import { AuthRateLimit } from '../../infrastructure/security/rate-limit.decorators';
 import type { Logger } from '../../application/ports/logger.port';
 import { LoginUseCase } from '../../application/use-cases/auth/login.use-case';
 import { LogoutUseCase } from '../../application/use-cases/auth/logout.use-case';
@@ -66,6 +67,7 @@ export class AuthController {
    * 🔑 LOGIN ENDPOINT
    */
   @Public()
+  @AuthRateLimit()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

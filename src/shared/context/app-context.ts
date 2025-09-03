@@ -48,7 +48,7 @@ export interface AppContextBuilder {
   session(sessionId: string): AppContextBuilder;
   tenant(tenantId: string): AppContextBuilder;
   organization(orgId: string): AppContextBuilder;
-  metadata(key: string, value: any): AppContextBuilder;
+  metadata(key: string, value: unknown): AppContextBuilder;
   build(): AppContext;
 }
 
@@ -102,7 +102,7 @@ class AppContextBuilderImpl implements AppContextBuilder {
     return this;
   }
 
-  metadata(key: string, value: any): AppContextBuilder {
+  metadata(key: string, value: unknown): AppContextBuilder {
     if (!this.context.metadata) {
       this.context.metadata = {};
     }

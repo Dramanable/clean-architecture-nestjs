@@ -18,12 +18,6 @@ export interface IConfigService {
   getRefreshTokenExpirationDays(): number;
 
   /**
-   * Durée de session utilisateur en cache (en minutes)
-   * @default 60 (1 heure)
-   */
-  getUserSessionDurationMinutes(): number;
-
-  /**
    * Secret pour signer les Access Tokens (JWT)
    */
   getAccessTokenSecret(): string;
@@ -105,14 +99,14 @@ export interface IConfigService {
    */
   getCorsOrigins(): string[];
   getCorsCredentials(): boolean;
-  getHelmetConfig(): any;
+  getHelmetConfig(): Record<string, unknown>;
 
   /**
    * Performance Configuration
    */
-  getCompressionConfig(): any;
-  getRateLimitConfig(): any;
-  getBodyParserConfig(): any;
+  getCompressionConfig(): Record<string, unknown>;
+  getRateLimitConfig(): Record<string, unknown>;
+  getBodyParserConfig(): Record<string, unknown>;
 
   /**
    * Environment Flags

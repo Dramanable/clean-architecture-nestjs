@@ -129,7 +129,7 @@ describe('LoginUseCase (TDD)', () => {
       mockPasswordService.compare.mockResolvedValue(true);
       mockTokenService.generateAccessToken.mockReturnValue('access_token_123');
       mockTokenService.generateRefreshToken.mockReturnValue(
-        'refresh_token_456',
+        'refresh_token_456_with_sufficient_length_for_validation_requirements',
       );
       mockRefreshTokenRepository.save.mockResolvedValue(undefined);
       mockCacheService.set.mockResolvedValue(undefined);
@@ -141,7 +141,9 @@ describe('LoginUseCase (TDD)', () => {
       expect(result.success).toBe(true);
       expect(result.user.id).toBe('user-456');
       expect(result.tokens.accessToken).toBe('access_token_123');
-      expect(result.tokens.refreshToken).toBe('refresh_token_456');
+      expect(result.tokens.refreshToken).toBe(
+        'refresh_token_456_with_sufficient_length_for_validation_requirements',
+      );
       expect(mockPasswordService.compare).toHaveBeenCalledWith(
         'validPassword123',
         'hashedPassword',
@@ -167,7 +169,9 @@ describe('LoginUseCase (TDD)', () => {
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockPasswordService.compare.mockResolvedValue(true);
       mockTokenService.generateAccessToken.mockReturnValue('access_token');
-      mockTokenService.generateRefreshToken.mockReturnValue('refresh_token');
+      mockTokenService.generateRefreshToken.mockReturnValue(
+        'refresh_token_with_sufficient_length_for_validation',
+      );
 
       // Act
       await useCase.execute(request);
@@ -260,7 +264,9 @@ describe('LoginUseCase (TDD)', () => {
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockPasswordService.compare.mockResolvedValue(true);
       mockTokenService.generateAccessToken.mockReturnValue('access_token');
-      mockTokenService.generateRefreshToken.mockReturnValue('refresh_token');
+      mockTokenService.generateRefreshToken.mockReturnValue(
+        'refresh_token_with_sufficient_length_for_validation',
+      );
 
       // Act
       await useCase.execute(request);

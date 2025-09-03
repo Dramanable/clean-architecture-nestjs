@@ -17,7 +17,9 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -37,7 +39,11 @@ import { DeleteUserUseCase } from '../../application/use-cases/users/delete-user
 import type { UserRepository } from '../../domain/repositories/user.repository';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 import { ApiErrorResponseDto } from '../dtos/common.dto';
-import { CreateUserDto, UserResponseDto } from '../dtos/user.dto';
+import {
+  CreateUserDto,
+  UserResponseDto,
+  UpdateUserDto,
+} from '../dtos/user.dto';
 import { SearchUsersSimpleDto } from '../dtos/search-users.dto';
 
 @ApiTags('users')
@@ -406,7 +412,8 @@ export class UserController {
   })
   async updateUser(
     @Param('id', ParseUUIDPipe) userId: string,
-    @Body() updateDto: any,
+    @Body() updateDto: UpdateUserDto,
+    @Req() request: Request,
   ): Promise<UserResponseDto> {
     this.logger.info('🎯 HTTP PUT /users/:id - Update user request', {
       operation: 'HTTP_UpdateUser',
@@ -416,13 +423,12 @@ export class UserController {
 
     try {
       const result = await this.updateUserUseCase.execute({
-        requestingUserId: 'system', // TODO: À récupérer du JWT
-        userId: userId,
+        userId,
         name: updateDto.name,
-        email: updateDto.email,
         role: updateDto.role,
+        passwordChangeRequired: updateDto.passwordChangeRequired,
+        requestingUserId: (request as any).user.sub,
       });
-
       this.logger.info('✅ HTTP PUT /users/:id - User updated successfully', {
         operation: 'HTTP_UpdateUser',
         userId,

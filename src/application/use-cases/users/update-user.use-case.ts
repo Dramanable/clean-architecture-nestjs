@@ -26,6 +26,7 @@ export interface UpdateUserRequest {
   email?: string;
   name?: string;
   role?: UserRole;
+  passwordChangeRequired?: boolean;
   requestingUserId: string;
 }
 

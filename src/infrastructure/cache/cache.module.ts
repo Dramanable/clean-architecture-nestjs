@@ -1,10 +1,9 @@
 /**
- * 🗄️ CACHE MODULE - Module Redis pour le cache et les sessions
+ * 🗄️ CACHE MODULE - Module Redis pour le cache
  */
 
 import { Module } from '@nestjs/common';
-import { RedisCacheService } from '../services/redis-cache.service';
-import { UserSessionService } from '../services/user-session.service';
+// import { RedisCacheService } from '../services/redis-cache.service';
 import { CookieService } from '../services/cookie.service';
 import { PinoLoggerModule } from '../logging/pino-logger.module';
 import {
@@ -88,16 +87,11 @@ class InfrastructureI18nService implements I18nService {
       provide: APPLICATION_TOKENS.I18N_SERVICE,
       useClass: InfrastructureI18nService,
     },
-    // 🗄️ Service de cache Redis
-    {
-      provide: TOKENS.CACHE_SERVICE,
-      useClass: RedisCacheService,
-    },
-    // 👤 Service de gestion des sessions utilisateur
-    {
-      provide: TOKENS.USER_SESSION_SERVICE,
-      useClass: UserSessionService,
-    },
+    // 🗄️ Service de cache Redis - Temporairement désactivé
+    // {
+    //   provide: TOKENS.CACHE_SERVICE,
+    //   useClass: RedisCacheService,
+    // },
     // 🍪 Service de gestion des cookies
     {
       provide: TOKENS.COOKIE_SERVICE,
@@ -105,8 +99,7 @@ class InfrastructureI18nService implements I18nService {
     },
   ],
   exports: [
-    TOKENS.CACHE_SERVICE,
-    TOKENS.USER_SESSION_SERVICE,
+    // TOKENS.CACHE_SERVICE, // Temporairement désactivé
     TOKENS.COOKIE_SERVICE,
   ],
 })

@@ -1,5 +1,18 @@
 /**
- * 🔑 JwtTokenService - TDD GREEN Phase
+ *import { Injectable, Inje  generateAccessToken(
+    userId: string,
+    email: string,
+    secret: string,
+    expiresIn: string,
+  ): string {om '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { randomBytes } from 'crypto';
+
+import { TOKENS } from '../../shared/constants/injection-tokens';
+import type { ILogger } from '../../application/ports/logger.port';
+import type { II18nService } from '../../application/ports/i18n.port';
+import type { IJwtTokenService } from '../../application/ports/auth-token.service.interface';
+import { JWTPayload } from '../../shared/types/auth.types';tTokenService - TDD GREEN Phase
  *
  * Service JWT pour génération et vérification des tokens
  */
@@ -43,8 +56,6 @@ export class JwtTokenService {
       const payload = {
         sub: userId,
         email,
-        role,
-        type: 'access',
       };
 
       const token = this.jwtService.sign(payload, {
@@ -68,10 +79,9 @@ export class JwtTokenService {
     }
   }
 
-  generateRefreshToken(secret: string): string {
+  generateRefreshToken(): string {
     const context = {
-      operation: 'GENERATE_REFRESH_TOKEN',
-      timestamp: new Date().toISOString(),
+      operation: 'generateRefreshToken',
     };
 
     this.logger.info(
@@ -79,25 +89,14 @@ export class JwtTokenService {
       context,
     );
 
-    try {
-      // Génération d'un token sécurisé avec crypto.randomBytes
-      const randomData = randomBytes(32);
-      const token = randomData.toString('hex');
+    const token = randomBytes(64).toString('base64url');
 
-      this.logger.info(
-        this.i18n.t('operations.token.generate_refresh_success'),
-        { ...context, tokenLength: token.length },
-      );
+    this.logger.info(
+      this.i18n.t('operations.token.generate_refresh_success'),
+      context,
+    );
 
-      return token;
-    } catch (error) {
-      this.logger.error(
-        this.i18n.t('errors.token.generate_refresh_failed'),
-        error as Error,
-        context,
-      );
-      throw error;
-    }
+    return token;
   }
 
   verifyToken(token: string, secret: string): unknown {

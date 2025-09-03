@@ -2,8 +2,6 @@
  * 🗄️ REDIS CACHE SERVICE - Implémentation Redis pour le cache
  */
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
-
 import {
   Injectable,
   Inject,
@@ -12,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
+import type { RedisOptions } from 'ioredis';
 import { ICacheService } from '../../application/ports/cache.port';
 import type { Logger } from '../../application/ports/logger.port';
 import type { I18nService } from '../../application/ports/i18n.port';
@@ -105,6 +104,10 @@ export class RedisCacheService
   async set(key: string, value: string, ttlSeconds: number): Promise<void> {
     await this.ensureConnection();
 
+    if (!this.client) {
+      throw new CacheOperationException('SET - Redis client not initialized');
+    }
+
     try {
       await this.client.setex(key, ttlSeconds, value);
 
@@ -118,12 +121,16 @@ export class RedisCacheService
         error as Error,
         { key, ttl: ttlSeconds },
       );
-      throw new CacheOperationException('SET', { key, ttl: ttlSeconds });
+      throw new CacheOperationException('SET');
     }
   }
 
   async get(key: string): Promise<string | null> {
     await this.ensureConnection();
+
+    if (!this.client) {
+      throw new CacheOperationException('GET - Redis client not initialized');
+    }
 
     try {
       const value = await this.client.get(key);
@@ -140,7 +147,7 @@ export class RedisCacheService
         error as Error,
         { key },
       );
-      throw new CacheOperationException('GET', { key });
+      throw new CacheOperationException('GET');
     }
   }
 
@@ -160,7 +167,7 @@ export class RedisCacheService
         error as Error,
         { key },
       );
-      throw new CacheOperationException('DELETE', { key });
+      throw new CacheOperationException('DELETE');
     }
   }
 
@@ -176,7 +183,7 @@ export class RedisCacheService
         error as Error,
         { key },
       );
-      throw new CacheOperationException('EXISTS', { key });
+      throw new CacheOperationException('EXISTS');
     }
   }
 
@@ -185,49 +192,32 @@ export class RedisCacheService
    */
   async invalidateUserCache(userId: string): Promise<void> {
     if (!userId?.trim()) {
-      this.logger.warn(this.i18n.t('infrastructure.cache.invalid_user_id'), {
-        userId,
-      });
+      this.logger.warn('Attempted to invalidate cache with empty user ID');
       return;
     }
 
-    await this.ensureConnection();
-
     try {
-      // Pattern pour tous les caches liés à cet utilisateur
       const userPattern = `user:${userId}:*`;
-      const sessionPattern = `session:${userId}:*`;
       const profilePattern = `profile:${userId}`;
 
-      const patterns = [userPattern, sessionPattern, profilePattern];
-      let totalKeysDeleted = 0;
+      const patterns = [userPattern, profilePattern];
 
       for (const pattern of patterns) {
         const keys = await this.client.keys(pattern);
         if (keys.length > 0) {
           await this.client.del(...keys);
-          totalKeysDeleted += keys.length;
+          this.logger.debug(
+            `Invalidated ${keys.length} keys for pattern: ${pattern}`,
+          );
         }
       }
 
-      this.logger.info(
-        this.i18n.t('infrastructure.cache.user_cache_invalidated'),
-        {
-          userId,
-          keysDeleted: totalKeysDeleted,
-          patterns,
-        },
-      );
+      this.logger.info('User cache invalidated successfully', { userId });
     } catch (error) {
-      this.logger.error(
-        this.i18n.t('infrastructure.cache.user_cache_invalidation_failed'),
-        error as Error,
-        { userId },
-      );
-      throw new CacheOperationException(
-        `Failed to invalidate cache for user ${userId}`,
-        { userId, originalError: (error as Error).message },
-      );
+      this.logger.error('Failed to invalidate user cache', error as Error, {
+        userId,
+      });
+      // Ne pas propager l'erreur pour éviter de casser le flow principal
     }
   }
 
@@ -250,7 +240,7 @@ export class RedisCacheService
         error as Error,
         { pattern },
       );
-      throw new CacheOperationException('DELETE_PATTERN', { pattern });
+      throw new CacheOperationException('DELETE_PATTERN');
     }
   }
 
@@ -258,9 +248,9 @@ export class RedisCacheService
    * 🔧 Crée le client Redis avec configuration
    */
   /**
-   * 🔧 Crée le client Redis avec configuration environnement-spécifique
+   * 🔧 Création du client Redis avec configuration typée
    */
-  private createRedisClient(): any {
+  private createRedisClient(): Redis {
     const host = this.configService.get<string>('REDIS_HOST', 'localhost');
     const port = this.configService.get<number>('REDIS_PORT', 6379);
     const db = this.configService.get<number>('REDIS_DB', 0);
@@ -270,7 +260,7 @@ export class RedisCacheService
     );
 
     // 🔧 Configuration de base
-    const config: any = {
+    const config: RedisConfig = {
       host,
       port,
       db,

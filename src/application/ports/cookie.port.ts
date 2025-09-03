@@ -2,13 +2,17 @@
  * 🍪 COOKIE PORT - Interface pour la gestion des cookies
  */
 
+import { Request, Response } from 'express';
+
 export interface CookieOptions {
-  readonly httpOnly?: boolean;
-  readonly secure?: boolean;
-  readonly sameSite?: 'strict' | 'lax' | 'none';
-  readonly maxAge?: number;
-  readonly domain?: string;
-  readonly path?: string;
+  domain?: string;
+  expires?: Date;
+  httpOnly?: boolean;
+  maxAge?: number;
+  path?: string;
+  secure?: boolean;
+  signed?: boolean;
+  sameSite?: boolean | 'lax' | 'strict' | 'none';
 }
 
 export interface ICookieService {
@@ -16,7 +20,7 @@ export interface ICookieService {
    * Définit un cookie avec options
    */
   setCookie(
-    response: any,
+    response: Response,
     name: string,
     value: string,
     options?: CookieOptions,
@@ -25,10 +29,10 @@ export interface ICookieService {
   /**
    * Récupère un cookie depuis la requête
    */
-  getCookie(request: any, name: string): string | undefined;
+  getCookie(request: Request, name: string): string | undefined;
 
   /**
    * Supprime un cookie
    */
-  clearCookie(response: any, name: string, options?: CookieOptions): void;
+  clearCookie(response: Response, name: string, options?: CookieOptions): void;
 }

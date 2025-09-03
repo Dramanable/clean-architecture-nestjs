@@ -6,6 +6,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
+import { RefreshToken } from '@domain/entities/refresh-token.entity';
 import {
   InvalidCredentialsError,
   TokenRepositoryError,
@@ -19,7 +20,7 @@ import { Email } from '../../../domain/value-objects/email.vo';
 
 // Interfaces pour les ports (qui ne sont pas dans le domaine)
 export interface RefreshTokenRepository {
-  save(refreshToken: any): Promise<any>;
+  save(refreshToken: RefreshToken): Promise<RefreshToken>;
   revokeAllByUserId(userId: string): Promise<void>;
 }
 
@@ -170,16 +171,21 @@ export class LoginUseCase {
 
       // 6. Sauvegarder le nouveau refresh token
       try {
-        await this.refreshTokenRepository.save({
-          token: refreshToken,
-          userId: user.id,
-          userAgent: request.userAgent,
-          ipAddress: request.ipAddress,
-          expiresAt: new Date(
-            Date.now() +
-              this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
-          ),
-        });
+        const expiresAt = new Date(
+          Date.now() +
+            this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
+        );
+
+        const refreshTokenEntity = new RefreshToken(
+          user.id,
+          refreshToken,
+          expiresAt,
+          undefined, // deviceId
+          request.userAgent,
+          request.ipAddress,
+        );
+
+        await this.refreshTokenRepository.save(refreshTokenEntity);
       } catch (error) {
         this.logger.error(
           this.i18n.t('errors.login.token_save_failed'),
@@ -190,44 +196,6 @@ export class LoginUseCase {
           this.i18n.t('errors.login.token_save_failed'),
           { operation: 'saveRefreshToken' },
         );
-      }
-
-      // 7. Stocker l'utilisateur connecté dans le cache Redis
-      try {
-        const userCacheKey = `connected_user:${user.id}`;
-        const sessionDurationMinutes =
-          this.config.getUserSessionDurationMinutes();
-        const sessionTtlSeconds = sessionDurationMinutes * 60;
-
-        const userCacheData = JSON.stringify({
-          id: user.id,
-          email: user.email.value,
-          name: user.name,
-          role: user.role,
-          connectedAt: new Date().toISOString(),
-          userAgent: request.userAgent,
-          ipAddress: request.ipAddress,
-        });
-
-        await this.cacheService.set(
-          userCacheKey,
-          userCacheData,
-          sessionTtlSeconds,
-        );
-
-        this.logger.info(this.i18n.t('operations.login.user_cached'), {
-          ...operationContext,
-          userId: user.id,
-          sessionDurationMinutes,
-          cacheKey: userCacheKey,
-        });
-      } catch (error) {
-        // Log l'erreur mais ne pas faire échouer la connexion
-        this.logger.warn(this.i18n.t('warnings.login.user_cache_failed'), {
-          ...operationContext,
-          userId: user.id,
-          error: (error as Error).message,
-        });
       }
 
       // 8. Logging de succès avec audit

@@ -33,8 +33,7 @@ export const APPLICATION_TOKENS = {
   AUTH_SERVICE: 'AuthService',
   JWT_SERVICE: 'JwtService',
 
-  // Session & Cache Services
-  USER_SESSION_SERVICE: 'UserSessionService',
+  // Cache Services
   CACHE_SERVICE: 'CacheService',
 } as const;
 

@@ -132,12 +132,13 @@ export class ExternalServiceError extends ApplicationException {
  * 📊 Exception : Validation des données d'application
  */
 export class ApplicationValidationError extends ApplicationException {
-  constructor(field: string, value: any, rule: string) {
+  constructor(field: string, value: unknown, rule: string) {
+    const valueStr = String(value);
     super(
-      `Application validation failed for field ${field} with value ${value}: ${rule}`,
+      `Application validation failed for field ${field} with value ${valueStr}: ${rule}`,
       'APPLICATION_VALIDATION_ERROR',
       'errors.application.validation_error',
-      { field, value: String(value), rule },
+      { field, value: valueStr, rule },
     );
   }
 }

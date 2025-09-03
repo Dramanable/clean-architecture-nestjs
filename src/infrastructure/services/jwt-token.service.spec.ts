@@ -12,8 +12,14 @@ import { JwtTokenService } from './jwt-token.service';
 describe('JwtTokenService (TDD)', () => {
   let service: JwtTokenService;
   let mockJwtService: Partial<JwtService>;
-  let mockLogger: any;
-  let mockI18n: any;
+  let mockLogger: {
+    info: jest.Mock;
+    error: jest.Mock;
+    warn: jest.Mock;
+  };
+  let mockI18n: {
+    t: jest.Mock;
+  };
 
   beforeEach(async () => {
     mockJwtService = {
@@ -57,9 +63,9 @@ describe('JwtTokenService (TDD)', () => {
       // Arrange
       const userId = 'user-123';
       const email = 'user@example.com';
-      const role = 'USER';
+      const role = 'user';
       const secret = 'test-secret';
-      const expiresIn = 900; // 15 minutes
+      const expiresIn = 15;
 
       const expectedToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
       mockJwtService.sign = jest.fn().mockReturnValue(expectedToken);
@@ -79,8 +85,6 @@ describe('JwtTokenService (TDD)', () => {
         {
           sub: userId,
           email,
-          role,
-          type: 'access',
         },
         {
           secret,
@@ -93,9 +97,9 @@ describe('JwtTokenService (TDD)', () => {
       // Arrange
       const userId = 'user-123';
       const email = 'user@example.com';
-      const role = 'USER';
+      const role = 'user';
       const secret = 'test-secret';
-      const expiresIn = 900;
+      const expiresIn = 15;
 
       mockJwtService.sign = jest.fn().mockReturnValue('token');
 
@@ -104,7 +108,7 @@ describe('JwtTokenService (TDD)', () => {
 
       // Assert
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.any(String),
+        'Mock message',
         expect.objectContaining({
           operation: 'GENERATE_ACCESS_TOKEN',
           userId,
@@ -115,17 +119,10 @@ describe('JwtTokenService (TDD)', () => {
 
   describe('Refresh Token Generation', () => {
     it('should generate secure refresh token', () => {
-      // Arrange
-      const secret = 'refresh-secret';
-      const expectedToken = 'random-secure-token-abc123';
-
-      // Mock crypto.randomBytes et buffer toString
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mockRandomBytes = jest.spyOn(require('crypto'), 'randomBytes');
-      mockRandomBytes.mockReturnValue(Buffer.from('test-random-data'));
+      // Arrange - no parameters needed
 
       // Act
-      const result = service.generateRefreshToken(secret);
+      const result = service.generateRefreshToken();
 
       // Assert
       expect(result).toBeDefined();
@@ -134,17 +131,49 @@ describe('JwtTokenService (TDD)', () => {
     });
 
     it('should log refresh token generation', () => {
-      // Arrange
-      const secret = 'refresh-secret';
+      // Arrange - no setup needed
 
       // Act
-      service.generateRefreshToken(secret);
+      service.generateRefreshToken();
 
       // Assert
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
-          operation: 'GENERATE_REFRESH_TOKEN',
+          operation: 'generateRefreshToken',
+        }),
+      );
+    });
+  });
+
+  describe('Refresh Token Generation', () => {
+    it('should generate secure refresh token', () => {
+      // Arrange - no parameters needed
+      // Mock crypto.randomBytes et buffer toString
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mockRandomBytes = jest.spyOn(require('crypto'), 'randomBytes');
+      mockRandomBytes.mockReturnValue(Buffer.from('test-random-data'));
+
+      // Act
+      const result = service.generateRefreshToken();
+
+      // Assert
+      expect(result).toBeDefined();
+      expect(typeof result).toBe('string');
+      expect(result.length).toBeGreaterThan(0);
+    });
+
+    it('should log refresh token generation', () => {
+      // Arrange - no setup needed
+
+      // Act
+      service.generateRefreshToken();
+
+      // Assert
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          operation: 'generateRefreshToken',
         }),
       );
     });

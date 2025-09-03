@@ -5,13 +5,14 @@
  */
 
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { GlobalAuthGuard } from './global-auth.guard';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { EnhancedThrottlerGuard } from './enhanced-throttler.guard';
 import { CacheModule } from '../cache/cache.module';
 import { PinoLoggerModule } from '../logging/pino-logger.module';
 import { TOKENS } from '../../shared/constants/injection-tokens';
+import { createThrottlerConfig } from '../config/throttler.config';
 
 /**
  * 🌍 Security I18n Service - Service I18n pour le module de sécurité
@@ -25,13 +26,11 @@ class SecurityI18nService {
       'auth.token_extracted_from_cookie': 'JWT token extracted from cookie',
       'auth.no_token_found': 'No authentication token found',
       'auth.token_verification_failed': 'Token verification failed',
-      'auth.session_validation_failed': 'Session validation failed',
       'auth.authentication_successful': 'Authentication successful',
       'auth.user_authenticated': 'User authenticated successfully',
-      'auth.user_session_validated': 'User session validated',
       'errors.auth.unauthorized': 'Unauthorized access',
       'errors.auth.invalid_token': 'Invalid authentication token',
-      'errors.auth.session_not_found': 'User session not found',
+      'errors.auth.user_not_found': 'User not found',
     };
 
     let result = translations[key] || key;
@@ -46,13 +45,19 @@ class SecurityI18nService {
 
 @Module({
   imports: [
-    // 🗄️ Module de cache (Redis + Sessions)
+    // 🗄️ Module de cache Redis
     CacheModule,
 
     // 📝 Module de logging
     PinoLoggerModule,
 
-    // 🔑 Configuration JWT globale avec ConfigService
+    // � Module Throttler avec configuration dynamique
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: createThrottlerConfig,
+    }),
+
+    // �🔑 Configuration JWT globale avec ConfigService
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -69,13 +74,9 @@ class SecurityI18nService {
       provide: TOKENS.I18N_SERVICE,
       useClass: SecurityI18nService,
     },
-    // 🛡️ Guard global pour authentification
-    GlobalAuthGuard,
-    {
-      provide: APP_GUARD,
-      useClass: GlobalAuthGuard,
-    },
+    //  Guard global pour rate limiting
+    EnhancedThrottlerGuard,
   ],
-  exports: [GlobalAuthGuard, JwtModule, CacheModule],
+  exports: [JwtModule, CacheModule, ThrottlerModule],
 })
 export class SecurityModule {}

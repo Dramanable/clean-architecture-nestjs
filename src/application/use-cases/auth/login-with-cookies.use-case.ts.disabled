@@ -8,6 +8,7 @@
  */
 
 import { Injectable, Inject } from '@nestjs/common';
+import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import type { IUserRepository } from '../../ports/user.repository.interface';
 import type { IAuthTokenService } from '../../ports/auth-token.service.interface';
@@ -61,7 +62,7 @@ export class LoginWithCookiesUseCase {
 
   async execute(
     request: LoginWithCookiesRequest,
-    response: any,
+    response: Response,
   ): Promise<LoginWithCookiesResponse> {
     // 📝 Contexte d'audit
     const context = AppContextFactory.create()
@@ -171,10 +172,9 @@ export class LoginWithCookiesUseCase {
    * 🍪 Définit les cookies d'authentification sécurisés
    */
   private async setAuthCookies(
-    response: any,
+    response: Response,
     accessToken: string,
     refreshToken: string,
-    rememberMe?: boolean,
   ): Promise<void> {
     const isProduction =
       this.configService.get<string>('NODE_ENV') === 'production';

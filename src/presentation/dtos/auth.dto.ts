@@ -36,15 +36,6 @@ export class LoginDto {
   @MinLength(6, { message: 'Password must be at least 6 characters long' })
   @IsNotEmpty({ message: 'Password is required' })
   password!: string;
-
-  @ApiPropertyOptional({
-    description: 'Remember me option for extended session',
-    example: false,
-    default: false,
-  })
-  @IsBoolean({ message: 'Remember me must be a boolean' })
-  @IsOptional()
-  rememberMe?: boolean;
 }
 
 /**
@@ -184,27 +175,5 @@ export class LoginCleanResponseDto {
     email: string;
     name: string;
     role: string;
-  };
-
-  @ApiProperty({
-    description: 'Session information',
-    example: {
-      sessionId: 'sess_1640995200000_abc123',
-      createdAt: '2021-12-31T23:00:00.000Z',
-      expiresAt: '2022-01-07T23:00:00.000Z',
-      deviceInfo: {
-        userAgent: 'Mozilla/5.0...',
-        ip: '192.168.1.1',
-      },
-    },
-  })
-  session!: {
-    sessionId: string;
-    createdAt: string;
-    expiresAt: string;
-    deviceInfo: {
-      userAgent?: string;
-      ip: string;
-    };
   };
 }

@@ -8,7 +8,6 @@
 export interface LoginRequest {
   email: string;
   password: string;
-  rememberMe?: boolean;
 }
 
 export interface LoginResponse {
@@ -23,12 +22,6 @@ export interface LoginResponse {
     refreshToken: string;
     expiresIn: number; // en secondes
     refreshExpiresIn: number; // en secondes
-  };
-  session: {
-    sessionId: string;
-    createdAt: string;
-    expiresAt: string;
-    deviceInfo?: unknown;
   };
 }
 
@@ -94,13 +87,9 @@ export interface CookieConfig {
 
 export interface JWTPayload {
   sub: string; // User ID
-  email: string;
-  role: string;
-  sessionId: string;
-  iat: number;
-  exp: number;
-  iss: string;
-  aud: string;
+  email: string; // User Email
+  iat?: number;
+  exp?: number;
 }
 
 export interface DeviceSession {

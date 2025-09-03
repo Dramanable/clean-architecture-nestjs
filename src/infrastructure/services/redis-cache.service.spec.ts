@@ -340,7 +340,6 @@ describe('RedisCacheService', () => {
       it('should successfully invalidate user cache', async () => {
         mockRedisClient.keys
           .mockResolvedValueOnce(['user:123:profile', 'user:123:settings'])
-          .mockResolvedValueOnce(['session:123:token'])
           .mockResolvedValueOnce(['profile:123']);
 
         mockRedisClient.del.mockResolvedValue(1);
@@ -348,23 +347,17 @@ describe('RedisCacheService', () => {
         await service.invalidateUserCache('123');
 
         expect(mockRedisClient.keys).toHaveBeenCalledWith('user:123:*');
-        expect(mockRedisClient.keys).toHaveBeenCalledWith('session:123:*');
         expect(mockRedisClient.keys).toHaveBeenCalledWith('profile:123');
 
         expect(mockRedisClient.del).toHaveBeenCalledWith(
           'user:123:profile',
           'user:123:settings',
         );
-        expect(mockRedisClient.del).toHaveBeenCalledWith('session:123:token');
         expect(mockRedisClient.del).toHaveBeenCalledWith('profile:123');
 
         expect(mockLogger.info).toHaveBeenCalledWith(
-          'mocked_infrastructure.cache.user_cache_invalidated',
-          {
-            userId: '123',
-            keysDeleted: 4,
-            patterns: ['user:123:*', 'session:123:*', 'profile:123'],
-          },
+          'User cache invalidated successfully',
+          { userId: '123' },
         );
       });
 
@@ -372,8 +365,7 @@ describe('RedisCacheService', () => {
         await service.invalidateUserCache('');
 
         expect(mockLogger.warn).toHaveBeenCalledWith(
-          'mocked_infrastructure.cache.invalid_user_id',
-          { userId: '' },
+          'Attempted to invalidate cache with empty user ID',
         );
         expect(mockRedisClient.keys).not.toHaveBeenCalled();
       });
@@ -382,10 +374,10 @@ describe('RedisCacheService', () => {
         const error = new Error('Redis KEYS failed');
         mockRedisClient.keys.mockRejectedValue(error);
 
-        await expect(service.invalidateUserCache('123')).rejects.toThrow();
+        await service.invalidateUserCache('123');
 
         expect(mockLogger.error).toHaveBeenCalledWith(
-          'mocked_infrastructure.cache.user_cache_invalidation_failed',
+          'Failed to invalidate user cache',
           error,
           { userId: '123' },
         );

@@ -126,7 +126,7 @@ export class TypeOrmUserRepository implements UserRepository {
   }
 
   async countWithFilters(params: UserQueryParams): Promise<number> {
-    const whereConditions: any = {};
+    const whereConditions: Record<string, unknown> = {};
     if (params.filters?.role) {
       whereConditions.role = params.filters.role;
     }

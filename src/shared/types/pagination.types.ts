@@ -49,7 +49,7 @@ export interface DateFilter {
 export interface Filter {
   field: string;
   operator: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte' | 'in' | 'like' | 'ilike';
-  value: any;
+  value: string | number | boolean | string[] | number[];
 }
 
 /**
@@ -93,7 +93,11 @@ export class QueryBuilder {
     return this;
   }
 
-  filter(field: string, operator: Filter['operator'], value: any): this {
+  filter(
+    field: string,
+    operator: Filter['operator'],
+    value: string | number | boolean | string[] | number[],
+  ): this {
     if (!this.params.filters) {
       this.params.filters = [];
     }
