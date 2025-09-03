@@ -46,17 +46,13 @@ async function bootstrap() {
   });
 
   // Helmet for security headers
-  app.use(helmet(configService.getHelmetConfig() as Record<string, unknown>));
+  app.use(helmet(configService.getHelmetConfig()));
 
   // ⚡ Performance Middlewares
   logger.log('Configuring performance middlewares...');
 
   // Compression
-  app.use(
-    compression(
-      configService.getCompressionConfig() as Record<string, unknown>,
-    ),
-  );
+  app.use(compression(configService.getCompressionConfig()));
 
   // Body parser limits
   const bodyConfig = configService.getBodyParserConfig() as {
