@@ -20,16 +20,36 @@ help:
 	@echo ""
 	@echo "🔍 Monitoring:"
 	@echo "  logs         - Afficher les logs de l'application"
+	@echo "  logs-db      - Afficher les logs de PostgreSQL"
+	@echo "  logs-mongo   - Afficher les logs de MongoDB"
+	@echo "  logs-redis   - Afficher les logs de Redis"
 	@echo "  shell        - Ouvrir un shell dans le conteneur"
 	@echo "  status       - Statut des services"
 	@echo "  health       - Vérifier la santé de l'application"
+	@echo "  health-all   - Vérifier la santé de tous les services"
+	@echo ""
+	@echo "🔌 Base de données:"
+	@echo "  redis        - Connexion Redis CLI"
+	@echo "  mongo        - Connexion MongoDB shell"
+	@echo "  psql         - Connexion PostgreSQL shell"
 	@echo ""
 	@echo "🧹 Maintenance:"
 	@echo "  clean        - Nettoyer les ressources Docker"
 	@echo "  reset        - Reset complet de l'environnement"
+	@echo "  start-db     - Démarrer uniquement les bases de données"
 	@echo ""
 redis:
-	docker exec -it cleanarchi_redis_dev redis-cli -a redis123
+	docker exec -it redis redis-cli -a redis123
+
+# Connexion MongoDB shell
+mongo:
+	@echo "🍃 Connexion MongoDB..."
+	docker exec -it mongodb mongosh -u admin -p admin
+
+# PostgreSQL shell
+psql:
+	@echo "🐘 Connexion PostgreSQL..."
+	docker exec -it postgres psql -U postgres -d cleanarchi_dev
 # ========================================
 # � Commandes Docker Compose
 # ========================================
@@ -71,7 +91,7 @@ build:
 # Exécuter les tests
 test:
 	@echo "🧪 Exécution des tests..."
-	docker compose exec app npm test
+	docker compose exec api npm test
 
 # ========================================
 # 🔍 Monitoring & Debug
@@ -80,7 +100,7 @@ test:
 # Afficher les logs de l'application
 logs:
 	@echo "📋 Logs de l'application..."
-	docker compose logs -f app
+	docker compose logs -f api
 
 # Logs de PostgreSQL
 logs-db:
@@ -97,10 +117,15 @@ logs-pgadmin:
 	@echo "📋 Logs de pgAdmin..."
 	docker compose logs -f pgadmin
 
+# Logs de Redis
+logs-redis:
+	@echo "📋 Logs de Redis..."
+	docker compose logs -f redis
+
 # Ouvrir un shell dans le conteneur
 shell:
 	@echo "🐚 Ouverture du shell..."
-	docker compose exec app sh
+	docker compose exec api sh
 
 # Statut des services
 status:
@@ -111,6 +136,18 @@ status:
 health:
 	@echo "🏥 Vérification de la santé..."
 	@curl -f http://localhost:3000/health 2>/dev/null && echo "✅ Service en bonne santé" || echo "❌ Service non disponible"
+
+# Vérifier l'état de tous les services
+health-all:
+	@echo "🏥 Vérification de tous les services..."
+	@echo "📡 API:"
+	@curl -f http://localhost:3000/health 2>/dev/null && echo "  ✅ API en bonne santé" || echo "  ❌ API non disponible"
+	@echo "🗄️ PostgreSQL:"
+	@docker exec postgres pg_isready -U postgres 2>/dev/null && echo "  ✅ PostgreSQL en bonne santé" || echo "  ❌ PostgreSQL non disponible"
+	@echo "🍃 MongoDB:"
+	@docker exec mongodb mongosh --eval "db.runCommand('ping').ok" --quiet 2>/dev/null && echo "  ✅ MongoDB en bonne santé" || echo "  ❌ MongoDB non disponible"
+	@echo "🔴 Redis:"
+	@docker exec redis redis-cli -a redis123 ping 2>/dev/null && echo "  ✅ Redis en bonne santé" || echo "  ❌ Redis non disponible"
 
 # ========================================
 # 🧹 Nettoyage & Maintenance
@@ -130,6 +167,11 @@ reset:
 	docker system prune -a -f --volumes
 	@echo "✅ Reset terminé. Utilisez 'make start-build' pour redémarrer"
 
+# Démarrer uniquement les bases de données
+start-db:
+	@echo "📊 Démarrage des bases de données uniquement..."
+	docker compose up -d postgres mongodb redis
+
 # ========================================
 # 🎯 Raccourcis Utiles
 # ========================================
@@ -137,7 +179,7 @@ reset:
 # Installation des dépendances
 install:
 	@echo "📦 Installation des dépendances..."
-	docker compose exec app npm install
+	docker compose exec api npm install
 
 # Mode développement complet
 dev: start
