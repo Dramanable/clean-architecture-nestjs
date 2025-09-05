@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { I18nService } from '../../../application/ports/i18n.port';
 import type { Logger } from '../../../application/ports/logger.port';
+import { RefreshToken as DomainRefreshToken } from '../../../domain/entities/refresh-token.entity';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { RefreshTokenOrmEntity } from '../entities/typeorm/refresh-token.entity';
 
@@ -62,17 +63,11 @@ export class TypeOrmRefreshTokenRepository {
     }
   }
 
-  async save(refreshTokenData: {
-    token: string;
-    userId: string;
-    userAgent?: string;
-    ipAddress?: string;
-    expiresAt: Date;
-  }): Promise<RefreshTokenOrmEntity> {
+  async save(domainToken: DomainRefreshToken): Promise<RefreshTokenOrmEntity> {
     const context = {
       operation: 'SAVE_REFRESH_TOKEN',
       timestamp: new Date().toISOString(),
-      userId: refreshTokenData.userId,
+      userId: domainToken.userId,
     };
 
     this.logger.info(
@@ -82,11 +77,11 @@ export class TypeOrmRefreshTokenRepository {
 
     try {
       const entity = new RefreshTokenOrmEntity();
-      entity.tokenHash = refreshTokenData.token;
-      entity.userId = refreshTokenData.userId;
-      entity.userAgent = refreshTokenData.userAgent;
-      entity.ipAddress = refreshTokenData.ipAddress;
-      entity.expiresAt = refreshTokenData.expiresAt;
+      entity.tokenHash = domainToken.tokenHash;
+      entity.userId = domainToken.userId;
+      entity.userAgent = domainToken.userAgent;
+      entity.ipAddress = domainToken.ipAddress;
+      entity.expiresAt = domainToken.expiresAt;
       entity.isRevoked = false;
 
       const result = await this.repository.save(entity);

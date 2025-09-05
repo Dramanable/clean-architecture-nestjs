@@ -7,6 +7,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { I18nService } from '../../../application/ports/i18n.port';
+import type { Logger } from '../../../application/ports/logger.port';
+import { RefreshToken as DomainRefreshToken } from '../../../domain/entities/refresh-token.entity';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { RefreshTokenOrmEntity } from '../entities/typeorm/refresh-token.entity';
 import { TypeOrmRefreshTokenRepository } from './typeorm-refresh-token.repository';
@@ -105,17 +108,22 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
   describe('Token Persistence', () => {
     it('should save refresh token successfully', async () => {
       // Arrange
-      const refreshTokenData = {
-        token: 'new_refresh_token',
-        userId: 'user-123',
-        userAgent: 'Mozilla/5.0',
-        ipAddress: '192.168.1.1',
-        expiresAt: new Date(Date.now() + 604800000), // 7 days
-      };
+      const refreshTokenEntity = new DomainRefreshToken(
+        'user-123',
+        'new_refresh_token_raw_with_sufficient_length_32chars_minimum',
+        new Date(Date.now() + 604800000), // 7 days
+        undefined, // deviceId
+        'Mozilla/5.0',
+        '192.168.1.1',
+      );
 
       const savedEntity = {
         id: 'token-id-new',
-        ...refreshTokenData,
+        tokenHash: refreshTokenEntity.tokenHash,
+        userId: refreshTokenEntity.userId,
+        userAgent: refreshTokenEntity.userAgent,
+        ipAddress: refreshTokenEntity.ipAddress,
+        expiresAt: refreshTokenEntity.expiresAt,
         isRevoked: false,
         createdAt: new Date(),
       };
@@ -123,15 +131,15 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
       mockTypeOrmRepository.save = jest.fn().mockResolvedValue(savedEntity);
 
       // Act
-      const result = await repository.save(refreshTokenData);
+      const result = await repository.save(refreshTokenEntity);
 
       // Assert
       expect(result).toBeDefined();
-      expect((result as unknown).token).toBe(refreshTokenData.token);
+      expect(result.tokenHash).toBe(refreshTokenEntity.tokenHash);
       expect(mockTypeOrmRepository.save).toHaveBeenCalledWith(
         expect.objectContaining({
-          tokenHash: refreshTokenData.token,
-          userId: refreshTokenData.userId,
+          tokenHash: refreshTokenEntity.tokenHash,
+          userId: refreshTokenEntity.userId,
         }),
       );
     });
