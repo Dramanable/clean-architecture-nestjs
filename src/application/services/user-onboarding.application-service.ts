@@ -256,6 +256,7 @@ export class UserOnboardingApplicationService {
   }
 
   private generateLoginUrl(): string {
+    // TODO: Inject ConfigService instead of direct process.env usage
     return process.env.APP_LOGIN_URL || 'https://app.company.com/login';
   }
 }
