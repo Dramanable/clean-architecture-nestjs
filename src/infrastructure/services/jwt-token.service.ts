@@ -1,20 +1,5 @@
 /**
- *import { Injectable, Inje  generateAccessToken(
-    userId: string,
-    email: string,
-    secret: string,
-    expiresIn: string,
-  ): string {om '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { randomBytes } from 'crypto';
-
-import { TOKENS } from '../../shared/constants/injection-tokens';
-import type { ILogger } from '../../application/ports/logger.port';
-import type { II18nService } from '../../application/ports/i18n.port';
-import type { IJwtTokenService } from '../../application/ports/auth-token.service.interface';
-import { JWTPayload } from '../../shared/types/auth.types';tTokenService - TDD GREEN Phase
- *
- * Service JWT pour génération et vérification des tokens
+ * JwtTokenService - Service JWT pour génération et vérification des tokens
  */
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -23,6 +8,13 @@ import { randomBytes } from 'crypto';
 import type { I18nService } from '../../application/ports/i18n.port';
 import type { Logger } from '../../application/ports/logger.port';
 import { TOKENS } from '../../shared/constants/injection-tokens';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  iat?: number;
+  exp?: number;
+}
 
 @Injectable()
 export class JwtTokenService {
@@ -99,7 +91,7 @@ export class JwtTokenService {
     return token;
   }
 
-  verifyToken(token: string, secret: string): unknown {
+  verifyToken(token: string, secret: string): JwtPayload {
     const context = {
       operation: 'VERIFY_TOKEN',
       timestamp: new Date().toISOString(),
@@ -108,7 +100,7 @@ export class JwtTokenService {
     this.logger.info(this.i18n.t('operations.token.verify_attempt'), context);
 
     try {
-      const payload = this.jwtService.verify(token, { secret });
+      const payload = this.jwtService.verify(token, { secret }) as JwtPayload;
 
       this.logger.info(this.i18n.t('operations.token.verify_success'), {
         ...context,

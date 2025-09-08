@@ -9,6 +9,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { EnhancedThrottlerGuard } from './enhanced-throttler.guard';
+import { PassportAuthModule } from './passport-auth.module';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { LocalAuthGuard } from './local-auth.guard';
 import { CacheModule } from '../cache/cache.module';
 import { PinoLoggerModule } from '../logging/pino-logger.module';
 import { TOKENS } from '../../shared/constants/injection-tokens';
@@ -51,13 +54,16 @@ class SecurityI18nService {
     // 📝 Module de logging
     PinoLoggerModule,
 
-    // � Module Throttler avec configuration dynamique
+    // 🔐 Module d'authentification Passport.js
+    PassportAuthModule,
+
+    // 🚦 Module Throttler avec configuration dynamique
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: createThrottlerConfig,
     }),
 
-    // �🔑 Configuration JWT globale avec ConfigService
+    // 🔑 Configuration JWT globale avec ConfigService
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -74,9 +80,19 @@ class SecurityI18nService {
       provide: TOKENS.I18N_SERVICE,
       useClass: SecurityI18nService,
     },
-    //  Guard global pour rate limiting
+    // 🚦 Guard global pour rate limiting
     EnhancedThrottlerGuard,
+    // 🛡️ Guards d'authentification Passport.js
+    JwtAuthGuard,
+    LocalAuthGuard,
   ],
-  exports: [JwtModule, CacheModule, ThrottlerModule],
+  exports: [
+    JwtModule,
+    CacheModule,
+    ThrottlerModule,
+    PassportAuthModule,
+    JwtAuthGuard,
+    LocalAuthGuard,
+  ],
 })
 export class SecurityModule {}

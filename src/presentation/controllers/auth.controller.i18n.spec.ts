@@ -151,6 +151,12 @@ describe('AuthController I18n Tests', () => {
       ip: '127.0.0.1',
       connection: { remoteAddress: '127.0.0.1' },
       socket: { remoteAddress: '127.0.0.1' },
+      user: {
+        id: 'user-id-123',
+        email: 'test@example.com',
+        name: 'Test User',
+        role: 'USER',
+      },
     };
 
     const mockResponse = {
@@ -161,6 +167,12 @@ describe('AuthController I18n Tests', () => {
     const mockLoginUseCase = {
       execute: jest.fn().mockResolvedValue({
         success: true,
+        user: {
+          id: 'user-id-123',
+          email: 'test@example.com',
+          name: 'Test User',
+          role: 'USER',
+        },
         tokens: {
           accessToken: 'access-token',
           refreshToken: 'refresh-token',

@@ -16,6 +16,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiCookieAuth,
@@ -27,13 +28,17 @@ import type { Request, Response } from 'express';
 import { InvalidCredentialsError } from '../../application/exceptions/auth.exceptions';
 import type { IConfigService } from '../../application/ports/config.port';
 import type { ICookieService } from '../../application/ports/cookie.port';
+import type { LocalStrategyResult } from '../../infrastructure/security/strategies/local.strategy';
 import type { I18nService } from '../../application/ports/i18n.port';
-import { AuthRateLimit } from '../../infrastructure/security/rate-limit.decorators';
 import type { Logger } from '../../application/ports/logger.port';
 import { LoginUseCase } from '../../application/use-cases/auth/login.use-case';
 import { LogoutUseCase } from '../../application/use-cases/auth/logout.use-case';
 import { RefreshTokenUseCase } from '../../application/use-cases/auth/refresh-token.use-case';
+import { User } from '../../domain/entities/user.entity';
+import { JwtAuthGuard } from '../../infrastructure/security/jwt-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 import { Public } from '../../infrastructure/security/public.decorator';
+import { AuthRateLimit } from '../../infrastructure/security/rate-limit.decorators';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 import {
   LoginDto,
@@ -42,6 +47,14 @@ import {
   RefreshTokenResponseDto,
   UserInfoResponseDto,
 } from '../dtos/auth.dto';
+
+interface AuthenticatedRequest extends Request {
+  user: User;
+}
+
+interface LocalAuthenticatedRequest extends Request {
+  user: LocalStrategyResult; // Données utilisateur validées par LocalStrategy
+}
 
 @ApiTags('auth')
 @Controller('auth')
@@ -66,6 +79,7 @@ export class AuthController {
   /**
    * 🔑 LOGIN ENDPOINT
    */
+  @UseGuards(AuthGuard('local'))
   @Public()
   @AuthRateLimit()
   @Post('login')
@@ -89,18 +103,31 @@ export class AuthController {
   })
   async login(
     @Body() loginDto: LoginDto,
-    @Req() req: Request,
+    @Req() req: LocalAuthenticatedRequest,
     @Res({ passthrough: true }) res: Response,
   ): Promise<LoginResponseDto> {
     try {
+      // ✅ APPROCHE CLEAN ARCHITECTURE
+      // 1. LocalStrategy a validé les credentials (email/password) → req.user populated
+      // 2. AuthController appelle LoginUseCase pour logique business (tokens, audit)
+
+      if (!req.user) {
+        throw new UnauthorizedException('Authentication failed');
+      }
+
+      // LocalStrategy nous donne les données utilisateur validées
+      const validatedUser = req.user;
+
+      // Maintenant appeler LoginUseCase pour la logique business complète
+      // (tokens, audit, logging, refresh token management, etc.)
       const result = await this.loginUseCase.execute({
-        email: loginDto.email,
-        password: loginDto.password,
+        email: validatedUser.email,
+        password: loginDto.password, // LoginUseCase a besoin du password pour logs/audit
         userAgent: req.headers['user-agent'],
         ipAddress: this.extractClientIp(req),
       });
 
-      // Set HttpOnly cookies using CookieService adapter
+      // 🍪 Set HttpOnly cookies using CookieService adapter
       const accessTokenExpirationMs =
         this.configService.getAccessTokenExpirationTime() * 1000;
       const refreshTokenExpirationMs =
@@ -112,25 +139,36 @@ export class AuthController {
 
       this.cookieService.setCookie(
         res,
-        'accessToken',
+        'access_token',
         result.tokens.accessToken,
         {
-          maxAge: accessTokenExpirationMs,
+          expires: new Date(Date.now() + accessTokenExpirationMs),
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
         },
       );
 
       this.cookieService.setCookie(
         res,
-        'refreshToken',
+        'refresh_token',
         result.tokens.refreshToken,
         {
-          maxAge: refreshTokenExpirationMs,
+          expires: new Date(Date.now() + refreshTokenExpirationMs),
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
         },
       );
 
       return {
         success: true,
-        user: result.user,
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          role: result.user.role,
+        },
       };
     } catch (error) {
       // Le Use Case a déjà fait le logging approprié
@@ -155,7 +193,7 @@ export class AuthController {
     description:
       'Refresh the access token using the refresh token from cookies',
   })
-  @ApiCookieAuth('refreshToken')
+  @ApiCookieAuth('refresh_token')
   @ApiResponse({
     status: 200,
     description: 'Token refreshed successfully',
@@ -166,7 +204,7 @@ export class AuthController {
     description: 'Invalid or expired refresh token',
   })
   async refresh(@Req() req: Request): Promise<RefreshTokenResponseDto> {
-    const refreshToken = this.cookieService.getCookie(req, 'refreshToken');
+    const refreshToken = this.cookieService.getCookie(req, 'refresh_token');
 
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token missing');
@@ -191,7 +229,7 @@ export class AuthController {
     summary: 'User logout',
     description: 'Logout user and invalidate tokens',
   })
-  @ApiCookieAuth('refreshToken')
+  @ApiCookieAuth('refresh_token')
   @ApiResponse({
     status: 200,
     description: 'Logout successful',
@@ -203,7 +241,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<LogoutResponseDto> {
     try {
-      const refreshToken = this.cookieService.getCookie(req, 'refreshToken');
+      const refreshToken = this.cookieService.getCookie(req, 'refresh_token');
 
       await this.logoutUseCase.execute({
         refreshToken: refreshToken || '',
@@ -213,17 +251,17 @@ export class AuthController {
       });
 
       // Clear cookies using CookieService adapter
-      this.cookieService.clearCookie(res, 'accessToken');
-      this.cookieService.clearCookie(res, 'refreshToken');
-
+      this.cookieService.clearCookie(res, 'access_token');
+      this.cookieService.clearCookie(res, 'refresh_token');
+      req.user = undefined;
       return {
         success: true,
         message: this.i18n.t('auth.logout_success'),
       };
     } catch {
       // Le logout réussit toujours pour des raisons de sécurité
-      this.cookieService.clearCookie(res, 'accessToken');
-      this.cookieService.clearCookie(res, 'refreshToken');
+      this.cookieService.clearCookie(res, 'access_token');
+      this.cookieService.clearCookie(res, 'refresh_token');
 
       return {
         success: true,
@@ -235,12 +273,13 @@ export class AuthController {
   /**
    * 👤 GET USER INFO ENDPOINT
    */
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiOperation({
     summary: 'Get current user information',
     description: 'Get information about the currently authenticated user',
   })
-  @ApiCookieAuth('accessToken')
+  @ApiCookieAuth('access_token')
   @ApiResponse({
     status: 200,
     description: 'User information retrieved successfully',
@@ -250,16 +289,14 @@ export class AuthController {
     status: 401,
     description: 'Authentication required',
   })
-  me(): UserInfoResponseDto {
-    // Cette méthode nécessiterait un middleware d'authentification
-    // pour extraire l'utilisateur du token JWT
-    // Pour l'instant, retournons un mock
+  me(@Req() req: AuthenticatedRequest): UserInfoResponseDto {
+    // req.user est automatiquement populé par JwtAuthGuard via JwtStrategy
     return {
       user: {
-        id: 'current-user',
-        email: 'user@example.com',
-        name: 'Current User',
-        role: 'USER',
+        id: req.user.id,
+        email: req.user.email.value,
+        name: req.user.name,
+        role: req.user.role,
       },
     };
   }

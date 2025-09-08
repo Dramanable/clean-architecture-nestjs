@@ -18,6 +18,11 @@ import { AppConfigService } from './infrastructure/config/app-config.service';
 import { setupSwagger } from './infrastructure/swagger/swagger.config';
 import { I18nValidationPipe } from './infrastructure/validation/i18n-validation.pipe';
 
+// Import cookie-parser avec typage correct
+import type { RequestHandler } from 'express';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const cookieParser: () => RequestHandler = require('cookie-parser');
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = new Logger('Bootstrap');
@@ -47,6 +52,10 @@ async function bootstrap() {
 
   // Helmet for security headers
   app.use(helmet(configService.getHelmetConfig()));
+
+  // 🍪 Cookie Parser - CRITICAL pour JWT authentication via cookies
+  logger.log('Configuring cookie parser...');
+  app.use(cookieParser());
 
   // ⚡ Performance Middlewares
   logger.log('Configuring performance middlewares...');

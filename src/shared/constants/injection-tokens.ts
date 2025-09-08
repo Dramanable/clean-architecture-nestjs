@@ -35,6 +35,9 @@ export const APPLICATION_TOKENS = {
 
   // Cache Services
   CACHE_SERVICE: 'CacheService',
+
+  // Session Services
+  USER_SESSION_SERVICE: 'UserSessionService',
 } as const;
 
 // 🏛️ Domain Layer Tokens
@@ -77,6 +80,10 @@ export const INFRASTRUCTURE_TOKENS = {
   APP_CONFIG: 'AppConfig',
   DATABASE_CONFIG: 'DatabaseConfig',
   LOGGER_CONFIG: 'LoggerConfig',
+
+  // Passport Strategies
+  JWT_STRATEGY: 'JwtStrategy',
+  LOCAL_STRATEGY: 'LocalStrategy',
 } as const;
 
 // 🎨 Presentation Layer Tokens

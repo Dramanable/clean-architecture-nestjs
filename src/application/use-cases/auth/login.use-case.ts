@@ -171,10 +171,9 @@ export class LoginUseCase {
 
       // 6. Sauvegarder le nouveau refresh token
       try {
-        const expiresAt = new Date(
-          Date.now() +
-            this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
-        );
+        const expirationDays = this.config.getRefreshTokenExpirationDays();
+        const expirationMs = expirationDays * 24 * 60 * 60 * 1000;
+        const expiresAt = new Date(Date.now() + expirationMs);
 
         const refreshTokenEntity = new RefreshToken(
           user.id,

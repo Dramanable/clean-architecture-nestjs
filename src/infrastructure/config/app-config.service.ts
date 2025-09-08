@@ -13,14 +13,43 @@ export class AppConfigService implements IConfigService {
   constructor(private readonly configService: ConfigService) {}
 
   getAccessTokenExpirationTime(): number {
-    return this.configService.get<number>('ACCESS_TOKEN_EXPIRATION', 3600);
+    const expiration = this.configService.get<string>(
+      'ACCESS_TOKEN_EXPIRATION',
+    );
+    if (!expiration) {
+      throw new Error(
+        'ACCESS_TOKEN_EXPIRATION is required. Please set this environment variable.',
+      );
+    }
+
+    const parsed = parseInt(expiration, 10);
+    if (isNaN(parsed) || parsed <= 0) {
+      throw new Error(
+        `ACCESS_TOKEN_EXPIRATION must be a positive number. Got: ${expiration}`,
+      );
+    }
+
+    return parsed;
   }
 
   getRefreshTokenExpirationDays(): number {
-    return this.configService.get<number>(
+    const expirationDays = this.configService.get<string>(
       'REFRESH_TOKEN_EXPIRATION_DAYS',
-      7, // 7 jours par défaut
     );
+    if (!expirationDays) {
+      throw new Error(
+        'REFRESH_TOKEN_EXPIRATION_DAYS is required. Please set this environment variable.',
+      );
+    }
+
+    const numericValue = parseInt(expirationDays, 10);
+    if (isNaN(numericValue) || numericValue <= 0) {
+      throw new Error(
+        `REFRESH_TOKEN_EXPIRATION_DAYS must be a positive number. Got: ${expirationDays}`,
+      );
+    }
+
+    return numericValue;
   }
 
   getAccessTokenSecret(): string {

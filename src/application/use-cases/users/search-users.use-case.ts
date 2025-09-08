@@ -101,7 +101,7 @@ export class SearchUsersUseCase {
 
       // 4. Construction de la réponse
       const response: SearchUsersResponse = {
-        users: results.data.map((user) => ({
+        users: (results.data || []).map((user) => ({
           id: user.id,
           email: user.email.value,
           name: user.name,
@@ -112,12 +112,12 @@ export class SearchUsersUseCase {
           updatedAt: user.updatedAt ?? user.createdAt,
         })),
         pagination: {
-          currentPage: results.meta.currentPage,
-          totalPages: results.meta.totalPages,
-          totalItems: results.meta.totalItems,
-          itemsPerPage: results.meta.itemsPerPage,
-          hasNextPage: results.meta.hasNextPage,
-          hasPreviousPage: results.meta.hasPreviousPage,
+          currentPage: results.meta?.currentPage || 1,
+          totalPages: results.meta?.totalPages || 1,
+          totalItems: results.meta?.totalItems || 0,
+          itemsPerPage: results.meta?.itemsPerPage || 10,
+          hasNextPage: results.meta?.hasNextPage || false,
+          hasPreviousPage: results.meta?.hasPreviousPage || false,
         },
         appliedFilters: this.buildAppliedFilters(request),
       };
