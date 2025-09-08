@@ -4,17 +4,17 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { RedisCacheService } from '../services/redis-cache.service';
+import type { ICacheService } from '../../application/ports/cache.port';
 import { CacheModule } from '../cache/cache.module';
 import { PinoLoggerModule } from '../logging/pino-logger.module';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 
-describe('Redis Connection Test', () => {
-  let module: TestingModule;
-  let cacheService: RedisCacheService;
+describe('Redis Connection Integration Test', () => {
+  let cacheService: ICacheService;
+  let testModule: TestingModule;
 
   beforeAll(async () => {
-    module = await Test.createTestingModule({
+    testModule = await Test.createTestingModule({
       imports: [CacheModule, PinoLoggerModule],
       providers: [
         {
@@ -34,11 +34,11 @@ describe('Redis Connection Test', () => {
       ],
     }).compile();
 
-    cacheService = module.get<RedisCacheService>(TOKENS.CACHE_SERVICE);
+    cacheService = testModule.get<ICacheService>(TOKENS.CACHE_SERVICE);
   });
 
   afterAll(async () => {
-    await module.close();
+    await testModule.close();
   });
 
   describe('Redis Connectivity', () => {

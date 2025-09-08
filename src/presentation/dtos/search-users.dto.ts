@@ -3,6 +3,16 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+  MinLength,
+} from 'class-validator';
 import { UserRole } from '../../shared/enums/user-role.enum';
 
 export class SearchUsersSimpleDto {
@@ -11,6 +21,9 @@ export class SearchUsersSimpleDto {
     required: false,
     example: 'john',
   })
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
   searchTerm?: string;
 
   @ApiProperty({
@@ -20,6 +33,9 @@ export class SearchUsersSimpleDto {
     isArray: true,
     example: [UserRole.USER, UserRole.MANAGER],
   })
+  @IsOptional()
+  @IsArray()
+  @IsEnum(UserRole, { each: true })
   roles?: UserRole[];
 
   @ApiProperty({
@@ -27,6 +43,8 @@ export class SearchUsersSimpleDto {
     required: false,
     example: true,
   })
+  @IsOptional()
+  @IsBoolean()
   isActive?: boolean;
 
   @ApiProperty({
@@ -34,6 +52,8 @@ export class SearchUsersSimpleDto {
     required: false,
     example: '2023-01-01T00:00:00Z',
   })
+  @IsOptional()
+  @IsString()
   createdAfter?: string;
 
   @ApiProperty({
@@ -41,6 +61,8 @@ export class SearchUsersSimpleDto {
     required: false,
     example: '2023-12-31T23:59:59Z',
   })
+  @IsOptional()
+  @IsString()
   createdBefore?: string;
 
   @ApiProperty({
@@ -50,6 +72,9 @@ export class SearchUsersSimpleDto {
     default: 1,
     example: 1,
   })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
   page?: number;
 
   @ApiProperty({
@@ -60,6 +85,9 @@ export class SearchUsersSimpleDto {
     default: 20,
     example: 20,
   })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
   limit?: number;
 
   @ApiProperty({
@@ -68,6 +96,8 @@ export class SearchUsersSimpleDto {
     default: 'createdAt',
     example: 'name',
   })
+  @IsOptional()
+  @IsString()
   sortBy?: string;
 
   @ApiProperty({
@@ -77,5 +107,7 @@ export class SearchUsersSimpleDto {
     default: 'desc',
     example: 'asc',
   })
+  @IsOptional()
+  @IsString()
   sortOrder?: 'asc' | 'desc';
 }

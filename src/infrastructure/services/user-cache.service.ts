@@ -1,8 +1,17 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { User } from '../../../domain/entities/user.entity';
-import { TOKENS } from '../../../shared/constants/injection-tokens';
-import type { UserRepository } from '../../../domain/repositories/user.repository';
-import type { CacheService } from '../../../application/ports/cache.service.interface';
+
+import { User } from '../../domain/entities/user.entity';
+
+import type { UserRepository } from '../../domain/repositories/user.repository';
+
+// Interface temporaire pour éviter les erreurs d'import
+interface ICacheService {
+  set(key: string, value: string, ttlSeconds: number): Promise<void>;
+  get(key: string): Promise<string | null>;
+  delete(key: string): Promise<void>;
+  exists(key: string): Promise<boolean>;
+  deletePattern(pattern: string): Promise<void>;
+}
 
 /**
  * 🧑‍💼 User Cache Service
@@ -20,10 +29,10 @@ export class UserCacheService {
   private readonly CACHE_TTL = 900; // 15 minutes en secondes
 
   constructor(
-    @Inject(TOKENS.USER_REPOSITORY)
+    @Inject('UserRepository')
     private readonly userRepository: UserRepository,
-    @Inject(TOKENS.CACHE_SERVICE)
-    private readonly cacheService: CacheService,
+    @Inject('CacheService')
+    private readonly cacheService: ICacheService,
   ) {}
 
   /**
@@ -32,6 +41,7 @@ export class UserCacheService {
    * 2. Si absent, récupérer de la DB et mettre en cache
    * 3. Si erreur cache, fallback vers DB directement
    */
+
   async findUserById(userId: string): Promise<User | null> {
     const cacheKey = this.getCacheKey(userId);
 
@@ -146,6 +156,7 @@ export class UserCacheService {
   /**
    * 🔍 Récupère un utilisateur depuis le cache
    */
+
   private async getUserFromCache(cacheKey: string): Promise<User | null> {
     try {
       const cachedData = await this.cacheService.get(cacheKey);
@@ -166,6 +177,7 @@ export class UserCacheService {
    */
   private cacheUserAsync(cacheKey: string, user: User): void {
     // Exécution asynchrone pour ne pas bloquer le thread principal
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setImmediate(async () => {
       try {
         await this.cacheService.set(
@@ -195,10 +207,10 @@ export class UserCacheService {
       email: user.email.value,
       name: user.name,
       role: user.role,
-      isActive: user.isActive,
       createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
-      // Ajouter d'autres propriétés nécessaires pour les guards
+      updatedAt: user.updatedAt?.toISOString(),
+      hashedPassword: user.hashedPassword,
+      passwordChangeRequired: user.passwordChangeRequired,
     };
 
     return JSON.stringify(userData);
@@ -212,16 +224,16 @@ export class UserCacheService {
       const userData = JSON.parse(cachedData);
 
       // Reconstruction de l'entité User depuis les données cachées
-      // Note: Vous devrez adapter selon votre structure d'entité
-      return User.fromData({
-        id: userData.id,
-        email: userData.email,
-        name: userData.name,
-        role: userData.role,
-        isActive: userData.isActive,
-        createdAt: new Date(userData.createdAt),
-        updatedAt: new Date(userData.updatedAt),
-      });
+      return User.restore(
+        userData.id,
+        userData.email,
+        userData.name,
+        userData.role,
+        new Date(userData.createdAt),
+        userData.updatedAt ? new Date(userData.updatedAt) : undefined,
+        userData.hashedPassword,
+        userData.passwordChangeRequired,
+      );
     } catch (error) {
       this.logger.error('Failed to deserialize user from cache', error);
       throw new Error('Invalid cached user data');

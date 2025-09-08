@@ -13,7 +13,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUUID,
+  // IsUUID, // Temporarily commented - not used
   Min,
   MinLength,
 } from 'class-validator';
@@ -116,7 +116,7 @@ export class CreateUserDto {
     example: 'user@example.com',
   })
   @IsEmail()
-  readonly email: string;
+  readonly email!: string;
 
   @ApiProperty({
     description: "Nom complet de l'utilisateur",
@@ -125,7 +125,7 @@ export class CreateUserDto {
   })
   @IsString()
   @MinLength(2)
-  readonly name: string;
+  readonly name!: string;
 
   @ApiProperty({
     description: "Rôle de l'utilisateur",
@@ -133,7 +133,7 @@ export class CreateUserDto {
     example: UserRole.USER,
   })
   @IsEnum(UserRole)
-  readonly role: UserRole;
+  readonly role!: UserRole;
 
   @ApiPropertyOptional({
     description:
@@ -200,50 +200,50 @@ export class UserResponseDto {
     description: "ID unique de l'utilisateur",
     example: 'f6696396-8476-44d0-b076-458c22aec11f',
   })
-  readonly id: string;
+  readonly id!: string;
 
   @ApiProperty({
     description: "Email de l'utilisateur",
     example: 'user@example.com',
   })
-  readonly email: string;
+  readonly email!: string;
 
   @ApiProperty({
     description: "Nom complet de l'utilisateur",
     example: 'John Doe',
   })
-  readonly name: string;
+  readonly name!: string;
 
   @ApiProperty({
     description: "Rôle de l'utilisateur",
     enum: UserRole,
     example: UserRole.USER,
   })
-  readonly role: UserRole;
+  readonly role!: UserRole;
 
   @ApiProperty({
     description: "Statut actif de l'utilisateur",
     example: true,
   })
-  readonly isActive: boolean;
+  readonly isActive!: boolean;
 
   @ApiProperty({
     description: 'Changement de mot de passe requis',
     example: false,
   })
-  readonly passwordChangeRequired: boolean;
+  readonly passwordChangeRequired!: boolean;
 
   @ApiProperty({
     description: 'Date de création',
     example: '2025-09-02T14:30:00.000Z',
   })
-  readonly createdAt: Date;
+  readonly createdAt!: Date;
 
   @ApiProperty({
     description: 'Date de dernière mise à jour',
     example: '2025-09-02T14:30:00.000Z',
   })
-  readonly updatedAt: Date;
+  readonly updatedAt!: Date;
 }
 
 /**
@@ -254,12 +254,12 @@ export class SearchUsersResponseDto {
     description: 'Liste des utilisateurs',
     type: [UserResponseDto],
   })
-  readonly users: UserResponseDto[];
+  readonly users!: UserResponseDto[];
 
   @ApiProperty({
     description: 'Informations de pagination',
   })
-  readonly pagination: {
+  readonly pagination!: {
     readonly currentPage: number;
     readonly totalPages: number;
     readonly totalItems: number;
@@ -271,7 +271,7 @@ export class SearchUsersResponseDto {
   @ApiProperty({
     description: 'Filtres appliqués',
   })
-  readonly appliedFilters: {
+  readonly appliedFilters!: {
     readonly searchTerm?: string;
     readonly roles?: UserRole[];
     readonly isActive?: boolean;
@@ -290,13 +290,13 @@ export class UserOperationResponseDto {
     description: "Statut de l'opération",
     example: true,
   })
-  readonly success: boolean;
+  readonly success!: boolean;
 
   @ApiProperty({
     description: 'Message de confirmation',
     example: 'User created successfully',
   })
-  readonly message: string;
+  readonly message!: string;
 
   @ApiPropertyOptional({
     description: "Données de l'utilisateur (pour création/mise à jour)",

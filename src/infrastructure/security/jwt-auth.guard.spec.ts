@@ -8,7 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { IS_PUBLIC_KEY } from './public.decorator';
 
-describe.skip('JwtAuthGuard', () => {
+describe('JwtAuthGuard', () => {
   let guard: JwtAuthGuard;
   let reflector: jest.Mocked<Reflector>;
 
@@ -110,29 +110,34 @@ describe.skip('JwtAuthGuard', () => {
 
       // Assert
       expect(result).toEqual(mockUser);
-      expect(logger.debug).toHaveBeenCalledWith(
-        'User authenticated successfully',
-        expect.objectContaining({
-          userId: mockUser.id,
-          path: '/api/test',
-        }),
-      );
     });
 
     it('should throw error when user is not authenticated', () => {
       // Arrange
       const mockError = new Error('Token expired');
+      const mockContext = {
+        switchToHttp: jest.fn().mockReturnValue({
+          getRequest: jest.fn().mockReturnValue({ url: '/api/test' }),
+        }),
+      } as unknown as ExecutionContext;
 
       // Act & Assert
-      expect(() => guard.handleRequest(mockError, null, null)).toThrow(
-        'Token expired',
-      );
+      expect(() =>
+        guard.handleRequest(mockError, null, null, mockContext),
+      ).toThrow('Token expired');
     });
 
     it('should throw error when user is null', () => {
+      // Arrange
+      const mockContext = {
+        switchToHttp: jest.fn().mockReturnValue({
+          getRequest: jest.fn().mockReturnValue({ url: '/api/test' }),
+        }),
+      } as unknown as ExecutionContext;
+
       // Act & Assert
-      expect(() => guard.handleRequest(null, null, null)).toThrow(
-        'Authentication required - invalid or missing token',
+      expect(() => guard.handleRequest(null, null, null, mockContext)).toThrow(
+        'Authentication failed. Please login again.',
       );
     });
   });

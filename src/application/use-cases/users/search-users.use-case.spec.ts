@@ -41,7 +41,11 @@ describe('🔍 SearchUsersUseCase', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCase = new SearchUsersUseCase(mockUserRepository as any, mockLogger as any, mockI18n as any);
+    useCase = new SearchUsersUseCase(
+      mockUserRepository as any,
+      mockLogger as any,
+      mockI18n as any,
+    );
   });
 
   const createMockUser = (
@@ -66,8 +70,18 @@ describe('🔍 SearchUsersUseCase', () => {
       );
 
       const searchResults = [
-        createMockUser('user-1', 'user1@example.com', 'User One', UserRole.USER),
-        createMockUser('user-2', 'user2@example.com', 'User Two', UserRole.MANAGER),
+        createMockUser(
+          'user-1',
+          'user1@example.com',
+          'User One',
+          UserRole.USER,
+        ),
+        createMockUser(
+          'user-2',
+          'user2@example.com',
+          'User Two',
+          UserRole.MANAGER,
+        ),
       ];
 
       const request = {
@@ -101,7 +115,7 @@ describe('🔍 SearchUsersUseCase', () => {
           email: 'user1@example.com',
           name: 'User One',
           role: UserRole.USER,
-        })
+        }),
       );
     });
 
@@ -115,7 +129,12 @@ describe('🔍 SearchUsersUseCase', () => {
       );
 
       const searchResults = [
-        createMockUser('manager-1', 'manager1@example.com', 'Manager One', UserRole.MANAGER),
+        createMockUser(
+          'manager-1',
+          'manager1@example.com',
+          'Manager One',
+          UserRole.MANAGER,
+        ),
       ];
 
       const request = {
@@ -147,7 +166,7 @@ describe('🔍 SearchUsersUseCase', () => {
         expect.objectContaining({
           id: 'manager-1',
           role: UserRole.MANAGER,
-        })
+        }),
       );
     });
   });
@@ -226,7 +245,7 @@ describe('🔍 SearchUsersUseCase', () => {
         expect.objectContaining({
           page: 1,
           limit: 20,
-        })
+        }),
       );
     });
   });

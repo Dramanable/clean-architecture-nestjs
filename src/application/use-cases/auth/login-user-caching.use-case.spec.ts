@@ -8,7 +8,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { LoginUseCase } from './login.use-case';
 
-describe.skip('LoginUseCase - User Caching', () => {
+describe('LoginUseCase - User Caching', () => {
   let useCase: LoginUseCase;
   let mockUserRepository: any;
   let mockRefreshTokenRepository: any;
@@ -121,13 +121,26 @@ describe.skip('LoginUseCase - User Caching', () => {
         hashedPassword: 'hashedPassword',
       };
 
+      const mockRefreshToken = {
+        id: 'refresh-token-123',
+        token:
+          'refresh_token_456_with_minimum_32_characters_required_for_validation',
+        userId: 'user-456',
+        hashedToken: 'hashed_refresh_token',
+        isRevoked: false,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        userAgent: 'Mozilla/5.0',
+        ipAddress: '192.168.1.1',
+      };
+
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockPasswordService.compare.mockResolvedValue(true);
       mockTokenService.generateAccessToken.mockReturnValue('access_token_123');
       mockTokenService.generateRefreshToken.mockReturnValue(
-        'refresh_token_456',
+        'refresh_token_456_with_minimum_32_characters_required_for_validation',
       );
-      mockRefreshTokenRepository.save.mockResolvedValue(undefined);
+      mockRefreshTokenRepository.save.mockResolvedValue(mockRefreshToken);
       mockCacheService.set.mockResolvedValue(undefined);
 
       // Act
@@ -187,13 +200,26 @@ describe.skip('LoginUseCase - User Caching', () => {
         hashedPassword: 'hashedPassword',
       };
 
+      const mockRefreshToken = {
+        id: 'refresh-token-123',
+        token:
+          'refresh_token_456_with_minimum_32_characters_required_for_validation',
+        userId: 'user-456',
+        hashedToken: 'hashed_refresh_token',
+        isRevoked: false,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        userAgent: 'Mozilla/5.0',
+        ipAddress: '192.168.1.1',
+      };
+
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockPasswordService.compare.mockResolvedValue(true);
       mockTokenService.generateAccessToken.mockReturnValue('access_token_123');
       mockTokenService.generateRefreshToken.mockReturnValue(
-        'refresh_token_456',
+        'refresh_token_456_with_minimum_32_characters_required_for_validation',
       );
-      mockRefreshTokenRepository.save.mockResolvedValue(undefined);
+      mockRefreshTokenRepository.save.mockResolvedValue(mockRefreshToken);
 
       // Simuler une erreur de cache
       mockCacheService.set.mockRejectedValue(
@@ -234,13 +260,26 @@ describe.skip('LoginUseCase - User Caching', () => {
         hashedPassword: 'hashedPassword',
       };
 
+      const mockRefreshToken = {
+        id: 'refresh-token-123',
+        token:
+          'refresh_token_456_with_minimum_32_characters_required_for_validation',
+        userId: 'user-456',
+        hashedToken: 'hashed_refresh_token',
+        isRevoked: false,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        userAgent: 'Mozilla/5.0',
+        ipAddress: '192.168.1.1',
+      };
+
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
       mockPasswordService.compare.mockResolvedValue(true);
       mockTokenService.generateAccessToken.mockReturnValue('access_token_123');
       mockTokenService.generateRefreshToken.mockReturnValue(
-        'refresh_token_456',
+        'refresh_token_456_with_minimum_32_characters_required_for_validation',
       );
-      mockRefreshTokenRepository.save.mockResolvedValue(undefined);
+      mockRefreshTokenRepository.save.mockResolvedValue(mockRefreshToken);
       mockCacheService.set.mockResolvedValue(undefined);
 
       // Act

@@ -197,7 +197,44 @@ export class LoginUseCase {
         );
       }
 
-      // 8. Logging de succès avec audit
+      // 8. Store user in Redis cache after successful login
+      try {
+        const userData = {
+          id: user.id,
+          email: user.email.value,
+          name: user.name,
+          role: user.role,
+          connectedAt: new Date().toISOString(),
+          userAgent: request.userAgent,
+          ipAddress: request.ipAddress,
+        };
+
+        // Store user data in Redis with configurable TTL
+        const cacheTtlMinutes = this.config.getUserSessionDurationMinutes();
+        const cacheTtlSeconds = cacheTtlMinutes * 60;
+
+        await this.cacheService.set(
+          `connected_user:${user.id}`,
+          JSON.stringify(userData),
+          cacheTtlSeconds,
+        );
+
+        this.logger.info(this.i18n.t('operations.login.user_cached'), {
+          ...operationContext,
+          userId: user.id,
+          sessionDurationMinutes: cacheTtlMinutes,
+          cacheKey: `connected_user:${user.id}`,
+        });
+      } catch (cacheError) {
+        // Don't fail the login if caching fails
+        this.logger.warn(this.i18n.t('operations.login.cache_failed'), {
+          ...operationContext,
+          userId: user.id,
+          error: (cacheError as Error).message,
+        });
+      }
+
+      // 9. Logging de succès avec audit
       const successContext = {
         ...operationContext,
         result: 'success',

@@ -1,7 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { HealthIndicator, HealthIndicatorResult } from '@nestjs/terminus';
-import { REDIS_CLIENT_TOKEN } from '../cache/cache.module';
 import { Redis } from 'ioredis';
+
+const REDIS_CLIENT_TOKEN = 'REDIS_CLIENT';
 
 /**
  * 🔴 Redis Health Indicator

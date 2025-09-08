@@ -12,16 +12,13 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import compression from 'compression';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { AppConfigService } from './infrastructure/config/app-config.service';
 import { setupSwagger } from './infrastructure/swagger/swagger.config';
 import { I18nValidationPipe } from './infrastructure/validation/i18n-validation.pipe';
-
 // Import cookie-parser avec typage correct
-import type { RequestHandler } from 'express';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const cookieParser: () => RequestHandler = require('cookie-parser');
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);

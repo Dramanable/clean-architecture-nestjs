@@ -16,7 +16,7 @@ type MockLogger = {
 };
 
 // Mock simple sans NestJS pour éviter les dépendances circulaires
-describe.skip('PasswordResetService (Simplified)', () => {
+describe('PasswordResetService (Simplified)', () => {
   let service: PasswordResetService;
   let mockUserRepository: MockUserRepository;
   let mockEmailService: MockEmailService;
@@ -55,7 +55,9 @@ describe.skip('PasswordResetService (Simplified)', () => {
 
       // Assert
       expect(result.success).toBe(true);
-      expect(result.message).toBe('If this email exists, you will receive password reset instructions.');
+      expect(result.message).toBe(
+        'If this email exists, you will receive password reset instructions.',
+      );
     });
 
     it('should return success even for non-existent email (security)', async () => {
@@ -97,7 +99,9 @@ describe.skip('PasswordResetService (Simplified)', () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Password must be at least 8 characters long');
+      expect(result.message).toBe(
+        'Password must be at least 8 characters long',
+      );
     });
   });
 });

@@ -52,6 +52,22 @@ export class AppConfigService implements IConfigService {
     return numericValue;
   }
 
+  getUserSessionDurationMinutes(): number {
+    const durationMinutes = this.configService.get<string>(
+      'USER_SESSION_DURATION_MINUTES',
+      '30',
+    );
+
+    const parsed = parseInt(durationMinutes, 10);
+    if (isNaN(parsed) || parsed <= 0) {
+      throw new Error(
+        `USER_SESSION_DURATION_MINUTES must be a positive number. Got: ${durationMinutes}`,
+      );
+    }
+
+    return parsed;
+  }
+
   getAccessTokenSecret(): string {
     const secret = this.configService.get<string>('ACCESS_TOKEN_SECRET');
     if (!secret) {

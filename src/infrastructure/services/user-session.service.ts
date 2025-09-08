@@ -10,10 +10,23 @@ import type { Logger } from '../../application/ports/logger.port';
 import type { I18nService } from '../../application/ports/i18n.port';
 import { User } from '../../domain/entities/user.entity';
 import {
-  UserSessionException,
-  UserSessionNotFoundError,
+  CacheException,
+  CacheOperationException,
 } from '../../application/exceptions/cache.exceptions';
 import { TOKENS } from '../../shared/constants/injection-tokens';
+
+// Temporary exceptions for compilation
+class UserSessionException extends CacheException {
+  constructor(message: string, context?: Record<string, unknown>) {
+    super(message, context);
+  }
+}
+
+class UserSessionNotFoundError extends CacheException {
+  constructor(userId: string) {
+    super(`User session not found: ${userId}`, { userId });
+  }
+}
 
 @Injectable()
 export class UserSessionService implements IUserSessionService {

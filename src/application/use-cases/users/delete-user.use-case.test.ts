@@ -32,13 +32,24 @@ describe('DeleteUserUseCase', () => {
   let targetUser: User;
 
   beforeEach(() => {
-    // Mock repository
+    // Mock repository - complete interface using unknown assertion
     mockUserRepository = {
       findById: jest.fn(),
       findByEmail: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
-    } as jest.Mocked<UserRepository>;
+      findAll: jest.fn(),
+      search: jest.fn(),
+      findByRole: jest.fn(),
+      emailExists: jest.fn(),
+      countSuperAdmins: jest.fn(),
+      count: jest.fn(),
+      countWithFilters: jest.fn(),
+      update: jest.fn(),
+      updateBatch: jest.fn(),
+      deleteBatch: jest.fn(),
+      export: jest.fn(),
+    } as unknown as jest.Mocked<UserRepository>;
 
     // Mock logger avec toutes les méthodes
     mockLogger = {
@@ -47,20 +58,26 @@ describe('DeleteUserUseCase', () => {
       warn: jest.fn(),
       debug: jest.fn(),
       audit: jest.fn(),
-    } as jest.Mocked<Logger>;
+      child: jest.fn().mockReturnThis(),
+    } as unknown as jest.Mocked<Logger>;
 
-    // Mock i18n
+    // Mock i18n - complete interface
     mockI18n = {
       t: jest.fn().mockReturnValue('Mocked translation'),
-    } as jest.Mocked<I18nService>;
+      translate: jest.fn().mockReturnValue('Mocked translation'),
+      setDefaultLanguage: jest.fn(),
+      exists: jest.fn().mockReturnValue(true),
+    } as unknown as jest.Mocked<I18nService>;
 
-    // Mock cache service
+    // Mock cache service - complete interface
     mockCacheService = {
       set: jest.fn(),
       get: jest.fn(),
       delete: jest.fn(),
       invalidateUserCache: jest.fn(),
-    } as jest.Mocked<ICacheService>;
+      exists: jest.fn(),
+      deletePattern: jest.fn(),
+    } as unknown as jest.Mocked<ICacheService>;
 
     deleteUserUseCase = new DeleteUserUseCase(
       mockUserRepository,
