@@ -1820,14 +1820,16 @@ export class BusinessHours {
   public readonly id: string;
   public readonly locationId: string;
   public readonly dayOfWeek: DayOfWeek; // MONDAY, TUESDAY, etc.
-  public readonly openTime: Time; // Ex: "08:00"
-  public readonly closeTime: Time; // Ex: "18:00"
-  public readonly breakStart?: Time; // Ex: "12:00" (pause déjeuner)
-  public readonly breakEnd?: Time; // Ex: "14:00"
+  public readonly isClosed: boolean; // 🔥 NOUVEAU: Jour de fermeture (lundi/mardi fermé)
+  public readonly openTime?: Time; // Ex: "08:00" - Optional si fermé
+  public readonly closeTime?: Time; // Ex: "18:00" - Optional si fermé
+  public readonly workingPeriods: WorkingPeriod[]; // 🔥 NOUVEAU: Créneaux multiples dans la journée
+  public readonly breakIntervals: BusinessBreakInterval[]; // 🔥 NOUVEAU: Pauses variables par jour
   public readonly isActive: boolean;
   public readonly effectiveFrom: Date; // Date d'entrée en vigueur
   public readonly effectiveUntil?: Date; // Date de fin (changements temporaires)
   public readonly timezone: string; // "Europe/Paris"
+  public readonly specialDayType?: SpecialDayType; // 🔥 NOUVEAU: Jour spécial
 
   // Business rules
   isOpenAt(dateTime: Date): boolean;
@@ -1836,6 +1838,81 @@ export class BusinessHours {
   isInBreakTime(time: Time): boolean;
   canAccommodateAppointment(startTime: Time, duration: number): boolean;
   getNextAvailableSlot(fromTime: Time, duration: number): Time | null;
+  hasMultipleWorkingPeriods(): boolean; // 🔥 NOUVEAU
+  getEffectiveBreaks(date: Date): BusinessBreakInterval[]; // 🔥 NOUVEAU
+}
+
+/**
+ * 🔥 NOUVEAU: Période de travail dans une journée
+ * Permet de gérer des horaires complexes comme "8h-12h puis 14h-18h"
+ */
+export class WorkingPeriod {
+  public readonly startTime: Time;
+  public readonly endTime: Time;
+  public readonly label?: string; // Ex: "Matinée", "Après-midi"
+  public readonly maxCapacity?: number; // Capacité spécifique à cette période
+  public readonly services?: string[]; // Services disponibles sur cette période
+  
+  // Business rules
+  contains(time: Time): boolean;
+  getDurationMinutes(): number;
+  overlapsWith(other: WorkingPeriod): boolean;
+  canAccommodateService(serviceId: string): boolean;
+}
+
+/**
+ * 🔥 NOUVEAU: Pause variable par jour de la semaine
+ * Une entreprise peut avoir des pauses différentes selon le jour
+ */
+export class BusinessBreakInterval {
+  public readonly id: string;
+  public readonly startTime: Time;
+  public readonly endTime: Time;
+  public readonly label: string; // Ex: "Pause déjeuner", "Pause café", "Réunion équipe"
+  public readonly breakType: BreakType;
+  public readonly isRecurring: boolean; // Si c'est une pause régulière
+  public readonly frequency?: BreakFrequency; // Daily, Weekly, Monthly
+  public readonly applicableDays: DayOfWeek[]; // 🔥 NOUVEAU: Jours où cette pause s'applique
+  public readonly exceptions?: Date[]; // Dates où la pause ne s'applique pas
+  public readonly isFlexible: boolean; // Peut être décalée/supprimée si nécessaire
+  public readonly priority: BreakPriority; // Importance de la pause
+  
+  // Business rules
+  isApplicableOn(date: Date): boolean; // 🔥 NOUVEAU
+  canBeMovedFor(urgency: UrgencyLevel): boolean;
+  conflictsWith(appointment: Appointment): boolean;
+}
+
+enum SpecialDayType {
+  NORMAL = 'NORMAL',
+  REDUCED_HOURS = 'REDUCED_HOURS', // Horaires réduits (veilles de fête, etc.)
+  EXTENDED_HOURS = 'EXTENDED_HOURS', // Horaires étendus (événements spéciaux)
+  CLOSED = 'CLOSED', // Fermé exceptionnel
+  MAINTENANCE = 'MAINTENANCE' // Maintenance programmée
+}
+
+enum BreakType {
+  LUNCH = 'LUNCH', // Pause déjeuner
+  COFFEE = 'COFFEE', // Pause café
+  MEETING = 'MEETING', // Réunion équipe
+  CLEANING = 'CLEANING', // Nettoyage/désinfection
+  ADMINISTRATIVE = 'ADMINISTRATIVE', // Tâches administratives
+  TRAINING = 'TRAINING', // Formation personnel
+  MAINTENANCE = 'MAINTENANCE' // Maintenance équipements
+}
+
+enum BreakFrequency {
+  DAILY = 'DAILY', // Tous les jours
+  WEEKLY = 'WEEKLY', // Une fois par semaine
+  MONTHLY = 'MONTHLY', // Une fois par mois
+  CUSTOM = 'CUSTOM' // Fréquence personnalisée
+}
+
+enum BreakPriority {
+  LOW = 1, // Peut être supprimée en cas d'urgence
+  MEDIUM = 2, // Peut être déplacée
+  HIGH = 3, // Obligatoire, ne peut pas être modifiée
+  CRITICAL = 4 // Légale/sécurité - jamais modifiable
 }
 
 enum DayOfWeek {
@@ -1857,12 +1934,16 @@ export class WorkingHours {
   public readonly staffId: string;
   public readonly locationId: string;
   public readonly dayOfWeek: DayOfWeek;
-  public readonly startTime: Time;
-  public readonly endTime: Time;
-  public readonly breakIntervals: BreakInterval[];
+  public readonly isWorkingDay: boolean; // 🔥 NOUVEAU: Staff peut ne pas travailler certains jours
+  public readonly startTime?: Time; // Optional si pas de travail ce jour
+  public readonly endTime?: Time; // Optional si pas de travail ce jour
+  public readonly workingPeriods: StaffWorkingPeriod[]; // 🔥 NOUVEAU: Périodes de travail multiples
+  public readonly personalBreaks: PersonalBreakInterval[]; // 🔥 NOUVEAU: Pauses personnelles variables
   public readonly maxConsecutiveHours: number; // Ex: 6h max d'affilée
   public readonly minBreakBetweenAppointments: number; // Ex: 10min minimum
   public readonly preferredSlotDuration: number; // Ex: 30min par défaut
+  public readonly overtimeAllowed: boolean; // 🔥 NOUVEAU: Heures supplémentaires autorisées
+  public readonly maxOvertimeHours: number; // 🔥 NOUVEAU: Max heures supp par jour
   public readonly isActive: boolean;
   public readonly effectiveFrom: Date;
   public readonly effectiveUntil?: Date;
@@ -1874,20 +1955,74 @@ export class WorkingHours {
   needsBreakAfter(currentTime: Date): boolean;
   calculateEndTimeWithBreaks(startTime: Date, serviceDuration: number): Date;
   hasConflictWith(appointment: Appointment): boolean;
+  getEffectiveBreaksForDay(date: Date): PersonalBreakInterval[]; // 🔥 NOUVEAU
+  canExtendWorkingHours(requestedEndTime: Time): boolean; // 🔥 NOUVEAU
+  getTotalWorkingHoursForDay(): number; // 🔥 NOUVEAU
 }
 
-export class BreakInterval {
+/**
+ * 🔥 NOUVEAU: Période de travail pour un employé
+ * Permet des horaires complexes comme "8h-12h pause 14h-17h"
+ */
+export class StaffWorkingPeriod {
   public readonly startTime: Time;
   public readonly endTime: Time;
-  public readonly isFlexible: boolean; // Peut être déplacée si nécessaire
-  public readonly reason: BreakReason;
+  public readonly services: string[]; // Services que l'employé peut faire sur cette période
+  public readonly maxAppointments?: number; // Limite RDV sur cette période
+  public readonly priority: number; // Préférence de l'employé (1=préféré, 5=moins préféré)
+  
+  // Business rules
+  contains(time: Time): boolean;
+  getDurationMinutes(): number;
+  canHandleService(serviceId: string): boolean;
+  hasCapacityFor(additionalAppointments: number): boolean;
 }
 
-enum BreakReason {
-  LUNCH = 'LUNCH',
-  COFFEE = 'COFFEE',
-  ADMINISTRATIVE = 'ADMINISTRATIVE',
-  TRAVEL_BETWEEN_LOCATIONS = 'TRAVEL_BETWEEN_LOCATIONS'
+/**
+ * 🔥 NOUVEAU: Pause personnelle variable par jour pour chaque employé
+ * Chaque employé peut avoir des pauses différentes selon ses contraintes
+ */
+export class PersonalBreakInterval {
+  public readonly id: string;
+  public readonly staffId: string;
+  public readonly startTime: Time;
+  public readonly endTime: Time;
+  public readonly label: string; // Ex: "Rendez-vous médical", "Formation", "Pause déjeuner prolongée"
+  public readonly breakType: PersonalBreakType;
+  public readonly applicableDays: DayOfWeek[]; // 🔥 NOUVEAU: Jours où cette pause s'applique
+  public readonly isRegular: boolean; // Pause récurrente ou ponctuelle
+  public readonly canBeInterrupted: boolean; // Peut être interrompue pour urgence
+  public readonly isFlexible: boolean; // Peut être déplacée dans la journée
+  public readonly flexibilityWindow: number; // +/- minutes de flexibilité
+  public readonly reason?: string; // Raison spécifique (médical, personnel, etc.)
+  public readonly managerApprovalRequired: boolean; // Nécessite validation manager
+  public readonly effectiveFrom: Date;
+  public readonly effectiveUntil?: Date;
+
+  // Business rules
+  isApplicableOn(date: Date): boolean; // 🔥 NOUVEAU
+  canBeMoved(newStartTime: Time, reason: UrgencyLevel): boolean;
+  conflictsWith(appointment: Appointment): boolean;
+  getFlexibleTimeRange(): { earliest: Time; latest: Time };
+}
+
+enum PersonalBreakType {
+  LUNCH = 'LUNCH', // Pause déjeuner
+  COFFEE = 'COFFEE', // Pause café
+  MEDICAL = 'MEDICAL', // Rendez-vous médical
+  TRAINING = 'TRAINING', // Formation
+  ADMINISTRATIVE = 'ADMINISTRATIVE', // Tâches admin
+  TRAVEL_BETWEEN_LOCATIONS = 'TRAVEL_BETWEEN_LOCATIONS', // Trajet inter-sites
+  PERSONAL = 'PERSONAL', // Raison personnelle
+  UNION_MEETING = 'UNION_MEETING', // Réunion syndicale
+  TEAM_MEETING = 'TEAM_MEETING' // Réunion équipe
+}
+
+enum UrgencyLevel {
+  LOW = 1,
+  MEDIUM = 2,
+  HIGH = 3,
+  EMERGENCY = 4
 }
 ```
 
@@ -2121,6 +2256,410 @@ export interface ScheduleWarning {
 2. **Minimisation trajets** : Optimisation automatique planning mobile
 3. **Utilisation maximale** : Proposition créneaux adjacents
 4. **Capacité partagée** : Mutualisation équipements entre services
+
+### 🏢 **Cas d'Usage Horaires Complexes Enterprise**
+
+#### **📅 Exemple 1: Salon de Coiffure - Fermeture Lundi/Mardi**
+
+```typescript
+// Configuration: Fermé lundi et mardi, horaires variables autres jours
+const businessHours: BusinessHours[] = [
+  // Lundi - Fermé
+  {
+    locationId: "salon-centre-ville",
+    dayOfWeek: DayOfWeek.MONDAY,
+    isClosed: true, // 🔥 Fermé ce jour
+    workingPeriods: [],
+    breakIntervals: []
+  },
+  
+  // Mardi - Fermé 
+  {
+    locationId: "salon-centre-ville", 
+    dayOfWeek: DayOfWeek.TUESDAY,
+    isClosed: true, // 🔥 Fermé ce jour
+    workingPeriods: [],
+    breakIntervals: []
+  },
+  
+  // Mercredi - Horaires normaux avec pause déjeuner
+  {
+    locationId: "salon-centre-ville",
+    dayOfWeek: DayOfWeek.WEDNESDAY,
+    isClosed: false,
+    workingPeriods: [
+      { startTime: "09:00", endTime: "12:00", label: "Matinée" },
+      { startTime: "14:00", endTime: "18:00", label: "Après-midi" }
+    ],
+    breakIntervals: [
+      {
+        startTime: "12:00",
+        endTime: "14:00", 
+        label: "Pause déjeuner",
+        breakType: BreakType.LUNCH,
+        applicableDays: [DayOfWeek.WEDNESDAY],
+        isFlexible: false,
+        priority: BreakPriority.HIGH
+      }
+    ]
+  },
+  
+  // Samedi - Horaires étendus sans pause
+  {
+    locationId: "salon-centre-ville",
+    dayOfWeek: DayOfWeek.SATURDAY,
+    isClosed: false,
+    workingPeriods: [
+      { startTime: "08:00", endTime: "19:00", label: "Journée continue" }
+    ],
+    breakIntervals: [
+      {
+        startTime: "13:00",
+        endTime: "13:30",
+        label: "Pause courte équipe",
+        breakType: BreakType.COFFEE,
+        applicableDays: [DayOfWeek.SATURDAY],
+        isFlexible: true, // 🔥 Peut être décalée
+        priority: BreakPriority.MEDIUM
+      }
+    ]
+  }
+];
+```
+
+#### **📅 Exemple 2: Cabinet Médical - Pauses Variables par Médecin**
+
+```typescript
+// Dr. Martin - Spécialiste, pauses courtes
+const drMartinSchedule: WorkingHours = {
+  staffId: "dr-martin",
+  dayOfWeek: DayOfWeek.THURSDAY,
+  isWorkingDay: true,
+  workingPeriods: [
+    { 
+      startTime: "08:00", 
+      endTime: "12:30", 
+      services: ["consultation-specialiste"],
+      maxAppointments: 8
+    },
+    {
+      startTime: "14:00",
+      endTime: "17:30",
+      services: ["consultation-specialiste", "urgences"],
+      maxAppointments: 6
+    }
+  ],
+  personalBreaks: [
+    {
+      startTime: "10:30",
+      endTime: "10:45",
+      label: "Pause café matinale",
+      breakType: PersonalBreakType.COFFEE,
+      applicableDays: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.THURSDAY],
+      isFlexible: true,
+      flexibilityWindow: 15 // +/- 15 minutes
+    },
+    {
+      startTime: "12:30", 
+      endTime: "14:00",
+      label: "Pause déjeuner + administratif",
+      breakType: PersonalBreakType.LUNCH,
+      applicableDays: [DayOfWeek.THURSDAY],
+      isFlexible: false, // Fixe
+      canBeInterrupted: true // Peut être interrompue pour urgence
+    },
+    {
+      startTime: "16:00",
+      endTime: "16:15", 
+      label: "Appels patients",
+      breakType: PersonalBreakType.ADMINISTRATIVE,
+      applicableDays: [DayOfWeek.THURSDAY],
+      isFlexible: true,
+      flexibilityWindow: 30
+    }
+  ]
+};
+
+// Infirmière - Horaires continus, pauses réglementaires
+const nurseSchedule: WorkingHours = {
+  staffId: "nurse-sophie",
+  dayOfWeek: DayOfWeek.THURSDAY,
+  isWorkingDay: true,
+  workingPeriods: [
+    {
+      startTime: "07:30",
+      endTime: "16:30", // 8h continues
+      services: ["soins-infirmiers", "prise-sang", "vaccinations"],
+      maxAppointments: 20
+    }
+  ],
+  personalBreaks: [
+    {
+      startTime: "10:00",
+      endTime: "10:15",
+      label: "Pause réglementaire matin",
+      breakType: PersonalBreakType.COFFEE,
+      applicableDays: [DayOfWeek.THURSDAY],
+      isFlexible: false, // Obligatoire légalement
+      priority: BreakPriority.CRITICAL
+    },
+    {
+      startTime: "12:00",
+      endTime: "12:45",
+      label: "Pause déjeuner",
+      breakType: PersonalBreakType.LUNCH,
+      applicableDays: [DayOfWeek.THURSDAY],
+      isFlexible: true,
+      flexibilityWindow: 30
+    },
+    {
+      startTime: "14:30",
+      endTime: "14:45", 
+      label: "Pause réglementaire après-midi",
+      breakType: PersonalBreakType.COFFEE,
+      applicableDays: [DayOfWeek.THURSDAY],
+      isFlexible: false,
+      priority: BreakPriority.CRITICAL
+    }
+  ]
+};
+```
+
+#### **📅 Exemple 3: Centre Multi-Services - Pauses par Type d'Activité**
+
+```typescript
+// Vendredi - Journée spéciale avec formation équipe
+const businessHoursFriday: BusinessHours = {
+  locationId: "centre-multi-services",
+  dayOfWeek: DayOfWeek.FRIDAY,
+  isClosed: false,
+  specialDayType: SpecialDayType.REDUCED_HOURS,
+  workingPeriods: [
+    { 
+      startTime: "09:00", 
+      endTime: "17:00", 
+      label: "Journée formation + services",
+      services: ["services-urgents-uniquement"]
+    }
+  ],
+  breakIntervals: [
+    {
+      startTime: "10:30",
+      endTime: "11:00",
+      label: "Formation équipe - Module 1",
+      breakType: BreakType.TRAINING,
+      applicableDays: [DayOfWeek.FRIDAY],
+      isFlexible: false,
+      priority: BreakPriority.HIGH
+    },
+    {
+      startTime: "12:00",
+      endTime: "13:30",
+      label: "Déjeuner + Formation Module 2", 
+      breakType: BreakType.TRAINING,
+      applicableDays: [DayOfWeek.FRIDAY],
+      isFlexible: false,
+      priority: BreakPriority.HIGH
+    },
+    {
+      startTime: "15:30",
+      endTime: "16:00",
+      label: "Nettoyage approfondi hebdomadaire",
+      breakType: BreakType.CLEANING,
+      applicableDays: [DayOfWeek.FRIDAY],
+      isFlexible: true,
+      flexibilityWindow: 60,
+      priority: BreakPriority.MEDIUM
+    }
+  ]
+};
+```
+
+### 🔧 **Algorithmes de Gestion Horaires Complexes**
+
+#### **🧠 ComplexScheduleManager - Gestionnaire Horaires Avancé**
+
+```typescript
+export class ComplexScheduleManager {
+  
+  /**
+   * Détermine si un créneau est disponible en tenant compte de tous les facteurs
+   */
+  isSlotAvailable(
+    requestedTime: Date,
+    duration: number,
+    serviceId: string,
+    staffId: string,
+    locationId: string
+  ): SlotAvailabilityResult {
+    
+    const dayOfWeek = requestedTime.getDay();
+    
+    // 1. Vérifier si le site est ouvert ce jour
+    const businessHours = this.getBusinessHours(locationId, dayOfWeek);
+    if (businessHours.isClosed) {
+      return {
+        available: false,
+        reason: "LOCATION_CLOSED",
+        suggestedAlternatives: this.findAlternativeDays(locationId, serviceId)
+      };
+    }
+    
+    // 2. Vérifier si l'employé travaille ce jour
+    const staffHours = this.getStaffWorkingHours(staffId, dayOfWeek);
+    if (!staffHours.isWorkingDay) {
+      return {
+        available: false,
+        reason: "STAFF_NOT_WORKING",
+        suggestedAlternatives: this.findStaffAlternatives(staffId, serviceId, requestedTime)
+      };
+    }
+    
+    // 3. Vérifier les périodes de travail du site
+    const siteWorkingPeriods = businessHours.workingPeriods;
+    const isInSiteWorkingPeriod = siteWorkingPeriods.some(period => 
+      this.timeInPeriod(requestedTime, period) && 
+      this.canFitDuration(requestedTime, duration, period)
+    );
+    
+    if (!isInSiteWorkingPeriod) {
+      return {
+        available: false,
+        reason: "OUTSIDE_WORKING_PERIODS",
+        suggestedAlternatives: this.findNearestWorkingPeriods(requestedTime, businessHours)
+      };
+    }
+    
+    // 4. Vérifier les périodes de travail du staff
+    const staffWorkingPeriods = staffHours.workingPeriods;
+    const canStaffWork = staffWorkingPeriods.some(period =>
+      this.timeInPeriod(requestedTime, period) &&
+      period.canHandleService(serviceId) &&
+      this.canFitDuration(requestedTime, duration, period)
+    );
+    
+    if (!canStaffWork) {
+      return {
+        available: false,
+        reason: "STAFF_UNAVAILABLE",
+        suggestedAlternatives: this.findStaffAvailablePeriods(staffId, requestedTime)
+      };
+    }
+    
+    // 5. Vérifier les pauses du site (formation, nettoyage, etc.)
+    const siteBreaks = this.getEffectiveBreaks(businessHours, requestedTime);
+    const conflictsWithSiteBreak = siteBreaks.some(breakInterval =>
+      this.timeOverlaps(requestedTime, duration, breakInterval) &&
+      !this.canBreakBeMoved(breakInterval, UrgencyLevel.MEDIUM)
+    );
+    
+    if (conflictsWithSiteBreak) {
+      return {
+        available: false,
+        reason: "SITE_BREAK_CONFLICT",
+        conflictingBreak: conflictsWithSiteBreak,
+        suggestedAlternatives: this.findSlotsAroundBreaks(requestedTime, siteBreaks)
+      };
+    }
+    
+    // 6. Vérifier les pauses personnelles du staff
+    const personalBreaks = this.getEffectivePersonalBreaks(staffHours, requestedTime);
+    const conflictsWithPersonalBreak = personalBreaks.some(breakInterval =>
+      this.timeOverlaps(requestedTime, duration, breakInterval) &&
+      !breakInterval.canBeMoved(requestedTime, UrgencyLevel.MEDIUM)
+    );
+    
+    if (conflictsWithPersonalBreak) {
+      return {
+        available: false,
+        reason: "PERSONAL_BREAK_CONFLICT",
+        conflictingBreak: conflictsWithPersonalBreak,
+        suggestedAlternatives: this.negotiateBreakFlexibility(
+          conflictsWithPersonalBreak, 
+          requestedTime, 
+          duration
+        )
+      };
+    }
+    
+    // 7. Vérifier les RDV existants et capacité
+    const existingAppointments = this.getExistingAppointments(staffId, requestedTime);
+    const hasCapacity = this.checkCapacity(
+      requestedTime, 
+      duration, 
+      serviceId, 
+      existingAppointments,
+      staffHours,
+      businessHours
+    );
+    
+    if (!hasCapacity.available) {
+      return {
+        available: false,
+        reason: "NO_CAPACITY",
+        currentLoad: hasCapacity.currentLoad,
+        maxCapacity: hasCapacity.maxCapacity,
+        suggestedAlternatives: this.findLowerLoadSlots(requestedTime, staffId, serviceId)
+      };
+    }
+    
+    return {
+      available: true,
+      confidence: this.calculateConfidence(requestedTime, staffId, serviceId),
+      flexibilityOptions: this.getFlexibilityOptions(requestedTime, duration, staffId)
+    };
+  }
+  
+  /**
+   * Trouve les meilleurs créneaux alternatifs en cas d'indisponibilité
+   */
+  findBestAlternatives(
+    originalRequest: SlotRequest,
+    constraints: ScheduleConstraints
+  ): AlternativeSlot[] {
+    const alternatives: AlternativeSlot[] = [];
+    
+    // Recherche dans la même journée
+    const sameDaySlots = this.findAlternativesInSameDay(originalRequest);
+    alternatives.push(...sameDaySlots);
+    
+    // Recherche dans les jours suivants
+    const nextDaysSlots = this.findAlternativesInNextDays(originalRequest, 7);
+    alternatives.push(...nextDaysSlots);
+    
+    // Recherche avec d'autres membres du personnel
+    const alternativeStaffSlots = this.findAlternativesWithOtherStaff(originalRequest);
+    alternatives.push(...alternativeStaffSlots);
+    
+    // Recherche dans d'autres sites
+    const otherLocationSlots = this.findAlternativesInOtherLocations(originalRequest);
+    alternatives.push(...otherLocationSlots);
+    
+    // Tri par pertinence
+    return alternatives
+      .sort((a, b) => b.score - a.score)
+      .slice(0, constraints.maxAlternatives || 5);
+  }
+}
+
+export interface SlotAvailabilityResult {
+  available: boolean;
+  reason?: string;
+  suggestedAlternatives?: AlternativeSlot[];
+  conflictingBreak?: BusinessBreakInterval | PersonalBreakInterval;
+  confidence?: number;
+  flexibilityOptions?: FlexibilityOption[];
+}
+
+export interface AlternativeSlot {
+  dateTime: Date;
+  staffId: string;
+  locationId: string;
+  score: number; // Score de pertinence (0-100)
+  differences: string[]; // Ce qui change par rapport à la demande originale
+  advantages?: string[]; // Avantages de ce créneau
+}
+```
 
 ---
 

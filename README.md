@@ -1,7 +1,39 @@
 # 🏢 **API Backend - Gestion de Rendez-vous Enterprise**
 
 <p align="center">
-  <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="NestJS Logo" />
+  <img src="https://nestjs.com/iPUT /admin/services/:id/timing      # Configuration durées service
+```
+
+## ⏰ **Gestion Horaires Complexes Enterprise**
+
+### 🏢 **Horaires Variables par Jour**
+- **Jours de fermeture** configurables (ex: fermé lundi/mardi)  
+- **Horaires différents** par jour de la semaine
+- **Périodes multiples** dans une journée (ex: 8h-12h puis 14h-18h)
+- **Pauses variables** selon le jour et l'activité
+
+### 👥 **Planning Personnel Flexible**
+- **Horaires individuels** par employé et par site
+- **Pauses personnelles** configurables par jour
+- **Jours de congé** et disponibilités variables
+- **Heures supplémentaires** avec limites configurables
+
+### 📅 **Cas d'Usage Supportés**
+```typescript
+// Salon fermé lundi/mardi
+{ dayOfWeek: MONDAY, isClosed: true }
+
+// Médecin avec pauses spécialisées
+{ personalBreaks: [
+  { startTime: "10:30", breakType: "COFFEE", isFlexible: true },
+  { startTime: "12:30", breakType: "LUNCH", canBeInterrupted: true }
+]}
+
+// Formation équipe le vendredi
+{ breakType: "TRAINING", applicableDays: [FRIDAY], priority: HIGH }
+```
+
+## 🏛️ **Architecture Clean Architecture**ogo-small.svg" width="120" alt="NestJS Logo" />
 </p>
 
 <p align="center">
