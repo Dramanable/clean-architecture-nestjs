@@ -1,10 +1,20 @@
 {
-  "name": "testingcleanarchi",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "name": "enterprise-appointment-system",
+  "version": "1.0.0",
+  "description": "Application d'entreprise pour la gestion intelligente des rendez-vous avec Clean Architecture",
+  "author": "Enterprise Development Team",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "keywords": [
+    "appointment-booking",
+    "enterprise-application",
+    "clean-architecture",
+    "nestjs",
+    "typescript",
+    "calendar-management",
+    "staff-management",
+    "multi-channel-notifications"
+  ],
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
