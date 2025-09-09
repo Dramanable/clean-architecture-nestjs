@@ -1,7 +1,25 @@
 /**
  * 🎨 PRESENTATION LAYER - User Controller avec Clean Architecture + Swagger
  *
- * Contrôleur NestJS qui respecte la Clean Architecture avec documentation OpenAPI
+ * Contrôleur NestJS qui respecte la Clean   })
+  async createUser(
+    @Body() createUserDto: CreateUserDto,
+    @CurrentUserId() currentUserId: string,
+  ): Promise<any> {
+    this.logger.info('🎯 HTTP POST /users - Create user request', {
+      operation: 'HTTP_CreateUser',
+      requestData: createUserDto,
+    });
+
+    try {
+      // 🎯 NOUVEAU : Utilisation du service d'orchestration au lieu du use case direct
+      const result = await this.userOnboardingService.createUserWithOnboarding({
+        requestingUserId: currentUserId, // ✅ Utilisateur authentifié depuis le JWT
+        email: createUserDto.email,
+        name: createUserDto.name,
+        role: createUserDto.role,
+        sendWelcomeEmail: createUserDto.sendWelcomeEmail ?? true, // Par défaut : envoi email
+      });ec documentation OpenAPI
  * Injection des dépendances au niveau présentation uniquement
  */
 
@@ -17,9 +35,8 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
-  Req,
+  UseGuards,
 } from '@nestjs/common';
-import type { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -39,6 +56,8 @@ import { DeleteUserUseCase } from '../../application/use-cases/users/delete-user
 import type { UserRepository } from '../../domain/repositories/user.repository';
 import { TOKENS } from '../../shared/constants/injection-tokens';
 import { ApiErrorResponseDto } from '../dtos/common.dto';
+import { CurrentUserId } from '../decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../infrastructure/security/jwt-auth.guard';
 import {
   CreateUserDto,
   UserResponseDto,
@@ -49,6 +68,7 @@ import { SearchUsersSimpleDto } from '../dtos/search-users.dto';
 @ApiTags('users')
 @Controller('users')
 @ApiBearerAuth('JWT-auth')
+@UseGuards(JwtAuthGuard) // ✅ Protection JWT pour toutes les routes
 export class UserController {
   private readonly getUserUseCase: GetUserUseCase;
   private readonly searchUsersUseCase: SearchUsersUseCase;
@@ -124,6 +144,7 @@ export class UserController {
   })
   async createUser(
     @Body() createUserDto: CreateUserDto,
+    @CurrentUserId() currentUserId: string,
   ): Promise<UserResponseDto> {
     this.logger.info('🎯 HTTP POST /users - Create user request', {
       operation: 'HTTP_CreateUser',
@@ -133,7 +154,7 @@ export class UserController {
     try {
       // 🎯 NOUVEAU : Utilisation du service d'orchestration au lieu du use case direct
       const result = await this.userOnboardingService.createUserWithOnboarding({
-        requestingUserId: 'system', // À récupérer du JWT en réalité
+        requestingUserId: currentUserId, // ✅ Utilisateur authentifié depuis le JWT
         email: createUserDto.email,
         name: createUserDto.name,
         role: createUserDto.role,
@@ -192,6 +213,7 @@ export class UserController {
   })
   async getUser(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUserId() currentUserId: string,
   ): Promise<UserResponseDto> {
     this.logger.info('🎯 HTTP GET /users/:id - Get user request', {
       operation: 'HTTP_GetUser',
@@ -200,7 +222,7 @@ export class UserController {
 
     try {
       const result = await this.getUserUseCase.execute({
-        requestingUserId: 'system', // À récupérer du JWT en réalité
+        requestingUserId: currentUserId, // ✅ Utilisateur authentifié depuis le JWT
         userId: id,
       });
 
@@ -293,7 +315,10 @@ export class UserController {
     status: 400,
     description: 'Paramètres de recherche invalides',
   })
-  async searchUsers(@Body() searchDto: SearchUsersSimpleDto): Promise<any> {
+  async searchUsers(
+    @Body() searchDto: SearchUsersSimpleDto,
+    @CurrentUserId() currentUserId: string,
+  ): Promise<any> {
     this.logger.info('🎯 HTTP POST /users/search - Search users request', {
       operation: 'HTTP_SearchUsers',
       requestData: searchDto,
@@ -301,7 +326,7 @@ export class UserController {
 
     try {
       const result = await this.searchUsersUseCase.execute({
-        requestingUserId: 'system', // TODO: À récupérer du JWT
+        requestingUserId: currentUserId, // ✅ Utilisateur authentifié depuis le JWT
         searchTerm: searchDto.searchTerm,
         roles: searchDto.roles,
         isActive: searchDto.isActive,
@@ -413,7 +438,7 @@ export class UserController {
   async updateUser(
     @Param('id', ParseUUIDPipe) userId: string,
     @Body() updateDto: UpdateUserDto,
-    @Req() request: Request,
+    @CurrentUserId() currentUserId: string,
   ): Promise<UserResponseDto> {
     this.logger.info('🎯 HTTP PUT /users/:id - Update user request', {
       operation: 'HTTP_UpdateUser',
@@ -427,8 +452,7 @@ export class UserController {
         name: updateDto.name,
         role: updateDto.role,
         passwordChangeRequired: updateDto.passwordChangeRequired,
-        requestingUserId: (request as Request & { user: { sub: string } }).user
-          .sub,
+        requestingUserId: currentUserId, // ✅ Utilisateur authentifié depuis le JWT
       });
       this.logger.info('✅ HTTP PUT /users/:id - User updated successfully', {
         operation: 'HTTP_UpdateUser',
@@ -501,7 +525,10 @@ export class UserController {
     status: 403,
     description: 'Accès interdit - SUPER_ADMIN requis',
   })
-  async deleteUser(@Param('id', ParseUUIDPipe) userId: string): Promise<void> {
+  async deleteUser(
+    @Param('id', ParseUUIDPipe) userId: string,
+    @CurrentUserId() currentUserId: string,
+  ): Promise<void> {
     this.logger.info('🎯 HTTP DELETE /users/:id - Delete user request', {
       operation: 'HTTP_DeleteUser',
       userId,
@@ -509,7 +536,7 @@ export class UserController {
 
     try {
       await this.deleteUserUseCase.execute({
-        requestingUserId: 'system', // TODO: À récupérer du JWT
+        requestingUserId: currentUserId, // ✅ Utilisateur authentifié depuis le JWT
         userId: userId,
       });
 
