@@ -126,7 +126,9 @@ describe('RefreshTokenUseCase (TDD)', () => {
       // Assert
       expect(result.success).toBe(true);
       expect(result.tokens.accessToken).toBe('new_access_token');
-      expect(result.tokens.refreshToken).toBe('new_refresh_token_with_minimum_32_chars_length');
+      expect(result.tokens.refreshToken).toBe(
+        'new_refresh_token_with_minimum_32_chars_length',
+      );
       expect(result.user.id).toBe('user-456');
       expect(mockRefreshTokenRepository.findByToken).toHaveBeenCalledWith(
         request.refreshToken,

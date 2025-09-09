@@ -37,8 +37,8 @@
     "*.config.js",
     ".commitlintrc.js",
     "jest.config.js",
-    "scripts/test-mongo-migration.ts",
+    "scripts/**/*.ts",
     "src/infrastructure/database/migrations/nosql/**/*.ts",
-    "src/infrastructure/database/migrations/nosql/mongo-migration-runner-enterprise.ts"
+    "src/infrastructure/database/modules/dynamic-repository.module.ts"
   ]
 }

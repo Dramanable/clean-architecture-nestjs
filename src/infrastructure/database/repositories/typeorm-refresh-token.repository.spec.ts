@@ -66,7 +66,7 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
     it('should find refresh token by token string', async () => {
       // Arrange
       const tokenString = 'refresh_token_123';
-      
+
       // Simuler la méthode hashToken pour obtenir le hash attendu
       let hash = 0;
       for (let i = 0; i < tokenString.length; i++) {
@@ -75,7 +75,7 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
         hash = hash & hash; // Convert to 32-bit integer
       }
       const expectedTokenHash = `hash_${Math.abs(hash).toString(16)}`;
-      
+
       const mockEntity = {
         id: 'token-id-456',
         tokenHash: expectedTokenHash,

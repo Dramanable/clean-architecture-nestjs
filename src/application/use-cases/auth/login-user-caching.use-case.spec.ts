@@ -4,6 +4,11 @@
  * Test spécifique pour valider que l'utilisateur est mis en cache après login
  */
 
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { LoginUseCase } from './login.use-case';

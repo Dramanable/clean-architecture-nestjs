@@ -19,9 +19,7 @@ export class PasswordResetService {
     @Inject(TOKENS.LOGGER) private readonly logger: Logger,
   ) {}
 
-  async requestPasswordReset(
-    email: string,
-  ): Promise<{ success: boolean; message: string }> {
+  requestPasswordReset(email: string): { success: boolean; message: string } {
     try {
       (this.logger as { info: (msg: string) => void }).info(
         `Password reset requested for: ${email}`,
@@ -47,10 +45,10 @@ export class PasswordResetService {
     }
   }
 
-  async resetPassword(
+  resetPassword(
     token: string,
     newPassword: string,
-  ): Promise<{ success: boolean; message: string }> {
+  ): { success: boolean; message: string } {
     try {
       if (newPassword.length < 8) {
         return {
@@ -74,7 +72,7 @@ export class PasswordResetService {
       );
       return {
         success: false,
-        message: 'Failed to reset password. Please try again.',
+        message: 'Password reset failed. Please try again.',
       };
     }
   }

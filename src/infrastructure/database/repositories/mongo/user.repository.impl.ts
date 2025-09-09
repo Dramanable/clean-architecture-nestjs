@@ -136,7 +136,7 @@ export class MongoUserRepository implements UserRepository {
   async export(params?: UserQueryParams): Promise<DomainUser[]> {
     // Utilise l'agrégation pour un export optimal avec indexes
     const pipeline: PipelineStage[] = [];
-    
+
     // Stage 1: Match/Filter
     const matchStage: Record<string, unknown> = {};
     if (params?.filters?.role) matchStage.role = params.filters.role;
@@ -146,14 +146,14 @@ export class MongoUserRepository implements UserRepository {
         { email: { $regex: params.search.query, $options: 'i' } },
       ];
     }
-    
+
     if (Object.keys(matchStage).length > 0) {
       pipeline.push({ $match: matchStage });
     }
-    
+
     // Stage 2: Sort pour ordre cohérent
     pipeline.push({ $sort: { createdAt: -1 } });
-    
+
     // Stage 3: Project pour optimiser les données exportées
     pipeline.push({
       $project: {
@@ -167,7 +167,7 @@ export class MongoUserRepository implements UserRepository {
         updatedAt: 1,
       },
     });
-    
+
     const users = await this.userModel.aggregate<UserDocument>(pipeline).exec();
     return users.map((user) => this.mongoToDomain(user));
   }

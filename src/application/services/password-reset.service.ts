@@ -46,10 +46,7 @@ export class PasswordResetService {
   /**
    * Initie le processus de réinitialisation de mot de passe
    */
-  async requestPasswordReset(
-    email: Email,
-    _lang = 'en',
-  ): Promise<PasswordResetResult> {
+  async requestPasswordReset(email: Email): Promise<PasswordResetResult> {
     this.logger.log('Attempting to initiate password reset');
 
     // Trouve l'utilisateur
@@ -102,10 +99,7 @@ export class PasswordResetService {
   /**
    * Valide un token de réinitialisation
    */
-  async validateResetToken(
-    token: string,
-    _lang = 'en',
-  ): Promise<TokenValidationResult> {
+  async validateResetToken(token: string): Promise<TokenValidationResult> {
     const resetToken = await this.tokenRepository.findByToken(token);
 
     if (!resetToken) {
@@ -134,10 +128,9 @@ export class PasswordResetService {
   async confirmPasswordReset(
     token: string,
     newPassword: string,
-    _lang = 'en',
   ): Promise<PasswordResetResult> {
     // Valide le token
-    const validation = await this.validateResetToken(token, _lang);
+    const validation = await this.validateResetToken(token);
     if (!validation.isValid) {
       return {
         success: false,

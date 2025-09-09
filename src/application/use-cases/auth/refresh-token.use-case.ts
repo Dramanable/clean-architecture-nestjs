@@ -194,7 +194,7 @@ export class RefreshTokenUseCase {
           Date.now() +
             this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
         );
-        
+
         // Créer une entité domain RefreshToken
         const newRefreshTokenEntity = new RefreshToken(
           user.id,
@@ -204,7 +204,7 @@ export class RefreshTokenUseCase {
           request.userAgent,
           request.ipAddress,
         );
-        
+
         await this.refreshTokenRepository.save(newRefreshTokenEntity);
       } catch (error) {
         this.logger.error(

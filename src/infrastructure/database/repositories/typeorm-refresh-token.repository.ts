@@ -38,7 +38,7 @@ export class TypeOrmRefreshTokenRepository {
     try {
       // Hash le token avant de le chercher en base
       const hashedToken = this.hashToken(token);
-      
+
       const result = await this.repository.findOne({
         where: { tokenHash: hashedToken },
       });
@@ -48,7 +48,7 @@ export class TypeOrmRefreshTokenRepository {
           this.i18n.t('operations.refresh_token.lookup_success'),
           { ...context, tokenId: result.id, userId: result.userId },
         );
-        
+
         // Convertir l'entité ORM en entité domain
         const domainToken = DomainRefreshToken.reconstruct(
           result.id,

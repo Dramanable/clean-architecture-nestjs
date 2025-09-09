@@ -89,8 +89,9 @@ export class AddEnterpriseUserSecurityFeatures1735930800000
         WHERE "passwordUpdatedAt" IS NULL
       `);
 
-      console.log('✅ Enterprise User Security Features migration completed successfully');
-
+      console.log(
+        '✅ Enterprise User Security Features migration completed successfully',
+      );
     } catch (error) {
       console.error('❌ Migration failed:', error);
       throw error;
@@ -98,7 +99,9 @@ export class AddEnterpriseUserSecurityFeatures1735930800000
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    console.log('🔽 Rolling back Enterprise User Security Features migration...');
+    console.log(
+      '🔽 Rolling back Enterprise User Security Features migration...',
+    );
 
     try {
       // 1. 🗑️ Supprimer les contraintes (ordre inverse de création)
@@ -111,10 +114,14 @@ export class AddEnterpriseUserSecurityFeatures1735930800000
       `);
 
       // 2. 🗑️ Supprimer les index (ordre inverse de création)
-      await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_PASSWORD_EXPIRY"`);
+      await queryRunner.query(
+        `DROP INDEX IF EXISTS "IDX_USER_PASSWORD_EXPIRY"`,
+      );
       await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_ACTIVE_RECENT"`);
       await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_LAST_LOGIN"`);
-      await queryRunner.query(`DROP INDEX IF EXISTS "IDX_USER_SECURITY_STATUS"`);
+      await queryRunner.query(
+        `DROP INDEX IF EXISTS "IDX_USER_SECURITY_STATUS"`,
+      );
 
       // 3. 🗑️ Supprimer les colonnes (ordre inverse de création)
       await queryRunner.query(`
@@ -128,8 +135,9 @@ export class AddEnterpriseUserSecurityFeatures1735930800000
         DROP COLUMN IF EXISTS "lastLoginAt"
       `);
 
-      console.log('⏪ Enterprise User Security Features rollback completed successfully');
-
+      console.log(
+        '⏪ Enterprise User Security Features rollback completed successfully',
+      );
     } catch (error) {
       console.error('❌ Rollback failed:', error);
       throw error;

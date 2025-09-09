@@ -1,4 +1,7 @@
 import { PasswordResetService } from './password-reset-simple.service';
+import { UserRepository } from '../../domain/repositories/user.repository';
+import { EmailService } from '../../domain/services/email.service';
+import { Logger } from '../../application/ports/logger.port';
 
 // Types pour les mocks
 type MockUserRepository = {
@@ -39,19 +42,19 @@ describe('PasswordResetService (Simplified)', () => {
 
     // Création directe sans NestJS TestingModule
     service = new PasswordResetService(
-      mockUserRepository as unknown as any,
-      mockEmailService as unknown as any,
-      mockLogger as unknown as any,
+      mockUserRepository as unknown as UserRepository,
+      mockEmailService as unknown as EmailService,
+      mockLogger as unknown as Logger,
     );
   });
 
   describe('requestPasswordReset', () => {
-    it('should return success for valid email', async () => {
+    it('should return success for valid email', () => {
       // Arrange
       const email = 'user@example.com';
 
       // Act
-      const result = await service.requestPasswordReset(email);
+      const result = service.requestPasswordReset(email);
 
       // Assert
       expect(result.success).toBe(true);
@@ -60,12 +63,12 @@ describe('PasswordResetService (Simplified)', () => {
       );
     });
 
-    it('should return success even for non-existent email (security)', async () => {
+    it('should return success even for non-existent email (security)', () => {
       // Arrange
       const email = 'nonexistent@example.com';
 
       // Act
-      const result = await service.requestPasswordReset(email);
+      const result = service.requestPasswordReset(email);
 
       // Assert
       expect(result.success).toBe(true);
@@ -76,26 +79,26 @@ describe('PasswordResetService (Simplified)', () => {
   });
 
   describe('resetPassword', () => {
-    it('should return success for valid input', async () => {
+    it('should return success for valid input', () => {
       // Arrange
       const token = 'valid-token';
       const newPassword = 'NewPassword123!';
 
       // Act
-      const result = await service.resetPassword(token, newPassword);
+      const result = service.resetPassword(token, newPassword);
 
       // Assert
       expect(result.success).toBe(true);
       expect(result.message).toBe('Password successfully reset.');
     });
 
-    it('should reject weak passwords', async () => {
+    it('should reject weak passwords', () => {
       // Arrange
       const token = 'valid-token';
       const newPassword = '123';
 
       // Act
-      const result = await service.resetPassword(token, newPassword);
+      const result = service.resetPassword(token, newPassword);
 
       // Assert
       expect(result.success).toBe(false);
