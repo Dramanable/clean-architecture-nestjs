@@ -1,8 +1,29 @@
-# 🏢 **PÉRIMÈTRE FONCTIONNEL - Application d'Entreprise de Gestion de Rendez-vous**
+# 🏢 **PÉRIMÈTRE FONCTIONNEL - API Backend de Gestion de Rendez-vous**
 
 ## 🎯 **Vision Métier**
 
-**Application d'entreprise complète** pour la gestion intelligente des rendez-vous, permettant aux entreprises de **paramétrer leur système calendaire**, **intégrer leur personnel**, et offrir une **expérience client optimale** avec notifications multi-canaux (email/SMS).
+**API Backend Enterprise** complète pour la gestion intelligente des rendez-vous, permettant aux entreprises de **paramétrer leur système calendaire**, **intégrer leur personnel**, et offrir une **expérience client optimale** avec notifications multi-canaux (email/SMS).
+
+## 🏗️ **Architecture Séparée Frontend/Backend**
+
+### 🎨 **Frontend Next.js** (Application Séparée)
+- **Site web public** optimisé pour le **référencement SEO**
+- **Interface internautes** pour la prise de rendez-vous en ligne
+- **Pages statiques générées** pour performances maximales
+- **Responsive design** mobile-first
+- **Optimisation Core Web Vitals** pour Google
+- **Intégration Google Analytics/Tag Manager**
+- **Schema.org markup** pour rich snippets
+- **Sitemap XML automatique** et robots.txt optimisés
+
+### 🚀 **Backend NestJS** (Ce Projet)
+- **API REST pure** avec endpoints sécurisés
+- **Gestion métier complète** des rendez-vous
+- **Authentification entreprise** et personnel
+- **Intégrations tierces** (email, SMS, calendriers)
+- **Dashboard administrateur** via API
+- **Webhooks** pour synchronisation temps réel
+- **Rate limiting** et sécurité enterprise
 
 ---
 
@@ -50,12 +71,15 @@
 - **Reprogrammation et annulation**
 - **Historique des rendez-vous**
 
-### 🌐 **4. Interface Client Public**
+### 🌐 **4. Interface Client Public (Frontend Next.js Séparé)**
 
-- **Portail de prise de rendez-vous** accessible aux internautes
-- **Authentification client** optionnelle
-- **Sélection de services** et **créneaux disponibles**
-- **Informations client** et **préférences**
+- **Site web Next.js** optimisé SEO avec référencement naturel
+- **Pages statiques générées** pour performances maximales
+- **Interface responsive** adaptée mobile et desktop
+- **Consommation API REST** sécurisée avec cache intelligent
+- **Authentification client** optionnelle via tokens JWT
+- **Sélection de services** et **créneaux disponibles** temps réel
+- **Informations client** et **préférences** persistées
 
 ### 📧 **5. Communication Multi-canaux**
 
@@ -223,6 +247,247 @@ enum GuestPermission {
   VIEW_AVAILABLE_SLOTS = 'VIEW_AVAILABLE_SLOTS',
   BOOK_GUEST_APPOINTMENT = 'BOOK_GUEST_APPOINTMENT',
   VIEW_PUBLIC_SERVICES = 'VIEW_PUBLIC_SERVICES',
+}
+```
+
+---
+
+## 🏗️ **Spécifications Techniques Frontend/Backend**
+
+### 🎨 **Frontend Next.js - Site Web Public**
+
+#### **🚀 Optimisations SEO & Performances**
+
+```typescript
+// Configuration Next.js optimisée
+export default {
+  // Static Generation pour SEO optimal
+  output: 'export', // Pages statiques générées
+  trailingSlash: true,
+  
+  // Core Web Vitals optimisés
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    loader: 'custom',
+    domains: ['api.votre-domaine.com']
+  },
+  
+  // Métadonnées SEO dynamiques
+  generateMetadata: async ({ params }) => ({
+    title: `Prendre RDV - ${business.name} - ${location.name}`,
+    description: `Réservez en ligne votre rendez-vous chez ${business.name}. Créneaux disponibles, confirmation immédiate.`,
+    keywords: ['rendez-vous', business.name, location.city, ...services],
+    openGraph: {
+      type: 'website',
+      locale: 'fr_FR',
+      url: `https://rdv.${business.domain}/${location.slug}`,
+      siteName: business.name,
+      images: [{
+        url: business.logoUrl,
+        width: 1200,
+        height: 630,
+        alt: `${business.name} - Prise de rendez-vous`
+      }]
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1
+      }
+    }
+  })
+}
+```
+
+#### **🔍 Schema.org pour Rich Snippets**
+
+```typescript
+// JSON-LD pour Google Rich Results
+const businessSchema = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": business.name,
+  "description": business.description,
+  "url": `https://rdv.${business.domain}`,
+  "telephone": business.phone,
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": location.address.street,
+    "addressLocality": location.address.city,
+    "postalCode": location.address.zipCode,
+    "addressCountry": "FR"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": location.coordinates.lat,
+    "longitude": location.coordinates.lng
+  },
+  "openingHours": location.businessHours.map(schedule => 
+    `${schedule.dayOfWeek} ${schedule.openTime}-${schedule.closeTime}`
+  ),
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Services disponibles",
+    "itemListElement": services.map(service => ({
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": service.name,
+        "description": service.description,
+        "provider": business.name
+      }
+    }))
+  }
+}
+```
+
+#### **📱 Architecture Frontend - Pages Principales**
+
+```typescript
+// Structure pages Next.js optimisée SEO
+app/
+├── layout.tsx                    # Layout global avec GA4
+├── page.tsx                      # Landing page entreprise
+├── [location]/                   # Pages par site/adresse
+│   ├── page.tsx                  # Page site spécifique
+│   ├── services/page.tsx         # Liste services du site
+│   ├── rdv/                      # Tunnel de réservation
+│   │   ├── page.tsx              # Sélection service + créneau
+│   │   ├── client/page.tsx       # Infos client
+│   │   ├── tiers/page.tsx        # Réservation pour proche
+│   │   └── confirmation/page.tsx # Validation réservation
+│   └── suivi/                    # Gestion RDV client
+│       ├── [token]/page.tsx      # Détails RDV public
+│       ├── modifier/page.tsx     # Modification RDV
+│       └── annuler/page.tsx      # Annulation RDV
+├── sitemap.xml                   # Sitemap automatique
+├── robots.txt                    # Robots optimisé
+└── api/                          # Routes API internes
+    ├── revalidate/               # ISR revalidation
+    └── webhook/                  # Webhooks NestJS
+```
+
+### 🚀 **Backend NestJS - API Enterprise**
+
+#### **🌐 Endpoints API pour Frontend**
+
+```typescript
+// API publique consommée par Next.js
+@Controller('public')
+export class PublicAppointmentController {
+  
+  // Données SEO-friendly avec cache
+  @Get('businesses')
+  @CacheControl(300) // 5min cache
+  async getBusinesses(): Promise<PublicBusinessDto[]> {
+    // Données optimisées pour SEO + performance
+  }
+  
+  @Get('businesses/:id/locations')
+  @CacheControl(300)
+  async getBusinessLocations(
+    @Param('id') businessId: string
+  ): Promise<PublicLocationDto[]> {
+    // Sites avec données SEO (coordonnées, horaires, etc.)
+  }
+  
+  @Get('availability')
+  @CacheControl(60) // 1min cache - données temps réel
+  async getAvailability(
+    @Query() filters: AvailabilityFiltersDto
+  ): Promise<AvailabilityResponseDto> {
+    // Créneaux disponibles optimisés
+  }
+  
+  // Réservation avec validation complète
+  @Post('appointments')
+  @RateLimit({ ttl: 60, limit: 10 }) // Protection spam
+  async createAppointment(
+    @Body() data: CreatePublicAppointmentDto
+  ): Promise<PublicAppointmentResponseDto> {
+    // Création avec token public pour suivi
+  }
+  
+  // Gestion RDV client via token public
+  @Get('appointments/:token')
+  async getAppointmentByToken(
+    @Param('token') token: string
+  ): Promise<PublicAppointmentDto> {
+    // Accès sécurisé sans auth
+  }
+}
+```
+
+#### **🔄 Synchronisation Temps Réel**
+
+```typescript
+// Webhooks pour synchronisation Frontend
+@Controller('webhooks')
+export class WebhookController {
+  
+  @Post('appointment-created')
+  async onAppointmentCreated(@Body() data: AppointmentCreatedEvent) {
+    // Revalidation ISR Next.js
+    await this.nextjsService.revalidate([
+      `/api/revalidate?path=/${data.location.slug}`,
+      `/api/revalidate?path=/${data.location.slug}/rdv`
+    ]);
+    
+    // Notification temps réel clients connectés
+    await this.websocketService.emit('availability-updated', {
+      locationId: data.locationId,
+      serviceId: data.serviceId,
+      date: data.appointmentDate
+    });
+  }
+  
+  @Post('business-updated')
+  async onBusinessUpdated(@Body() data: BusinessUpdatedEvent) {
+    // Mise à jour cache + revalidation pages
+    await this.cacheService.invalidate(`business:${data.businessId}:*`);
+    await this.nextjsService.revalidateAll();
+  }
+}
+```
+
+#### **📊 Analytics & SEO Data**
+
+```typescript
+// Données analytics pour optimisation SEO
+@Controller('admin/seo')
+export class SeoAnalyticsController {
+  
+  @Get('performance')
+  async getSeoPerformance(): Promise<SeoMetricsDto> {
+    return {
+      // Core Web Vitals depuis Real User Monitoring
+      coreWebVitals: await this.analyticsService.getCoreWebVitals(),
+      
+      // Positions mots-clés
+      keywordRankings: await this.seoService.getKeywordRankings(),
+      
+      // Trafic organique
+      organicTraffic: await this.analyticsService.getOrganicTraffic(),
+      
+      // Taux conversion par landing page
+      conversionRates: await this.analyticsService.getConversionRates()
+    };
+  }
+  
+  @Get('content-optimization')
+  async getContentSuggestions(): Promise<ContentOptimizationDto> {
+    // Suggestions auto d'optimisation contenu
+    return await this.aiService.generateSeoSuggestions({
+      businessType: this.business.category,
+      location: this.business.locations,
+      competitors: await this.seoService.getCompetitors()
+    });
+  }
 }
 ```
 

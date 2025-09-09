@@ -1,11 +1,11 @@
-# 🏢 **Application d'Entreprise de Gestion de Rendez-vous**
+# 🏢 **API Backend - Gestion de Rendez-vous Enterprise**
 
 <p align="center">
   <img src="https://nestjs.com/img/logo-small.svg" width="120" alt="NestJS Logo" />
 </p>
 
 <p align="center">
-  <strong>Application d'entreprise complète</strong> pour la gestion intelligente des rendez-vous<br/>
+  <strong>API Backend Enterprise</strong> pour la gestion intelligente des rendez-vous<br/>
   Construite avec <strong>Clean Architecture</strong>, <strong>NestJS</strong> et <strong>TypeScript</strong>
 </p>
 
@@ -13,23 +13,94 @@
   <img src="https://img.shields.io/badge/Architecture-Clean%20Architecture-blue" alt="Clean Architecture" />
   <img src="https://img.shields.io/badge/Framework-NestJS-red" alt="NestJS" />
   <img src="https://img.shields.io/badge/Language-TypeScript-blue" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Tests-228%20Passing-green" alt="Tests" />
+  <img src="https://img.shields.io/badge/Tests-202%20Passing-green" alt="Tests" />
   <img src="https://img.shields.io/badge/SOLID-Compliant-brightgreen" alt="SOLID" />
+  <img src="https://img.shields.io/badge/Type-API%20Backend-orange" alt="API Backend" />
 </p>
 
 ---
 
-## 🎯 **Vision Métier**
+## �️ **Architecture Séparée Frontend/Backend**
 
-Plateforme enterprise permettant aux entreprises de :
+### 🎨 **Frontend Next.js** (Application Séparée)
+- **Site web public SEO-optimisé** pour prise de rendez-vous internautes
+- **Pages statiques générées** avec référencement optimal
+- **Interface responsive** mobile-first
+- **Core Web Vitals** optimisés pour Google
+- **Schema.org markup** et rich snippets
 
-- ✅ **Paramétrer leur système calendaire** avec horaires et services
+### 🚀 **Backend NestJS** (Ce Projet)
+- **API REST enterprise** avec authentification sécurisée
+- **Gestion métier complète** des rendez-vous multi-sites
+- **Dashboard administrateur** pour entreprises
+- **Intégrations tierces** (email, SMS, calendriers)
+- **Webhooks temps réel** pour synchronisation
+
+---
+
+## 🎯 **Vision Métier Backend**
+
+API Backend permettant aux entreprises de :
+
+- ✅ **Paramétrer leur système calendaire** via endpoints REST
 - ✅ **Intégrer leur personnel** avec rôles spécialisés et plannings
-- ✅ **Offrir la prise de rendez-vous en ligne** aux internautes
+- ✅ **Exposer les créneaux disponibles** aux applications frontend
 - ✅ **Automatiser les notifications** email et SMS
-- ✅ **Gérer intelligemment** les créneaux et éviter les conflits
+- ✅ **Gérer intelligemment** les conflits et capacités multi-sites
 
-## 🏛️ **Architecture Clean Architecture**
+## � **Endpoints API Publics - Frontend Next.js**
+
+API REST optimisée pour consommation par le site web Next.js avec **cache-control** et **SEO-friendly responses**.
+
+### 📍 **API Publique - Prise de Rendez-vous**
+
+#### **🔍 Recherche & Disponibilités**
+```http
+GET /public/businesses              # Liste entreprises avec SEO data
+GET /public/businesses/:id/services # Services disponibles + metadata SEO
+GET /public/businesses/:id/locations # Sites/adresses de l'entreprise
+GET /public/availability            # Créneaux disponibles (cache 5min)
+```
+
+#### **📅 Réservation Internautes**
+```http
+POST /public/appointments           # Création rendez-vous public
+GET /public/appointments/:token     # Détails RDV (token public)
+PUT /public/appointments/:token     # Modification RDV client
+DELETE /public/appointments/:token  # Annulation RDV client
+```
+
+#### **👥 Réservations Tierces & Groupes**
+```http
+POST /public/appointments/third-party    # RDV pour proche/famille
+POST /public/appointments/group          # RDV de groupe/famille
+GET /public/family-relationships         # Types relations autorisées
+```
+
+### 🔒 **API Privée - Dashboard Entreprise**
+
+#### **🏢 Gestion Entreprise**
+```http
+GET /admin/dashboard/stats          # KPIs et métriques
+GET /admin/businesses/:id           # Config entreprise
+PUT /admin/businesses/:id/settings  # Paramètres calendaire
+```
+
+#### **👨‍💼 Gestion Personnel**
+```http
+GET /admin/staff                    # Liste personnel avec plannings
+POST /admin/staff                   # Ajout nouvel employé
+PUT /admin/staff/:id/schedule       # Modification planning
+```
+
+#### **📊 Analytics & Rapports**
+```http
+GET /admin/analytics/appointments   # Stats RDV (CA, taux occupation)
+GET /admin/analytics/capacity       # Optimisation capacités
+GET /admin/reports/export           # Export données (PDF/Excel)
+```
+
+## �🏛️ **Architecture Clean Architecture**
 
 Implémentation rigoureuse des **principes de Robert C. Martin** avec 4 couches :
 

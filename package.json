@@ -1,19 +1,23 @@
 {
-  "name": "enterprise-appointment-system",
+  "name": "appointment-system-api",
   "version": "1.0.0",
-  "description": "Application d'entreprise pour la gestion intelligente des rendez-vous avec Clean Architecture",
+  "description": "API Backend Enterprise pour la gestion intelligente des rendez-vous - Clean Architecture NestJS",
   "author": "Enterprise Development Team",
   "private": true,
   "license": "MIT",
   "keywords": [
-    "appointment-booking",
-    "enterprise-application",
+    "api-backend",
+    "appointment-booking-api",
+    "enterprise-api",
     "clean-architecture",
     "nestjs",
     "typescript",
-    "calendar-management",
-    "staff-management",
-    "multi-channel-notifications"
+    "rest-api",
+    "calendar-management-api",
+    "staff-management-api",
+    "multi-site-management",
+    "multi-channel-notifications",
+    "seo-optimized-backend"
   ],
   "scripts": {
     "build": "nest build",
