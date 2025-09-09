@@ -7,8 +7,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import type { I18nService } from '../../../application/ports/i18n.port';
-import type { Logger } from '../../../application/ports/logger.port';
+// Types removed - not used in tests
 import { RefreshToken as DomainRefreshToken } from '../../../domain/entities/refresh-token.entity';
 import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { RefreshTokenOrmEntity } from '../entities/typeorm/refresh-token.entity';

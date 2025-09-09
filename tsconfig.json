@@ -40,5 +40,11 @@
     "scripts/**/*.ts",
     "src/infrastructure/database/migrations/nosql/**/*.ts",
     "src/infrastructure/database/modules/dynamic-repository.module.ts"
-  ]
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "allowJs": true
+    },
+    "files": true
+  }
 }
