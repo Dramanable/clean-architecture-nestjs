@@ -1811,7 +1811,320 @@ export interface ITemplateService {
 
 ---
 
-## � **Règles Métier Spécialisées** 🔥 **NOUVEAU**
+## ⏰ **Gestion des Horaires et Durées** 🔥 **FONDAMENTAL**
+
+### 📅 **BusinessHours - Horaires d'Activité par Site**
+
+```typescript
+export class BusinessHours {
+  public readonly id: string;
+  public readonly locationId: string;
+  public readonly dayOfWeek: DayOfWeek; // MONDAY, TUESDAY, etc.
+  public readonly openTime: Time; // Ex: "08:00"
+  public readonly closeTime: Time; // Ex: "18:00"
+  public readonly breakStart?: Time; // Ex: "12:00" (pause déjeuner)
+  public readonly breakEnd?: Time; // Ex: "14:00"
+  public readonly isActive: boolean;
+  public readonly effectiveFrom: Date; // Date d'entrée en vigueur
+  public readonly effectiveUntil?: Date; // Date de fin (changements temporaires)
+  public readonly timezone: string; // "Europe/Paris"
+
+  // Business rules
+  isOpenAt(dateTime: Date): boolean;
+  getTotalWorkingMinutes(): number;
+  getWorkingPeriodsForDay(): WorkingPeriod[];
+  isInBreakTime(time: Time): boolean;
+  canAccommodateAppointment(startTime: Time, duration: number): boolean;
+  getNextAvailableSlot(fromTime: Time, duration: number): Time | null;
+}
+
+enum DayOfWeek {
+  MONDAY = 0,
+  TUESDAY = 1,
+  WEDNESDAY = 2,
+  THURSDAY = 3,
+  FRIDAY = 4,
+  SATURDAY = 5,
+  SUNDAY = 6
+}
+```
+
+### 🕐 **WorkingHours - Planning Personnel**
+
+```typescript
+export class WorkingHours {
+  public readonly id: string;
+  public readonly staffId: string;
+  public readonly locationId: string;
+  public readonly dayOfWeek: DayOfWeek;
+  public readonly startTime: Time;
+  public readonly endTime: Time;
+  public readonly breakIntervals: BreakInterval[];
+  public readonly maxConsecutiveHours: number; // Ex: 6h max d'affilée
+  public readonly minBreakBetweenAppointments: number; // Ex: 10min minimum
+  public readonly preferredSlotDuration: number; // Ex: 30min par défaut
+  public readonly isActive: boolean;
+  public readonly effectiveFrom: Date;
+  public readonly effectiveUntil?: Date;
+
+  // Business rules
+  isAvailableAt(dateTime: Date, duration: number): boolean;
+  getAvailableSlots(date: Date, slotDuration: number): TimeSlot[];
+  canWorkConsecutively(fromTime: Date, duration: number): boolean;
+  needsBreakAfter(currentTime: Date): boolean;
+  calculateEndTimeWithBreaks(startTime: Date, serviceDuration: number): Date;
+  hasConflictWith(appointment: Appointment): boolean;
+}
+
+export class BreakInterval {
+  public readonly startTime: Time;
+  public readonly endTime: Time;
+  public readonly isFlexible: boolean; // Peut être déplacée si nécessaire
+  public readonly reason: BreakReason;
+}
+
+enum BreakReason {
+  LUNCH = 'LUNCH',
+  COFFEE = 'COFFEE',
+  ADMINISTRATIVE = 'ADMINISTRATIVE',
+  TRAVEL_BETWEEN_LOCATIONS = 'TRAVEL_BETWEEN_LOCATIONS'
+}
+```
+
+### ⏱️ **Service Duration & Slot Management**
+
+```typescript
+export class ServiceTiming {
+  public readonly serviceId: string;
+  public readonly baseDuration: number; // Durée de base en minutes
+  public readonly preparationTime: number; // Temps préparation avant
+  public readonly cleanupTime: number; // Temps nettoyage après
+  public readonly bufferTime: number; // Temps tampon entre RDV
+  public readonly allowedDurations: number[]; // [30, 45, 60] minutes autorisées
+  public readonly slotAlignment: SlotAlignment; // QUARTER_HOUR, HALF_HOUR, HOUR
+  public readonly locationVariations: Map<string, DurationVariation>; // Variations par site
+
+  // Business rules
+  calculateTotalSlotTime(): number; // base + prep + cleanup + buffer
+  getEffectiveDuration(locationId: string): number;
+  isValidStartTime(time: Time): boolean; // Respecte l'alignement
+  getNextValidStartTime(fromTime: Time): Time;
+  canFitInTimeSlot(availableMinutes: number): boolean;
+}
+
+enum SlotAlignment {
+  FIVE_MINUTES = 5,
+  QUARTER_HOUR = 15,
+  HALF_HOUR = 30,
+  HOUR = 60
+}
+
+export class DurationVariation {
+  public readonly locationId: string;
+  public readonly durationModifier: number; // +/- minutes
+  public readonly reason: string; // "Équipement spécialisé", "Transport matériel"
+}
+```
+
+### 📊 **TimeSlot Generation & Management**
+
+```typescript
+export class SlotGenerator {
+  
+  /**
+   * Génère tous les créneaux disponibles pour un service et une date
+   */
+  generateAvailableSlots(
+    service: Service,
+    staff: Staff,
+    location: BusinessLocation,
+    date: Date
+  ): TimeSlot[] {
+    const businessHours = location.getBusinessHoursFor(date.getDay());
+    const staffHours = staff.getWorkingHoursFor(date.getDay(), location.id);
+    const serviceTiming = service.getTiming();
+    
+    // Intersection des horaires business + staff
+    const workingPeriods = this.calculateWorkingPeriods(businessHours, staffHours);
+    
+    // Génération des slots selon l'alignement
+    const slots: TimeSlot[] = [];
+    for (const period of workingPeriods) {
+      const periodSlots = this.generateSlotsForPeriod(
+        period, 
+        serviceTiming, 
+        service.slotAlignment
+      );
+      slots.push(...periodSlots);
+    }
+    
+    // Filtrage des conflits existants
+    return this.filterConflicts(slots, date, staff.id);
+  }
+  
+  /**
+   * Optimise la capacité en gérant les RDV simultanés
+   */
+  optimizeCapacity(
+    service: Service,
+    location: BusinessLocation,
+    requestedTime: Date,
+    groupSize: number
+  ): SlotOptimization {
+    const maxCapacity = Math.min(
+      service.maxConcurrentCapacity,
+      location.capacity.getServiceCapacity(service.id),
+      this.getAvailableStaffCount(service, location, requestedTime)
+    );
+    
+    return {
+      canAccommodate: groupSize <= maxCapacity,
+      suggestedSlots: this.findAlternativeSlots(service, location, requestedTime, groupSize),
+      waitingListPosition: this.calculateWaitingListPosition(service, requestedTime)
+    };
+  }
+}
+
+export interface SlotOptimization {
+  canAccommodate: boolean;
+  suggestedSlots: TimeSlot[];
+  waitingListPosition?: number;
+  alternativeLocations?: BusinessLocation[];
+}
+```
+
+### 🌍 **Multi-Site Time Management**
+
+```typescript
+export class MultiSiteTimeManager {
+  
+  /**
+   * Calcule les temps de trajet entre sites pour le personnel mobile
+   */
+  calculateTravelTime(
+    fromLocation: BusinessLocation,
+    toLocation: BusinessLocation,
+    transportMode: TransportMode = TransportMode.CAR
+  ): number {
+    const distance = this.geoService.calculateDistance(
+      fromLocation.coordinates,
+      toLocation.coordinates
+    );
+    
+    const speedMap = {
+      [TransportMode.WALKING]: 5, // km/h
+      [TransportMode.CAR]: 40,    // km/h en ville
+      [TransportMode.PUBLIC_TRANSPORT]: 25 // km/h moyen
+    };
+    
+    const travelTimeMinutes = (distance / speedMap[transportMode]) * 60;
+    return Math.ceil(travelTimeMinutes) + 10; // +10min buffer
+  }
+  
+  /**
+   * Optimise les plannings multi-sites pour le personnel
+   */
+  optimizeStaffSchedule(
+    staff: Staff,
+    appointments: Appointment[],
+    date: Date
+  ): ScheduleOptimization {
+    // Tri par heure de début
+    const sortedAppointments = appointments.sort((a, b) => 
+      a.scheduledAt.getTime() - b.scheduledAt.getTime()
+    );
+    
+    const optimized: OptimizedAppointment[] = [];
+    let warnings: ScheduleWarning[] = [];
+    
+    for (let i = 0; i < sortedAppointments.length; i++) {
+      const current = sortedAppointments[i];
+      const next = sortedAppointments[i + 1];
+      
+      if (next) {
+        const travelTime = this.calculateTravelTime(
+          current.getLocation(),
+          next.getLocation()
+        );
+        
+        const availableTime = next.scheduledAt.getTime() - 
+          (current.scheduledAt.getTime() + current.duration * 60000);
+        
+        if (availableTime < travelTime * 60000) {
+          warnings.push({
+            type: 'INSUFFICIENT_TRAVEL_TIME',
+            appointmentId: next.id,
+            requiredMinutes: travelTime,
+            availableMinutes: availableTime / 60000
+          });
+        }
+      }
+      
+      optimized.push({
+        appointment: current,
+        travelTimeToNext: next ? this.calculateTravelTime(
+          current.getLocation(),
+          next.getLocation()
+        ) : 0
+      });
+    }
+    
+    return { optimizedAppointments: optimized, warnings };
+  }
+}
+
+enum TransportMode {
+  WALKING = 'WALKING',
+  CAR = 'CAR',
+  PUBLIC_TRANSPORT = 'PUBLIC_TRANSPORT'
+}
+
+export interface ScheduleOptimization {
+  optimizedAppointments: OptimizedAppointment[];
+  warnings: ScheduleWarning[];
+}
+
+export interface OptimizedAppointment {
+  appointment: Appointment;
+  travelTimeToNext: number;
+  suggestedDeparture?: Date;
+}
+
+export interface ScheduleWarning {
+  type: 'INSUFFICIENT_TRAVEL_TIME' | 'OVERTIME' | 'NO_BREAK';
+  appointmentId: string;
+  requiredMinutes: number;
+  availableMinutes: number;
+}
+```
+
+### 📋 **Règles Temporelles Métier**
+
+#### **🔒 Contraintes Horaires Obligatoires**
+
+1. **Respect des horaires d'ouverture** : Aucun RDV en dehors des `BusinessHours`
+2. **Alignement des créneaux** : Start time doit respecter `SlotAlignment` du service
+3. **Durée minimale entre RDV** : `bufferTime` obligatoire entre appointments
+4. **Temps de trajet staff** : Prise en compte automatique pour personnel mobile
+5. **Pauses obligatoires** : Respect des `BreakInterval` configurées
+
+#### **⚠️ Règles de Flexibilité**
+
+1. **Overbooking contrôlé** : Max 110% de capacité avec liste d'attente
+2. **Extensions de durée** : +15min maximum sur demande client
+3. **Pauses flexibles** : Décalage possible si `isFlexible = true`
+4. **Horaires d'urgence** : Override possible avec autorisation MANAGER+
+
+#### **🎯 Optimisations Automatiques**
+
+1. **Regroupement géographique** : Priorité aux RDV sur même site
+2. **Minimisation trajets** : Optimisation automatique planning mobile
+3. **Utilisation maximale** : Proposition créneaux adjacents
+4. **Capacité partagée** : Mutualisation équipements entre services
+
+---
+
+## 🔥 **Règles Métier Spécialisées** 🔥 **NOUVEAU**
 
 ### 🔒 **Règles de Consentement et Protection**
 

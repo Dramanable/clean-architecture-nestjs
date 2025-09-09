@@ -100,6 +100,16 @@ GET /admin/analytics/capacity       # Optimisation capacités
 GET /admin/reports/export           # Export données (PDF/Excel)
 ```
 
+#### **⏰ Gestion Horaires & Créneaux**
+```http
+GET /admin/businesses/:id/hours     # Horaires d'ouverture par site
+PUT /admin/businesses/:id/hours     # Modification horaires
+GET /admin/staff/:id/schedule       # Planning personnel détaillé
+PUT /admin/staff/:id/schedule       # Modification planning staff
+GET /admin/services/:id/timing      # Durées et alignement créneaux
+PUT /admin/services/:id/timing      # Configuration durées service
+```
+
 ## �🏛️ **Architecture Clean Architecture**
 
 Implémentation rigoureuse des **principes de Robert C. Martin** avec 4 couches :
