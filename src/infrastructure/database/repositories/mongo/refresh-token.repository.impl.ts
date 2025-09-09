@@ -10,22 +10,15 @@ import { Model } from 'mongoose';
 import type { I18nService } from '../../../../application/ports/i18n.port';
 import type { Logger } from '../../../../application/ports/logger.port';
 import { RefreshToken as DomainRefreshToken } from '../../../../domain/entities/refresh-token.entity';
+import { RefreshTokenRepository } from '../../../../domain/repositories/refresh-token.repository';
 import { TOKENS } from '../../../../shared/constants/injection-tokens';
 import {
   RefreshToken,
   RefreshTokenDocument,
 } from '../../entities/mongo/refresh-token.schema';
 
-export interface IRefreshTokenRepository {
-  save(token: DomainRefreshToken): Promise<DomainRefreshToken>;
-  findByToken(token: string): Promise<DomainRefreshToken | null>;
-  findByUserId(userId: string): Promise<DomainRefreshToken[]>;
-  deleteByUserId(userId: string): Promise<void>;
-  deleteExpiredTokens(): Promise<number>;
-}
-
 @Injectable()
-export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
+export class MongoRefreshTokenRepository implements RefreshTokenRepository {
   constructor(
     @InjectModel(RefreshToken.name)
     private readonly tokenModel: Model<RefreshTokenDocument>,
@@ -42,11 +35,17 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
 
       const tokenDoc = this.domainToMongo(token);
 
-      const savedToken = await this.tokenModel.findOneAndUpdate(
-        { _id: token.id },
-        tokenDoc,
-        { upsert: true, new: true },
-      );
+      const savedToken = await this.tokenModel
+        .findOneAndUpdate({ _id: token.id }, tokenDoc, {
+          upsert: true,
+          new: true,
+          lean: true,
+        })
+        .exec();
+
+      if (!savedToken) {
+        throw new Error('Failed to save refresh token');
+      }
 
       this.logger.info(
         this.i18n.t('operations.refresh_token.saved_successfully'),
@@ -66,11 +65,14 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
 
   async findByToken(hashedToken: string): Promise<DomainRefreshToken | null> {
     try {
-      const token = await this.tokenModel.findOne({
-        hashedToken,
-        expiresAt: { $gt: new Date() },
-        isRevoked: false,
-      });
+      const token = await this.tokenModel
+        .findOne({
+          hashedToken,
+          expiresAt: { $gt: new Date() },
+          isRevoked: false,
+        })
+        .lean()
+        .exec();
 
       return token ? this.mongoToDomain(token) : null;
     } catch (error) {
@@ -90,7 +92,9 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
           expiresAt: { $gt: new Date() },
           isRevoked: false,
         })
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .lean()
+        .exec();
 
       return tokens.map((token) => this.mongoToDomain(token));
     } catch (error) {
@@ -142,6 +146,36 @@ export class MongoRefreshTokenRepository implements IRefreshTokenRepository {
         error instanceof Error ? error : new Error(String(error)),
       );
       return 0;
+    }
+  }
+
+  /**
+   * Alias pour deleteByUserId - pour compatibilité avec les Use Cases existants
+   */
+  async revokeAllByUserId(userId: string): Promise<void> {
+    return this.deleteByUserId(userId);
+  }
+
+  /**
+   * Révoque un token spécifique par sa valeur hashée
+   */
+  async revokeByToken(tokenHash: string): Promise<void> {
+    try {
+      await this.tokenModel.updateOne(
+        { tokenHash },
+        { isRevoked: true, revokedAt: new Date() },
+      );
+
+      this.logger.info(this.i18n.t('operations.refresh_token.token_revoked'), {
+        tokenHash: tokenHash.substring(0, 8) + '...',
+      });
+    } catch (error) {
+      this.logger.error(
+        this.i18n.t('operations.refresh_token.revoke_failed'),
+        error instanceof Error ? error : new Error(String(error)),
+        { tokenHash: tokenHash.substring(0, 8) + '...' },
+      );
+      throw error;
     }
   }
 

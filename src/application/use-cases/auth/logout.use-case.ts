@@ -9,16 +9,7 @@ import { TOKENS } from '../../../shared/constants/injection-tokens';
 import { TokenRepositoryError } from '../../exceptions/auth.exceptions';
 import type { I18nService } from '../../ports/i18n.port';
 import type { Logger } from '../../ports/logger.port';
-
-// Interfaces pour les ports
-export interface RefreshTokenRepository {
-  findByToken(token: string): Promise<{
-    userId: string;
-    isValid(): boolean;
-  } | null>;
-  revokeAllByUserId(userId: string): Promise<void>;
-  revokeByToken(token: string): Promise<void>;
-}
+import type { RefreshTokenRepository } from '../../../domain/repositories/refresh-token.repository';
 
 // DTOs
 export interface LogoutRequest {

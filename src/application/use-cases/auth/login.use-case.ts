@@ -16,13 +16,8 @@ import type { I18nService } from '../../ports/i18n.port';
 import type { Logger } from '../../ports/logger.port';
 import type { ICacheService } from '../../ports/cache.port';
 import type { UserRepository } from '../../../domain/repositories/user.repository';
+import type { RefreshTokenRepository } from '../../../domain/repositories/refresh-token.repository';
 import { Email } from '../../../domain/value-objects/email.vo';
-
-// Interfaces pour les ports (qui ne sont pas dans le domaine)
-export interface RefreshTokenRepository {
-  save(refreshToken: RefreshToken): Promise<RefreshToken>;
-  revokeAllByUserId(userId: string): Promise<void>;
-}
 
 export interface TokenService {
   generateAccessToken(
@@ -140,7 +135,7 @@ export class LoginUseCase {
 
       // 4. Révoquer tous les anciens refresh tokens (sécurité)
       try {
-        await this.refreshTokenRepository.revokeAllByUserId(user.id);
+        await this.refreshTokenRepository.deleteByUserId(user.id);
       } catch (error) {
         this.logger.warn(
           this.i18n.t('warnings.login.token_revocation_failed'),

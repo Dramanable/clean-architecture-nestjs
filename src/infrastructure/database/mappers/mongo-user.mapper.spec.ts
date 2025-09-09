@@ -155,7 +155,7 @@ describe('MongoUserMapper', () => {
       const result = MongoUserMapper.toMongo(domainUser);
 
       // Assert
-      expect(result.password).toBe('mongoHashedPassword');
+      expect(result.hashedPassword).toBe('mongoHashedPassword');
       expect(result.lastLoginAt).toEqual(new Date('2023-01-04'));
       expect(result.loginAttempts).toBe(2);
       expect(result.emailVerified).toBe(true);
@@ -166,7 +166,7 @@ describe('MongoUserMapper', () => {
       const result = MongoUserMapper.toMongo(domainUser);
 
       // Assert
-      expect(result.password).toBe('');
+      expect(result.hashedPassword).toBe('');
       expect(result.loginAttempts).toBe(0);
       expect(result.emailVerified).toBe(false);
       expect(result.isActive).toBe(true);
@@ -206,7 +206,7 @@ describe('MongoUserMapper', () => {
       expect(result.email).toBe('jane.updated@company.com');
       expect(result.name).toBe('Jane Updated');
       expect(result.role).toBe(UserRole.SUPER_ADMIN);
-      expect(result.password).toBe('newMongoPassword');
+      expect(result.hashedPassword).toBe('newMongoPassword');
 
       // Should preserve MongoDB metadata
       expect(result._id).toBe('mongo-id-123');

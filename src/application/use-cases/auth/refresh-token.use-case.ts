@@ -17,17 +17,8 @@ import type { I18nService } from '../../ports/i18n.port';
 import type { Logger } from '../../ports/logger.port';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
 import { User } from '../../../domain/entities/user.entity';
-
-// Interfaces pour les ports
-export interface RefreshTokenRepository {
-  findByToken(token: string): Promise<any>;
-  save(refreshToken: any): Promise<any>;
-  revokeAllByUserId(userId: string): Promise<void>;
-}
-
-export interface UserRepository {
-  findById(id: string): Promise<any>;
-}
+import type { RefreshTokenRepository } from '../../../domain/repositories/refresh-token.repository';
+import type { UserRepository } from '../../../domain/repositories/user.repository';
 
 export interface TokenService {
   generateAccessToken(
@@ -199,16 +190,22 @@ export class RefreshTokenUseCase {
 
       // 5. Sauvegarder le nouveau refresh token
       try {
-        await this.refreshTokenRepository.save({
-          token: newRefreshToken,
-          userId: user.id,
-          userAgent: request.userAgent,
-          ipAddress: request.ipAddress,
-          expiresAt: new Date(
-            Date.now() +
-              this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
-          ),
-        });
+        const expiresAt = new Date(
+          Date.now() +
+            this.config.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000,
+        );
+        
+        // Créer une entité domain RefreshToken
+        const newRefreshTokenEntity = new RefreshToken(
+          user.id,
+          newRefreshToken,
+          expiresAt,
+          undefined, // deviceId
+          request.userAgent,
+          request.ipAddress,
+        );
+        
+        await this.refreshTokenRepository.save(newRefreshTokenEntity);
       } catch (error) {
         this.logger.error(
           this.i18n.t('errors.refresh_token.save_failed'),

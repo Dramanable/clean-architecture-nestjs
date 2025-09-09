@@ -23,7 +23,8 @@ export class MongoUserMapper {
 
     // Reconstitution des propriétés privées
     (user as unknown as { id: string }).id = mongoDoc._id;
-    (user as unknown as { _password: string })._password = mongoDoc.password;
+    (user as unknown as { _password: string })._password =
+      mongoDoc.hashedPassword;
 
     // Métadonnées de sécurité
     (user as unknown as { _lastLoginAt: Date | null })._lastLoginAt =
@@ -54,7 +55,7 @@ export class MongoUserMapper {
       _id: domainEntity.id,
       email: domainEntity.email.value, // Utilisation de .value pour Email VO
       name: domainEntity.name,
-      password:
+      hashedPassword:
         (domainEntity as unknown as { _password: string })._password || '',
       role: domainEntity.role,
       isActive: true,
@@ -107,7 +108,7 @@ export class MongoUserMapper {
     const newPassword = (domainEntity as unknown as { _password: string })
       ._password;
     if (newPassword) {
-      mongoDoc.password = newPassword;
+      mongoDoc.hashedPassword = newPassword;
     }
 
     // Métadonnées de sécurité

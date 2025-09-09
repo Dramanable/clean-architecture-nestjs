@@ -59,7 +59,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
       ...this.getMigrationConfig(),
 
       // 🧪 Configuration par environnement
-      synchronize: !isProduction, // JAMAIS en production !
+      synchronize: false, // JAMAIS en production !
       logging: !isProduction ? ['query', 'error', 'warn'] : ['error'],
       logger: isProduction ? 'file' : 'debug',
 

@@ -66,15 +66,27 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
     it('should find refresh token by token string', async () => {
       // Arrange
       const tokenString = 'refresh_token_123';
+      
+      // Simuler la méthode hashToken pour obtenir le hash attendu
+      let hash = 0;
+      for (let i = 0; i < tokenString.length; i++) {
+        const char = tokenString.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash; // Convert to 32-bit integer
+      }
+      const expectedTokenHash = `hash_${Math.abs(hash).toString(16)}`;
+      
       const mockEntity = {
         id: 'token-id-456',
-        token: tokenString,
+        tokenHash: expectedTokenHash,
         userId: 'user-789',
         isRevoked: false,
         expiresAt: new Date(Date.now() + 86400000), // 1 day
-        isValid: () => true,
-        isExpired: () => false,
-        revoke: jest.fn(),
+        deviceId: 'device-123',
+        userAgent: 'Mozilla/5.0',
+        ipAddress: '192.168.1.1',
+        revokedAt: null,
+        createdAt: new Date(),
       };
 
       mockTypeOrmRepository.findOne = jest.fn().mockResolvedValue(mockEntity);
@@ -85,10 +97,9 @@ describe('TypeOrmRefreshTokenRepository (TDD)', () => {
       // Assert
       expect(result).toBeDefined();
       expect(result).toBeTruthy();
-      expect((result as unknown).token).toBe(tokenString);
-      expect((result as unknown).userId).toBe('user-789');
+      expect((result as any).userId).toBe('user-789');
       expect(mockTypeOrmRepository.findOne).toHaveBeenCalledWith({
-        where: { tokenHash: tokenString },
+        where: { tokenHash: expectedTokenHash },
       });
     });
 

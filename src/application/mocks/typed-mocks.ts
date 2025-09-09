@@ -8,16 +8,7 @@
 import { IUserRepository } from '../ports/user.repository.interface';
 import { Logger } from '../ports/logger.port';
 import { I18nService } from '../ports/i18n.port';
-import { RefreshToken } from '../../domain/entities/refresh-token.entity';
-
-// Types pour les interfaces définies dans les use cases
-export interface RefreshTokenRepository {
-  save(refreshToken: RefreshToken): Promise<RefreshToken>;
-  findByToken(token: string): Promise<RefreshToken | null>;
-  revokeByToken(token: string): Promise<void>;
-  revokeAllByUserId(userId: string): Promise<void>;
-  cleanupExpired(): Promise<void>;
-}
+import type { RefreshTokenRepository } from '../../domain/repositories/refresh-token.repository';
 
 export interface TokenService {
   generateAccessToken(
@@ -95,9 +86,11 @@ export function createMockRefreshTokenRepository(): jest.Mocked<RefreshTokenRepo
   return {
     save: jest.fn(),
     findByToken: jest.fn(),
-    revokeByToken: jest.fn(),
+    findByUserId: jest.fn(),
+    deleteByUserId: jest.fn(),
     revokeAllByUserId: jest.fn(),
-    cleanupExpired: jest.fn(),
+    revokeByToken: jest.fn(),
+    deleteExpiredTokens: jest.fn(),
   } as jest.Mocked<RefreshTokenRepository>;
 }
 

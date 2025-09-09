@@ -40,7 +40,7 @@ export class User {
     required: true,
     maxlength: 255,
   })
-  password!: string;
+  hashedPassword!: string;
 
   @Prop({
     type: String,

@@ -116,8 +116,9 @@ describe('RefreshTokenUseCase (TDD)', () => {
       mockUserRepository.findById.mockResolvedValue(mockUser);
       mockTokenService.generateAccessToken.mockReturnValue('new_access_token');
       mockTokenService.generateRefreshToken.mockReturnValue(
-        'new_refresh_token',
+        'new_refresh_token_with_minimum_32_chars_length',
       );
+      mockRefreshTokenRepository.save.mockResolvedValue(undefined); // Mock save success
 
       // Act
       const result = await useCase.execute(request);
@@ -125,7 +126,7 @@ describe('RefreshTokenUseCase (TDD)', () => {
       // Assert
       expect(result.success).toBe(true);
       expect(result.tokens.accessToken).toBe('new_access_token');
-      expect(result.tokens.refreshToken).toBe('new_refresh_token');
+      expect(result.tokens.refreshToken).toBe('new_refresh_token_with_minimum_32_chars_length');
       expect(result.user.id).toBe('user-456');
       expect(mockRefreshTokenRepository.findByToken).toHaveBeenCalledWith(
         request.refreshToken,
@@ -155,6 +156,11 @@ describe('RefreshTokenUseCase (TDD)', () => {
         name: 'John Doe',
         role: 'USER',
       });
+      mockTokenService.generateAccessToken.mockReturnValue('new_access_token');
+      mockTokenService.generateRefreshToken.mockReturnValue(
+        'new_refresh_token_with_minimum_32_chars_length',
+      );
+      mockRefreshTokenRepository.save.mockResolvedValue(undefined); // Mock save success
 
       // Act
       await useCase.execute(request);

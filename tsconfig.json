@@ -36,6 +36,9 @@
     "coverage",
     "*.config.js",
     ".commitlintrc.js",
-    "jest.config.js"
+    "jest.config.js",
+    "scripts/test-mongo-migration.ts",
+    "src/infrastructure/database/migrations/nosql/**/*.ts",
+    "src/infrastructure/database/migrations/nosql/mongo-migration-runner-enterprise.ts"
   ]
 }

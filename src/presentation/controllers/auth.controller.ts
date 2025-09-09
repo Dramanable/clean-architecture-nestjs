@@ -161,6 +161,17 @@ export class AuthController {
         },
       );
 
+      this.logger.info('🍪 LOGIN - Cookies set successfully', {
+        operation: 'Login',
+        userId: result.user.id,
+        accessTokenExpires: new Date(Date.now() + accessTokenExpirationMs),
+        refreshTokenExpires: new Date(Date.now() + refreshTokenExpirationMs),
+        accessTokenLength: result.tokens.accessToken.length,
+        refreshTokenLength: result.tokens.refreshToken.length,
+        environment: process.env.NODE_ENV,
+        secure: process.env.NODE_ENV === 'production',
+      });
+
       return {
         success: true,
         user: {
@@ -203,21 +214,98 @@ export class AuthController {
     status: 401,
     description: 'Invalid or expired refresh token',
   })
-  async refresh(@Req() req: Request): Promise<RefreshTokenResponseDto> {
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<RefreshTokenResponseDto> {
+    this.logger.info('🔄 REFRESH TOKEN - Attempting to refresh token', {
+      operation: 'RefreshToken',
+      cookiesPresent: !!req.cookies,
+      cookieNames: req.cookies ? Object.keys(req.cookies) : [],
+      userAgent: req.headers['user-agent'],
+      ip: this.extractClientIp(req),
+    });
+
     const refreshToken = this.cookieService.getCookie(req, 'refresh_token');
 
+    this.logger.info('🔄 REFRESH TOKEN - Cookie extraction result', {
+      operation: 'RefreshToken',
+      tokenFound: !!refreshToken,
+      tokenLength: refreshToken ? refreshToken.length : 0,
+      allCookies: req.cookies,
+    });
+
     if (!refreshToken) {
+      this.logger.warn('🔄 REFRESH TOKEN - No refresh token found in cookies', {
+        operation: 'RefreshToken',
+        availableCookies: req.cookies ? Object.keys(req.cookies) : [],
+        headers: req.headers.cookie,
+      });
       throw new UnauthorizedException('Refresh token missing');
     }
 
-    const result = await this.refreshTokenUseCase.execute({
-      refreshToken,
-    });
+    try {
+      const result = await this.refreshTokenUseCase.execute({
+        refreshToken,
+      });
 
-    return {
-      success: true,
-      user: result.user,
-    };
+      // Définir les nouveaux tokens dans les cookies
+      const accessTokenExpirationMs =
+        this.configService.getAccessTokenExpirationTime() * 1000;
+      const refreshTokenExpirationMs =
+        this.configService.getRefreshTokenExpirationDays() *
+        24 *
+        60 *
+        60 *
+        1000;
+
+      this.cookieService.setCookie(
+        res,
+        'access_token',
+        result.tokens.accessToken,
+        {
+          expires: new Date(Date.now() + accessTokenExpirationMs),
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+        },
+      );
+
+      this.cookieService.setCookie(
+        res,
+        'refresh_token',
+        result.tokens.refreshToken,
+        {
+          expires: new Date(Date.now() + refreshTokenExpirationMs),
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+        },
+      );
+
+      this.logger.info('✅ REFRESH TOKEN - Token refreshed successfully', {
+        operation: 'RefreshToken',
+        userId: result.user.id,
+        userEmail: result.user.email,
+        newAccessTokenLength: result.tokens.accessToken.length,
+        newRefreshTokenLength: result.tokens.refreshToken.length,
+      });
+
+      return {
+        success: true,
+        user: result.user,
+      };
+    } catch (error) {
+      this.logger.error(
+        '❌ REFRESH TOKEN - Failed to refresh token',
+        error as Error,
+        {
+          operation: 'RefreshToken',
+          tokenProvided: !!refreshToken,
+        },
+      );
+      throw error;
+    }
   }
 
   /**

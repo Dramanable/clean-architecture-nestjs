@@ -19,10 +19,22 @@ import { PaginatedResult } from '../../../../shared/types/pagination.types';
 import { UserQueryParams } from '../../../../shared/types/user-query.types';
 import { User, UserDocument } from '../../entities/mongo/user.schema';
 
-// Interface pour le retour des agrégations MongoDB
+// Interfaces pour le retour des agrégations MongoDB
 interface UserAggregationResult {
   users?: UserDocument[];
   totalCount?: { count: number }[];
+}
+
+interface SearchAggregationResult {
+  users?: (UserDocument & { relevanceScore?: number })[];
+  totalCount?: { count: number }[];
+}
+
+interface StatsAggregationResult {
+  total: { count: number }[];
+  byRole: { _id: UserRole; count: number }[];
+  activityStatus: { _id: string; count: number }[];
+  recentSignups: { count: number }[];
 }
 
 @Injectable()
@@ -69,7 +81,11 @@ export class MongoUserRepository implements UserRepository {
   }
 
   async emailExists(email: Email): Promise<boolean> {
-    const count = await this.userModel.countDocuments({ email: email.value });
+    const count = await this.userModel
+      .countDocuments({
+        email: email.value.toLowerCase(),
+      })
+      .lean();
     return count > 0;
   }
 
@@ -95,11 +111,9 @@ export class MongoUserRepository implements UserRepository {
 
   async update(user: DomainUser): Promise<DomainUser> {
     const mongoUser = this.domainToMongo(user);
-    const updated = await this.userModel.findOneAndUpdate(
-      { _id: user.id },
-      mongoUser,
-      { new: true },
-    );
+    const updated = await this.userModel
+      .findOneAndUpdate({ _id: user.id }, mongoUser, { new: true, lean: true })
+      .exec();
     if (!updated) throw new Error('User not found');
     return this.mongoToDomain(updated);
   }
@@ -120,15 +134,41 @@ export class MongoUserRepository implements UserRepository {
   }
 
   async export(params?: UserQueryParams): Promise<DomainUser[]> {
-    const filter: Record<string, unknown> = {};
-    if (params?.filters?.role) filter.role = params.filters.role;
+    // Utilise l'agrégation pour un export optimal avec indexes
+    const pipeline: PipelineStage[] = [];
+    
+    // Stage 1: Match/Filter
+    const matchStage: Record<string, unknown> = {};
+    if (params?.filters?.role) matchStage.role = params.filters.role;
     if (params?.search?.query) {
-      filter.$or = [
+      matchStage.$or = [
         { name: { $regex: params.search.query, $options: 'i' } },
         { email: { $regex: params.search.query, $options: 'i' } },
       ];
     }
-    const users = await this.userModel.find(filter);
+    
+    if (Object.keys(matchStage).length > 0) {
+      pipeline.push({ $match: matchStage });
+    }
+    
+    // Stage 2: Sort pour ordre cohérent
+    pipeline.push({ $sort: { createdAt: -1 } });
+    
+    // Stage 3: Project pour optimiser les données exportées
+    pipeline.push({
+      $project: {
+        _id: 1,
+        email: 1,
+        name: 1,
+        hashedPassword: 1,
+        role: 1,
+        isActive: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    });
+    
+    const users = await this.userModel.aggregate<UserDocument>(pipeline).exec();
     return users.map((user) => this.mongoToDomain(user));
   }
 
@@ -142,11 +182,17 @@ export class MongoUserRepository implements UserRepository {
       const userDoc = this.domainToMongo(user);
 
       // Upsert: update if exists, create if not
-      const savedUser = await this.userModel.findOneAndUpdate(
-        { _id: user.id },
-        userDoc,
-        { upsert: true, new: true },
-      );
+      const savedUser = await this.userModel
+        .findOneAndUpdate({ _id: user.id }, userDoc, {
+          upsert: true,
+          new: true,
+          lean: true,
+        })
+        .exec();
+
+      if (!savedUser) {
+        throw new Error('Failed to save user');
+      }
 
       this.logger.info(this.i18n.t('operations.user.saved_successfully'), {
         userId: savedUser._id,
@@ -167,7 +213,7 @@ export class MongoUserRepository implements UserRepository {
 
   async findById(id: string): Promise<DomainUser | null> {
     try {
-      const user = await this.userModel.findById(id);
+      const user = await this.userModel.findById(id).lean().exec();
       return user ? this.mongoToDomain(user) : null;
     } catch (error) {
       this.logger.error(
@@ -183,9 +229,12 @@ export class MongoUserRepository implements UserRepository {
 
   async findByEmail(email: Email): Promise<DomainUser | null> {
     try {
-      const user = await this.userModel.findOne({
-        email: email.value.toLowerCase(),
-      });
+      const user = await this.userModel
+        .findOne({
+          email: email.value.toLowerCase(),
+        })
+        .lean()
+        .exec();
       return user ? this.mongoToDomain(user) : null;
     } catch (error) {
       this.logger.error(
@@ -201,9 +250,11 @@ export class MongoUserRepository implements UserRepository {
 
   async existsByEmail(email: string): Promise<boolean> {
     try {
-      const count = await this.userModel.countDocuments({
-        email: email.toLowerCase(),
-      });
+      const count = await this.userModel
+        .countDocuments({
+          email: email.toLowerCase(),
+        })
+        .lean();
       return count > 0;
     } catch (error) {
       this.logger.error(
@@ -328,7 +379,7 @@ export class MongoUserRepository implements UserRepository {
               _id: 1,
               email: 1,
               name: 1,
-              password: 1,
+              hashedPassword: 1,
               role: 1,
               isActive: 1,
               createdAt: 1,
@@ -396,15 +447,19 @@ export class MongoUserRepository implements UserRepository {
         },
       ];
 
-      const [result] = await this.userModel.aggregate(pipeline);
+      const results =
+        await this.userModel.aggregate<SearchAggregationResult>(pipeline);
+      const [result] = results;
 
       const users = result?.users || [];
       const total = result?.totalCount?.[0]?.count || 0;
 
-      const data = users.map((user: unknown) => ({
-        ...this.mongoToDomain(user as UserDocument),
-        relevanceScore: (user as { relevanceScore: number }).relevanceScore,
-      }));
+      const data = users.map((user) => {
+        const domainUser = this.mongoToDomain(user);
+        return Object.assign(domainUser, {
+          relevanceScore: user.relevanceScore,
+        });
+      });
 
       return {
         data,
@@ -471,19 +526,25 @@ export class MongoUserRepository implements UserRepository {
         },
       ];
 
-      const [result] = await this.userModel.aggregate(pipeline);
+      const results =
+        await this.userModel.aggregate<StatsAggregationResult>(pipeline);
+      const [result] = results;
+
+      if (!result) {
+        throw new Error('No aggregation results returned');
+      }
 
       // Transformation des résultats
       const total = result.total[0]?.count || 0;
 
       const byRole = {} as Record<UserRole, number>;
       Object.values(UserRole).forEach((role) => (byRole[role] = 0));
-      result.byRole.forEach((item: { _id: UserRole; count: number }) => {
+      result.byRole.forEach((item) => {
         byRole[item._id] = item.count;
       });
 
       const activityMap = result.activityStatus.reduce(
-        (acc: Record<string, number>, item: { _id: string; count: number }) => {
+        (acc: Record<string, number>, item) => {
           acc[item._id] = item.count;
           return acc;
         },
@@ -594,12 +655,7 @@ export class MongoUserRepository implements UserRepository {
 
       this.logger.info('Query performance analysis', {
         filters,
-        explanation: {
-          executionTimeMillis: explanation.executionStats?.executionTimeMillis,
-          totalDocsExamined: explanation.executionStats?.totalDocsExamined,
-          totalDocsReturned: explanation.executionStats?.totalDocsReturned,
-          indexesUsed: explanation.executionStats?.executionStages,
-        },
+        explanation: JSON.stringify(explanation),
       });
 
       return explanation;
@@ -628,7 +684,7 @@ export class MongoUserRepository implements UserRepository {
       _id: user.id,
       email: user.email.value,
       name: user.name,
-      password: user.hashedPassword || '',
+      hashedPassword: user.hashedPassword || '',
       role: user.role,
       isActive: true, // Par défaut actif, peut être géré par une propriété métier
       // createdAt et updatedAt gérés automatiquement par Mongoose
@@ -644,7 +700,7 @@ export class MongoUserRepository implements UserRepository {
       new Email(userDoc.email),
       userDoc.name,
       userDoc.role,
-      userDoc.password,
+      userDoc.hashedPassword,
       userDoc.createdAt || new Date(),
       userDoc.updatedAt || new Date(),
     );

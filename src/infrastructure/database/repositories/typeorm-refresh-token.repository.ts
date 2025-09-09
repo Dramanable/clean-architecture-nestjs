@@ -24,7 +24,7 @@ export class TypeOrmRefreshTokenRepository {
     private readonly i18n: I18nService,
   ) {}
 
-  async findByToken(token: string): Promise<RefreshTokenOrmEntity | null> {
+  async findByToken(token: string): Promise<DomainRefreshToken | null> {
     const context = {
       operation: 'FIND_REFRESH_TOKEN',
       timestamp: new Date().toISOString(),
@@ -36,8 +36,11 @@ export class TypeOrmRefreshTokenRepository {
     });
 
     try {
+      // Hash le token avant de le chercher en base
+      const hashedToken = this.hashToken(token);
+      
       const result = await this.repository.findOne({
-        where: { tokenHash: token },
+        where: { tokenHash: hashedToken },
       });
 
       if (result) {
@@ -45,14 +48,41 @@ export class TypeOrmRefreshTokenRepository {
           this.i18n.t('operations.refresh_token.lookup_success'),
           { ...context, tokenId: result.id, userId: result.userId },
         );
+        
+        // Convertir l'entité ORM en entité domain
+        const domainToken = DomainRefreshToken.reconstruct(
+          result.id,
+          result.userId,
+          result.tokenHash,
+          result.expiresAt,
+          {
+            deviceId: result.deviceId,
+            userAgent: result.userAgent,
+            ipAddress: result.ipAddress,
+          },
+          result.isRevoked,
+          result.revokedAt,
+          result.createdAt,
+        );
+
+        // Vérifier que le token fourni correspond au hash stocké
+        if (!domainToken.verifyToken(token)) {
+          this.logger.warn('Token hash mismatch - possible security issue', {
+            ...context,
+            tokenId: result.id,
+            userId: result.userId,
+          });
+          return null;
+        }
+
+        return domainToken;
       } else {
         this.logger.warn(
           this.i18n.t('warnings.refresh_token.token_not_found'),
           { ...context, tokenProvided: !!token },
         );
+        return null;
       }
-
-      return result;
     } catch (error) {
       this.logger.error(
         this.i18n.t('errors.refresh_token.lookup_failed'),
@@ -132,5 +162,19 @@ export class TypeOrmRefreshTokenRepository {
       );
       throw error;
     }
+  }
+
+  /**
+   * Hash le token pour la recherche en base de données
+   * Même logique que dans l'entité domain RefreshToken
+   */
+  private hashToken(token: string): string {
+    let hash = 0;
+    for (let i = 0; i < token.length; i++) {
+      const char = token.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return `hash_${Math.abs(hash).toString(16)}`;
   }
 }
