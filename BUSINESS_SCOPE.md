@@ -7,6 +7,7 @@
 ## 🏗️ **Architecture Séparée Frontend/Backend**
 
 ### 🎨 **Frontend Next.js** (Application Séparée)
+
 - **Site web public** optimisé pour le **référencement SEO**
 - **Interface internautes** pour la prise de rendez-vous en ligne
 - **Pages statiques générées** pour performances maximales
@@ -17,6 +18,7 @@
 - **Sitemap XML automatique** et robots.txt optimisés
 
 ### 🚀 **Backend NestJS** (Ce Projet)
+
 - **API REST pure** avec endpoints sécurisés
 - **Gestion métier complète** des rendez-vous
 - **Authentification entreprise** et personnel
@@ -264,14 +266,14 @@ export default {
   // Static Generation pour SEO optimal
   output: 'export', // Pages statiques générées
   trailingSlash: true,
-  
+
   // Core Web Vitals optimisés
   images: {
     formats: ['image/webp', 'image/avif'],
     loader: 'custom',
-    domains: ['api.votre-domaine.com']
+    domains: ['api.votre-domaine.com'],
   },
-  
+
   // Métadonnées SEO dynamiques
   generateMetadata: async ({ params }) => ({
     title: `Prendre RDV - ${business.name} - ${location.name}`,
@@ -282,12 +284,14 @@ export default {
       locale: 'fr_FR',
       url: `https://rdv.${business.domain}/${location.slug}`,
       siteName: business.name,
-      images: [{
-        url: business.logoUrl,
-        width: 1200,
-        height: 630,
-        alt: `${business.name} - Prise de rendez-vous`
-      }]
+      images: [
+        {
+          url: business.logoUrl,
+          width: 1200,
+          height: 630,
+          alt: `${business.name} - Prise de rendez-vous`,
+        },
+      ],
     },
     robots: {
       index: true,
@@ -297,11 +301,11 @@ export default {
         follow: true,
         'max-video-preview': -1,
         'max-image-preview': 'large',
-        'max-snippet': -1
-      }
-    }
-  })
-}
+        'max-snippet': -1,
+      },
+    },
+  }),
+};
 ```
 
 #### **🔍 Schema.org pour Rich Snippets**
@@ -309,41 +313,42 @@ export default {
 ```typescript
 // JSON-LD pour Google Rich Results
 const businessSchema = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": business.name,
-  "description": business.description,
-  "url": `https://rdv.${business.domain}`,
-  "telephone": business.phone,
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": location.address.street,
-    "addressLocality": location.address.city,
-    "postalCode": location.address.zipCode,
-    "addressCountry": "FR"
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: business.name,
+  description: business.description,
+  url: `https://rdv.${business.domain}`,
+  telephone: business.phone,
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: location.address.street,
+    addressLocality: location.address.city,
+    postalCode: location.address.zipCode,
+    addressCountry: 'FR',
   },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": location.coordinates.lat,
-    "longitude": location.coordinates.lng
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: location.coordinates.lat,
+    longitude: location.coordinates.lng,
   },
-  "openingHours": location.businessHours.map(schedule => 
-    `${schedule.dayOfWeek} ${schedule.openTime}-${schedule.closeTime}`
+  openingHours: location.businessHours.map(
+    (schedule) =>
+      `${schedule.dayOfWeek} ${schedule.openTime}-${schedule.closeTime}`,
   ),
-  "hasOfferCatalog": {
-    "@type": "OfferCatalog",
-    "name": "Services disponibles",
-    "itemListElement": services.map(service => ({
-      "@type": "Offer",
-      "itemOffered": {
-        "@type": "Service",
-        "name": service.name,
-        "description": service.description,
-        "provider": business.name
-      }
-    }))
-  }
-}
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'Services disponibles',
+    itemListElement: services.map((service) => ({
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'Service',
+        name: service.name,
+        description: service.description,
+        provider: business.name,
+      },
+    })),
+  },
+};
 ```
 
 #### **📱 Architecture Frontend - Pages Principales**
@@ -380,43 +385,42 @@ app/
 // API publique consommée par Next.js
 @Controller('public')
 export class PublicAppointmentController {
-  
   // Données SEO-friendly avec cache
   @Get('businesses')
   @CacheControl(300) // 5min cache
   async getBusinesses(): Promise<PublicBusinessDto[]> {
     // Données optimisées pour SEO + performance
   }
-  
+
   @Get('businesses/:id/locations')
   @CacheControl(300)
   async getBusinessLocations(
-    @Param('id') businessId: string
+    @Param('id') businessId: string,
   ): Promise<PublicLocationDto[]> {
     // Sites avec données SEO (coordonnées, horaires, etc.)
   }
-  
+
   @Get('availability')
   @CacheControl(60) // 1min cache - données temps réel
   async getAvailability(
-    @Query() filters: AvailabilityFiltersDto
+    @Query() filters: AvailabilityFiltersDto,
   ): Promise<AvailabilityResponseDto> {
     // Créneaux disponibles optimisés
   }
-  
+
   // Réservation avec validation complète
   @Post('appointments')
   @RateLimit({ ttl: 60, limit: 10 }) // Protection spam
   async createAppointment(
-    @Body() data: CreatePublicAppointmentDto
+    @Body() data: CreatePublicAppointmentDto,
   ): Promise<PublicAppointmentResponseDto> {
     // Création avec token public pour suivi
   }
-  
+
   // Gestion RDV client via token public
   @Get('appointments/:token')
   async getAppointmentByToken(
-    @Param('token') token: string
+    @Param('token') token: string,
   ): Promise<PublicAppointmentDto> {
     // Accès sécurisé sans auth
   }
@@ -429,23 +433,22 @@ export class PublicAppointmentController {
 // Webhooks pour synchronisation Frontend
 @Controller('webhooks')
 export class WebhookController {
-  
   @Post('appointment-created')
   async onAppointmentCreated(@Body() data: AppointmentCreatedEvent) {
     // Revalidation ISR Next.js
     await this.nextjsService.revalidate([
       `/api/revalidate?path=/${data.location.slug}`,
-      `/api/revalidate?path=/${data.location.slug}/rdv`
+      `/api/revalidate?path=/${data.location.slug}/rdv`,
     ]);
-    
+
     // Notification temps réel clients connectés
     await this.websocketService.emit('availability-updated', {
       locationId: data.locationId,
       serviceId: data.serviceId,
-      date: data.appointmentDate
+      date: data.appointmentDate,
     });
   }
-  
+
   @Post('business-updated')
   async onBusinessUpdated(@Body() data: BusinessUpdatedEvent) {
     // Mise à jour cache + revalidation pages
@@ -461,32 +464,125 @@ export class WebhookController {
 // Données analytics pour optimisation SEO
 @Controller('admin/seo')
 export class SeoAnalyticsController {
-  
   @Get('performance')
   async getSeoPerformance(): Promise<SeoMetricsDto> {
     return {
       // Core Web Vitals depuis Real User Monitoring
       coreWebVitals: await this.analyticsService.getCoreWebVitals(),
-      
+
       // Positions mots-clés
       keywordRankings: await this.seoService.getKeywordRankings(),
-      
+
       // Trafic organique
       organicTraffic: await this.analyticsService.getOrganicTraffic(),
-      
+
       // Taux conversion par landing page
-      conversionRates: await this.analyticsService.getConversionRates()
+      conversionRates: await this.analyticsService.getConversionRates(),
     };
   }
-  
+
   @Get('content-optimization')
   async getContentSuggestions(): Promise<ContentOptimizationDto> {
     // Suggestions auto d'optimisation contenu
     return await this.aiService.generateSeoSuggestions({
       businessType: this.business.category,
       location: this.business.locations,
-      competitors: await this.seoService.getCompetitors()
+      competitors: await this.seoService.getCompetitors(),
     });
+  }
+}
+```
+
+#### **🎨 Endpoints Gestion Identité d'Entreprise** 🔥 **NOUVEAU**
+
+```typescript
+// Gestion de l'identité visuelle et informations d'entreprise
+@Controller('admin/business-identity')
+@UseGuards(JwtAuthGuard, RoleGuard)
+@Roles('SUPER_ADMIN', 'MANAGER')
+export class BusinessIdentityController {
+  // 🎨 Gestion du branding
+  @Put('branding')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logo', maxCount: 1 },
+      { name: 'banner', maxCount: 1 },
+      { name: 'profile', maxCount: 1 },
+      { name: 'gallery', maxCount: 10 },
+    ]),
+  )
+  async updateBranding(
+    @Body() brandingData: UpdateBusinessBrandingDto,
+    @UploadedFiles() files: BusinessImageFiles,
+    @CurrentUser() user: User,
+  ): Promise<BusinessBrandingResponseDto> {
+    return await this.businessIdentityService.updateBranding({
+      businessId: user.businessId,
+      branding: brandingData,
+      files,
+      requestingUserId: user.id,
+    });
+  }
+
+  // 📞 Gestion des coordonnées
+  @Put('contact-info')
+  async updateContactInfo(
+    @Body() contactData: UpdateBusinessContactInfoDto,
+    @CurrentUser() user: User,
+  ): Promise<BusinessContactInfoResponseDto> {
+    return await this.businessIdentityService.updateContactInfo({
+      businessId: user.businessId,
+      contactInfo: contactData,
+      requestingUserId: user.id,
+    });
+  }
+
+  // 📱 Gestion des réseaux sociaux
+  @Put('social-media')
+  async updateSocialMedia(
+    @Body() socialData: UpdateSocialMediaLinksDto,
+    @CurrentUser() user: User,
+  ): Promise<SocialMediaLinksResponseDto> {
+    return await this.businessIdentityService.updateSocialMedia({
+      businessId: user.businessId,
+      socialMedia: socialData,
+      requestingUserId: user.id,
+    });
+  }
+
+  // 🌐 Profil public avec prévisualisation
+  @Get('public-profile/preview')
+  async previewPublicProfile(
+    @CurrentUser() user: User,
+  ): Promise<BusinessPublicProfileResponseDto> {
+    return await this.businessIdentityService.getPublicProfile({
+      businessId: user.businessId,
+      includePrivateInfo: false,
+      requestingUserId: user.id,
+    });
+  }
+}
+
+// API publique pour consultation des profils d'entreprise
+@Controller('public/business-profile')
+export class PublicBusinessProfileController {
+  @Get(':businessSlug')
+  @CacheControl(300) // 5min cache
+  async getPublicBusinessProfile(
+    @Param('businessSlug') businessSlug: string,
+  ): Promise<PublicBusinessProfileDto> {
+    return await this.businessIdentityService.getPublicProfile({
+      businessSlug,
+      includePrivateInfo: false,
+    });
+  }
+
+  @Get(':businessSlug/structured-data')
+  @CacheControl(3600) // 1h cache - Données Schema.org
+  async getStructuredData(
+    @Param('businessSlug') businessSlug: string,
+  ): Promise<StructuredDataDto> {
+    return await this.seoService.generateStructuredData(businessSlug);
   }
 }
 ```
@@ -502,9 +598,15 @@ export class Business {
   public readonly id: string;
   public readonly name: string;
   public readonly description?: string;
+  public readonly slogan?: string; // 🔥 NOUVEAU: Slogan marketing
+  public readonly businessSectors: BusinessSector[]; // 🔥 NOUVEAU: Secteurs d'activité
+  public readonly branding: BusinessBranding; // 🔥 NOUVEAU: Logo, images, identité visuelle
   public readonly headquarters: Address; // 🔥 MODIFIÉ: Siège social
   public readonly locations: BusinessLocation[]; // 🔥 NOUVEAU: Sites multiples
-  public readonly contactInfo: ContactInfo;
+  public readonly contactInfo: BusinessContactInfo; // 🔥 MODIFIÉ: Coordonnées complètes
+  public readonly socialMedia: SocialMediaLinks; // 🔥 NOUVEAU: Réseaux sociaux
+  public readonly legalInfo: BusinessLegalInfo; // 🔥 NOUVEAU: Informations légales
+  public readonly foundedDate?: Date; // 🔥 NOUVEAU: Date de création
   public readonly globalSettings: BusinessSettings;
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
@@ -522,6 +624,12 @@ export class Business {
     dateTime: Date,
   ): Staff[]; // 🔥 NOUVEAU
   hasMultipleLocations(): boolean; // 🔥 NOUVEAU
+  updateBranding(branding: BusinessBranding): void; // 🔥 NOUVEAU
+  updateContactInfo(contactInfo: BusinessContactInfo): void; // 🔥 NOUVEAU
+  updateSocialMedia(socialMedia: SocialMediaLinks): void; // 🔥 NOUVEAU
+  getFormattedAddress(): string; // 🔥 NOUVEAU
+  getPrimaryContact(): ContactInfo; // 🔥 NOUVEAU
+  getPublicProfile(): BusinessPublicProfile; // 🔥 NOUVEAU
 }
 ```
 
@@ -926,6 +1034,306 @@ export enum StaffMobilityType {
 
 ---
 
+## 🏢 **Entités Métier pour Informations d'Entreprise** 🔥 **NOUVEAU**
+
+### 🎨 **BusinessBranding (Identité Visuelle)**
+
+```typescript
+export class BusinessBranding {
+  public readonly logoUrl: string; // Logo principal
+  public readonly logoLightUrl?: string; // Logo version claire
+  public readonly logoDarkUrl?: string; // Logo version sombre
+  public readonly faviconUrl?: string; // Favicon
+  public readonly bannerImageUrl?: string; // Image de bannière
+  public readonly profileImageUrl?: string; // Photo de profil
+  public readonly brandColors: BrandColors; // Couleurs de marque
+  public readonly brandFonts?: BrandFonts; // Polices de marque
+  public readonly brandGuidelines?: string; // Guidelines de marque
+  public readonly imageGallery: BusinessImage[]; // Galerie d'images
+  public readonly updatedAt: Date;
+
+  // Business rules
+  getLogoForTheme(theme: 'light' | 'dark'): string;
+  getPrimaryColor(): string;
+  getSecondaryColor(): string;
+  validateImageFormats(): boolean;
+  optimizeImagesForWeb(): Promise<OptimizedImages>;
+}
+```
+
+### 🎨 **BrandColors (Couleurs de Marque)**
+
+```typescript
+export class BrandColors {
+  public readonly primary: string; // Couleur principale (#hex)
+  public readonly secondary?: string; // Couleur secondaire
+  public readonly accent?: string; // Couleur d'accent
+  public readonly background?: string; // Couleur de fond
+  public readonly text?: string; // Couleur de texte
+  public readonly neutral?: string; // Couleur neutre
+
+  // Business rules
+  isValidHexColor(color: string): boolean;
+  getColorPalette(): ColorPalette;
+  generateComplementaryColors(): ComplementaryColors;
+}
+```
+
+### 📷 **BusinessImage (Images d'Entreprise)**
+
+```typescript
+export class BusinessImage {
+  public readonly id: string;
+  public readonly url: string;
+  public readonly alt: string; // Texte alternatif
+  public readonly caption?: string; // Légende
+  public readonly category: ImageCategory; // Catégorie d'image
+  public readonly size: ImageSize; // Dimensions
+  public readonly format: ImageFormat; // Format (jpg, png, webp)
+  public readonly isPublic: boolean; // Visible publiquement
+  public readonly order: number; // Ordre d'affichage
+  public readonly uploadedAt: Date;
+  public readonly updatedAt: Date;
+
+  // Business rules
+  isOptimizedForWeb(): boolean;
+  generateThumbnail(): Promise<string>;
+  compressImage(quality: number): Promise<CompressedImage>;
+}
+```
+
+### 📞 **BusinessContactInfo (Coordonnées d'Entreprise)**
+
+```typescript
+export class BusinessContactInfo {
+  public readonly primaryPhone: string; // Téléphone principal
+  public readonly secondaryPhone?: string; // Téléphone secondaire
+  public readonly mobilePhone?: string; // Mobile
+  public readonly faxNumber?: string; // Fax
+  public readonly primaryEmail: string; // Email principal
+  public readonly supportEmail?: string; // Email support
+  public readonly salesEmail?: string; // Email commercial
+  public readonly websiteUrl?: string; // Site web
+  public readonly emergencyContact?: EmergencyContactInfo; // Contact d'urgence
+  public readonly businessHours: ContactBusinessHours; // Horaires de contact
+  public readonly preferredContactMethods: ContactMethod[]; // Méthodes préférées
+  public readonly languages: SupportedLanguage[]; // Langues supportées
+  public readonly updatedAt: Date;
+
+  // Business rules
+  getPrimaryContact(): ContactInfo;
+  getContactByType(type: ContactType): ContactInfo | null;
+  isContactMethodAvailable(method: ContactMethod, dateTime: Date): boolean;
+  formatPhoneNumber(country: string): string;
+  validateEmailAddresses(): ValidationResult;
+}
+```
+
+### 📱 **SocialMediaLinks (Réseaux Sociaux)**
+
+```typescript
+export class SocialMediaLinks {
+  public readonly facebook?: SocialMediaProfile;
+  public readonly instagram?: SocialMediaProfile;
+  public readonly twitter?: SocialMediaProfile;
+  public readonly linkedin?: SocialMediaProfile;
+  public readonly youtube?: SocialMediaProfile;
+  public readonly tiktok?: SocialMediaProfile;
+  public readonly pinterest?: SocialMediaProfile;
+  public readonly whatsapp?: string; // Numéro WhatsApp Business
+  public readonly telegram?: string; // Canal Telegram
+  public readonly customLinks?: CustomSocialLink[]; // Liens personnalisés
+  public readonly updatedAt: Date;
+
+  // Business rules
+  getActiveProfiles(): SocialMediaProfile[];
+  validateSocialUrls(): ValidationResult;
+  generateSocialSharingUrls(content: ShareableContent): SocialSharingUrls;
+  getFollowersCount(): Promise<SocialMetrics>;
+}
+```
+
+### 📱 **SocialMediaProfile (Profil Réseau Social)**
+
+```typescript
+export class SocialMediaProfile {
+  public readonly platform: SocialPlatform;
+  public readonly url: string;
+  public readonly username: string;
+  public readonly displayName?: string;
+  public readonly isVerified: boolean;
+  public readonly isActive: boolean;
+  public readonly followersCount?: number;
+  public readonly lastUpdated?: Date;
+
+  // Business rules
+  isValidUrl(): boolean;
+  generateEmbedCode(): string;
+  getProfileMetrics(): Promise<ProfileMetrics>;
+}
+```
+
+### 🏭 **BusinessSector (Secteur d'Activité)**
+
+```typescript
+export class BusinessSector {
+  public readonly id: string;
+  public readonly name: string; // Ex: "Santé et Bien-être"
+  public readonly code: string; // Code NAF/NACE
+  public readonly description?: string;
+  public readonly category: SectorCategory; // Catégorie principale
+  public readonly subcategories: string[]; // Sous-catégories
+  public readonly keywords: string[]; // Mots-clés SEO
+  public readonly regulations?: BusinessRegulation[]; // Réglementations spécifiques
+  public readonly isActive: boolean;
+
+  // Business rules
+  getRegulationsByType(type: RegulationType): BusinessRegulation[];
+  generateSeoKeywords(): string[];
+  isRegulatedSector(): boolean;
+}
+```
+
+### ⚖️ **BusinessLegalInfo (Informations Légales)**
+
+```typescript
+export class BusinessLegalInfo {
+  public readonly legalName: string; // Raison sociale
+  public readonly tradingName?: string; // Nom commercial
+  public readonly legalForm: CompanyType; // Forme juridique (SARL, SAS, etc.)
+  public readonly registrationNumber: string; // SIRET
+  public readonly vatNumber?: string; // TVA intracommunautaire
+  public readonly tradeRegisterNumber?: string; // RCS
+  public readonly licenseNumbers: BusinessLicense[]; // Licences professionnelles
+  public readonly insuranceInfo?: InsuranceInfo; // Assurances
+  public readonly complianceCertifications: ComplianceCertification[]; // Certifications
+  public readonly establishmentDate: Date; // Date d'établissement
+  public readonly updatedAt: Date;
+
+  // Business rules
+  isLicenseValid(licenseType: LicenseType): boolean;
+  getActiveCertifications(): ComplianceCertification[];
+  generateLegalDisclaimer(): string;
+  validateComplianceStatus(): ComplianceStatus;
+}
+```
+
+### 📄 **BusinessPublicProfile (Profil Public)**
+
+```typescript
+export class BusinessPublicProfile {
+  public readonly businessId: string;
+  public readonly displayName: string;
+  public readonly shortDescription: string; // Description courte (160 chars max)
+  public readonly longDescription?: string; // Description détaillée
+  public readonly tagline?: string; // Phrase d'accroche
+  public readonly highlights: string[]; // Points forts
+  public readonly awards?: BusinessAward[]; // Récompenses
+  public readonly testimonials?: CustomerTestimonial[]; // Témoignages
+  public readonly featuredServices: string[]; // Services mis en avant
+  public readonly galleryImages: string[]; // Images de galerie
+  public readonly videoUrl?: string; // Vidéo de présentation
+  public readonly isPubliclyVisible: boolean;
+  public readonly seoMetadata: SeoMetadata; // Métadonnées SEO
+  public readonly updatedAt: Date;
+
+  // Business rules
+  generateMetaDescription(): string;
+  getStructuredData(): StructuredData; // Schema.org
+  optimizeForSeo(): SeoOptimization;
+  validatePublicContent(): ContentValidation;
+}
+```
+
+---
+
+## 📝 **Énumérations pour Informations d'Entreprise** 🔥 **NOUVEAU**
+
+### **ImageCategory** - Catégories d'Images
+
+```typescript
+export enum ImageCategory {
+  LOGO = 'LOGO',
+  BANNER = 'BANNER',
+  GALLERY = 'GALLERY',
+  TEAM = 'TEAM',
+  FACILITY = 'FACILITY',
+  SERVICE = 'SERVICE',
+  CERTIFICATE = 'CERTIFICATE',
+  PRODUCT = 'PRODUCT',
+  EVENT = 'EVENT',
+  OTHER = 'OTHER',
+}
+```
+
+### **SocialPlatform** - Plateformes Sociales
+
+```typescript
+export enum SocialPlatform {
+  FACEBOOK = 'FACEBOOK',
+  INSTAGRAM = 'INSTAGRAM',
+  TWITTER = 'TWITTER',
+  LINKEDIN = 'LINKEDIN',
+  YOUTUBE = 'YOUTUBE',
+  TIKTOK = 'TIKTOK',
+  PINTEREST = 'PINTEREST',
+  SNAPCHAT = 'SNAPCHAT',
+  WHATSAPP = 'WHATSAPP',
+  TELEGRAM = 'TELEGRAM',
+  CUSTOM = 'CUSTOM',
+}
+```
+
+### **ContactMethod** - Méthodes de Contact
+
+```typescript
+export enum ContactMethod {
+  PHONE = 'PHONE',
+  EMAIL = 'EMAIL',
+  SMS = 'SMS',
+  WHATSAPP = 'WHATSAPP',
+  ONLINE_CHAT = 'ONLINE_CHAT',
+  CONTACT_FORM = 'CONTACT_FORM',
+  APPOINTMENT_BOOKING = 'APPOINTMENT_BOOKING',
+  SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+}
+```
+
+### **SectorCategory** - Catégories de Secteurs
+
+```typescript
+export enum SectorCategory {
+  HEALTHCARE = 'HEALTHCARE', // Santé
+  BEAUTY_WELLNESS = 'BEAUTY_WELLNESS', // Beauté et bien-être
+  PROFESSIONAL_SERVICES = 'PROFESSIONAL_SERVICES', // Services professionnels
+  EDUCATION = 'EDUCATION', // Éducation
+  CONSULTING = 'CONSULTING', // Conseil
+  MAINTENANCE = 'MAINTENANCE', // Maintenance
+  PERSONAL_SERVICES = 'PERSONAL_SERVICES', // Services à la personne
+  AUTOMOTIVE = 'AUTOMOTIVE', // Automobile
+  HOME_SERVICES = 'HOME_SERVICES', // Services à domicile
+  OTHER = 'OTHER', // Autre
+}
+```
+
+### **CompanyType** - Formes Juridiques
+
+```typescript
+export enum CompanyType {
+  SARL = 'SARL', // Société à responsabilité limitée
+  SAS = 'SAS', // Société par actions simplifiée
+  SA = 'SA', // Société anonyme
+  EURL = 'EURL', // Entreprise unipersonnelle à responsabilité limitée
+  SNC = 'SNC', // Société en nom collectif
+  MICRO_ENTREPRISE = 'MICRO_ENTREPRISE', // Micro-entreprise
+  EI = 'EI', // Entreprise individuelle
+  ASSOCIATION = 'ASSOCIATION', // Association
+  OTHER = 'OTHER', // Autre
+}
+```
+
+---
+
 ## �🔄 **Use Cases Principaux**
 
 ### 🏢 **Gestion d'Entreprise**
@@ -1050,6 +1458,280 @@ export interface SetAvailabilityRequest {
 
 export class SetStaffAvailabilityUseCase {
   async execute(request: SetAvailabilityRequest): Promise<AvailabilityResponse>;
+}
+```
+
+### 🎨 **Gestion de l'Identité d'Entreprise** 🔥 **NOUVEAU**
+
+#### **UpdateBusinessBrandingUseCase**
+
+```typescript
+export interface UpdateBusinessBrandingRequest {
+  businessId: string;
+  branding: BusinessBrandingData;
+  requestingUserId: string;
+}
+
+export interface BusinessBrandingData {
+  logoFile?: FileUpload; // Nouveau logo
+  bannerImageFile?: FileUpload; // Nouvelle bannière
+  profileImageFile?: FileUpload; // Nouvelle image de profil
+  brandColors?: BrandColorsData;
+  brandFonts?: BrandFontsData;
+  imageGallery?: BusinessImageData[];
+  removeImages?: string[]; // IDs des images à supprimer
+}
+
+export class UpdateBusinessBrandingUseCase {
+  async execute(
+    request: UpdateBusinessBrandingRequest,
+  ): Promise<BrandingResponse>;
+
+  private validateImageFormats(files: FileUpload[]): Promise<void>;
+  private optimizeImagesForWeb(files: FileUpload[]): Promise<OptimizedImage[]>;
+  private generateImageVariants(image: OptimizedImage): Promise<ImageVariants>;
+  private updateBrandingAssets(branding: BusinessBrandingData): Promise<void>;
+  private generateBrandGuidelines(colors: BrandColors): Promise<string>;
+  private notifyBrandingUpdate(businessId: string): Promise<void>;
+}
+```
+
+#### **UpdateBusinessContactInfoUseCase**
+
+```typescript
+export interface UpdateBusinessContactInfoRequest {
+  businessId: string;
+  contactInfo: BusinessContactInfoData;
+  requestingUserId: string;
+}
+
+export interface BusinessContactInfoData {
+  primaryPhone: string;
+  secondaryPhone?: string;
+  mobilePhone?: string;
+  faxNumber?: string;
+  primaryEmail: string;
+  supportEmail?: string;
+  salesEmail?: string;
+  websiteUrl?: string;
+  emergencyContact?: EmergencyContactInfoData;
+  businessHours?: ContactBusinessHoursData;
+  preferredContactMethods?: ContactMethod[];
+  languages?: SupportedLanguage[];
+}
+
+export class UpdateBusinessContactInfoUseCase {
+  async execute(
+    request: UpdateBusinessContactInfoRequest,
+  ): Promise<ContactInfoResponse>;
+
+  private validatePhoneNumbers(phones: string[]): Promise<ValidationResult>;
+  private validateEmailAddresses(emails: string[]): Promise<ValidationResult>;
+  private validateWebsiteUrl(url: string): Promise<ValidationResult>;
+  private updateContactInformation(
+    contactInfo: BusinessContactInfoData,
+  ): Promise<void>;
+  private notifySocialMediaUpdate(businessId: string): Promise<void>;
+  private updateSeoMetadata(businessId: string): Promise<void>;
+}
+```
+
+#### **UpdateSocialMediaLinksUseCase**
+
+```typescript
+export interface UpdateSocialMediaLinksRequest {
+  businessId: string;
+  socialMedia: SocialMediaLinksData;
+  requestingUserId: string;
+}
+
+export interface SocialMediaLinksData {
+  facebook?: SocialMediaProfileData;
+  instagram?: SocialMediaProfileData;
+  twitter?: SocialMediaProfileData;
+  linkedin?: SocialMediaProfileData;
+  youtube?: SocialMediaProfileData;
+  tiktok?: SocialMediaProfileData;
+  pinterest?: SocialMediaProfileData;
+  whatsapp?: string;
+  telegram?: string;
+  customLinks?: CustomSocialLinkData[];
+}
+
+export class UpdateSocialMediaLinksUseCase {
+  async execute(
+    request: UpdateSocialMediaLinksRequest,
+  ): Promise<SocialMediaResponse>;
+
+  private validateSocialUrls(
+    socialMedia: SocialMediaLinksData,
+  ): Promise<ValidationResult>;
+  private fetchSocialMetrics(
+    profiles: SocialMediaProfile[],
+  ): Promise<SocialMetrics>;
+  private generateSocialSharingUrls(
+    businessId: string,
+  ): Promise<SocialSharingUrls>;
+  private updateSocialMediaIntegrations(
+    socialMedia: SocialMediaLinksData,
+  ): Promise<void>;
+  private scheduleSocialMetricsUpdate(businessId: string): Promise<void>;
+}
+```
+
+#### **UpdateBusinessSectorsUseCase**
+
+```typescript
+export interface UpdateBusinessSectorsRequest {
+  businessId: string;
+  sectors: BusinessSectorData[];
+  requestingUserId: string;
+}
+
+export interface BusinessSectorData {
+  name: string;
+  code?: string; // Code NAF/NACE
+  description?: string;
+  category: SectorCategory;
+  subcategories?: string[];
+  keywords?: string[];
+}
+
+export class UpdateBusinessSectorsUseCase {
+  async execute(
+    request: UpdateBusinessSectorsRequest,
+  ): Promise<BusinessSectorsResponse>;
+
+  private validateSectorCodes(
+    sectors: BusinessSectorData[],
+  ): Promise<ValidationResult>;
+  private generateSeoKeywords(sectors: BusinessSectorData[]): Promise<string[]>;
+  private checkSectorRegulations(
+    sectors: BusinessSectorData[],
+  ): Promise<BusinessRegulation[]>;
+  private updateBusinessClassification(
+    businessId: string,
+    sectors: BusinessSectorData[],
+  ): Promise<void>;
+  private regenerateSeoMetadata(businessId: string): Promise<void>;
+}
+```
+
+#### **UpdateBusinessLegalInfoUseCase**
+
+```typescript
+export interface UpdateBusinessLegalInfoRequest {
+  businessId: string;
+  legalInfo: BusinessLegalInfoData;
+  requestingUserId: string;
+}
+
+export interface BusinessLegalInfoData {
+  legalName: string;
+  tradingName?: string;
+  legalForm: CompanyType;
+  registrationNumber: string;
+  vatNumber?: string;
+  tradeRegisterNumber?: string;
+  licenseNumbers?: BusinessLicenseData[];
+  insuranceInfo?: InsuranceInfoData;
+  complianceCertifications?: ComplianceCertificationData[];
+}
+
+export class UpdateBusinessLegalInfoUseCase {
+  async execute(
+    request: UpdateBusinessLegalInfoRequest,
+  ): Promise<LegalInfoResponse>;
+
+  private validateRegistrationNumbers(
+    legalInfo: BusinessLegalInfoData,
+  ): Promise<ValidationResult>;
+  private checkLicenseValidity(
+    licenses: BusinessLicenseData[],
+  ): Promise<LicenseValidation>;
+  private validateInsuranceRequirements(
+    insuranceInfo: InsuranceInfoData,
+  ): Promise<InsuranceValidation>;
+  private updateComplianceStatus(businessId: string): Promise<ComplianceStatus>;
+  private generateLegalDisclaimer(
+    legalInfo: BusinessLegalInfoData,
+  ): Promise<string>;
+  private scheduleComplianceRenewalReminders(businessId: string): Promise<void>;
+}
+```
+
+#### **UpdateBusinessPublicProfileUseCase**
+
+```typescript
+export interface UpdateBusinessPublicProfileRequest {
+  businessId: string;
+  publicProfile: BusinessPublicProfileData;
+  requestingUserId: string;
+}
+
+export interface BusinessPublicProfileData {
+  displayName: string;
+  shortDescription: string;
+  longDescription?: string;
+  tagline?: string;
+  highlights?: string[];
+  awards?: BusinessAwardData[];
+  testimonials?: CustomerTestimonialData[];
+  featuredServices?: string[];
+  videoUrl?: string;
+  isPubliclyVisible: boolean;
+}
+
+export class UpdateBusinessPublicProfileUseCase {
+  async execute(
+    request: UpdateBusinessPublicProfileRequest,
+  ): Promise<PublicProfileResponse>;
+
+  private validateDescriptionLength(
+    descriptions: string[],
+  ): Promise<ValidationResult>;
+  private optimizeContentForSeo(
+    content: BusinessPublicProfileData,
+  ): Promise<SeoOptimization>;
+  private generateStructuredData(businessId: string): Promise<StructuredData>;
+  private updateSearchEngineVisibility(
+    businessId: string,
+    isVisible: boolean,
+  ): Promise<void>;
+  private scheduleContentReview(businessId: string): Promise<void>;
+  private notifyPublicProfileUpdate(businessId: string): Promise<void>;
+}
+```
+
+#### **GetBusinessPublicProfileUseCase**
+
+```typescript
+export interface GetBusinessPublicProfileRequest {
+  businessId?: string;
+  businessSlug?: string; // Slug pour URL publique
+  includePrivateInfo?: boolean;
+  requestingUserId?: string;
+}
+
+export class GetBusinessPublicProfileUseCase {
+  async execute(
+    request: GetBusinessPublicProfileRequest,
+  ): Promise<BusinessPublicProfileResponse>;
+
+  private buildPublicProfile(
+    business: Business,
+  ): Promise<BusinessPublicProfile>;
+  private filterPrivateInformation(
+    profile: BusinessPublicProfile,
+    isInternal: boolean,
+  ): BusinessPublicProfile;
+  private enrichWithAnalytics(
+    profile: BusinessPublicProfile,
+  ): Promise<EnrichedProfile>;
+  private generateSeoMetadata(
+    profile: BusinessPublicProfile,
+  ): Promise<SeoMetadata>;
+  private trackProfileView(businessId: string, source?: string): Promise<void>;
 }
 ```
 
@@ -1750,6 +2432,14 @@ export interface ITemplateService {
 - **Analytics par site** : performance, utilisation 🔥 **NOUVEAU**
 - **Configuration** des services de son secteur
 
+#### **🎨 Gestion Identité Limitée** 🔥 **NOUVEAU**
+
+- **Mise à jour description** des sites sous sa responsabilité
+- **Gestion galerie images** des sites assignés
+- **Coordination contact** : horaires, téléphones par site
+- **Validation modifications** avant publication
+- **Prévisualisation** des profils publics des sites
+
 ### 🏢 **4. Interface Super Admin**
 
 - **Master Dashboard** : vue 360° tous sites 🔥 **NOUVEAU**
@@ -1757,6 +2447,20 @@ export interface ITemplateService {
 - **Matrice staff-sites** avec assignations visuelles 🔥 **NOUVEAU**
 - **Simulateur d'optimisation** multi-sites 🔥 **NOUVEAU**
 - **Configuration globale** de l'entreprise
+
+#### **🎨 Gestion de l'Identité d'Entreprise** 🔥 **NOUVEAU**
+
+- **Éditeur de logo** avec upload et redimensionnement automatique
+- **Gestionnaire de galerie** : upload multiple, catégorisation, optimisation web
+- **Configurateur de couleurs** de marque avec prévisualisation temps réel
+- **Éditeur de profil public** : description, slogan, secteurs d'activité
+- **Gestionnaire de coordonnées** : téléphones, emails, adresses multiples
+- **Intégrateur réseaux sociaux** : liens, validation, métriques
+- **Centre légal** : SIRET, licences, assurances, certifications
+- **Prévisualisation publique** : rendu final du profil client
+
+#### **⚙️ Administration Avancée**
+
 - **Gestion complète** du personnel et mobilité
 - **Paramétrage** des services par site, tarifs et **règles de capacité**
 - **Tableau de bord capacité** temps réel tous sites
@@ -1852,7 +2556,7 @@ export class WorkingPeriod {
   public readonly label?: string; // Ex: "Matinée", "Après-midi"
   public readonly maxCapacity?: number; // Capacité spécifique à cette période
   public readonly services?: string[]; // Services disponibles sur cette période
-  
+
   // Business rules
   contains(time: Time): boolean;
   getDurationMinutes(): number;
@@ -1876,7 +2580,7 @@ export class BusinessBreakInterval {
   public readonly exceptions?: Date[]; // Dates où la pause ne s'applique pas
   public readonly isFlexible: boolean; // Peut être décalée/supprimée si nécessaire
   public readonly priority: BreakPriority; // Importance de la pause
-  
+
   // Business rules
   isApplicableOn(date: Date): boolean; // 🔥 NOUVEAU
   canBeMovedFor(urgency: UrgencyLevel): boolean;
@@ -1888,7 +2592,7 @@ enum SpecialDayType {
   REDUCED_HOURS = 'REDUCED_HOURS', // Horaires réduits (veilles de fête, etc.)
   EXTENDED_HOURS = 'EXTENDED_HOURS', // Horaires étendus (événements spéciaux)
   CLOSED = 'CLOSED', // Fermé exceptionnel
-  MAINTENANCE = 'MAINTENANCE' // Maintenance programmée
+  MAINTENANCE = 'MAINTENANCE', // Maintenance programmée
 }
 
 enum BreakType {
@@ -1898,21 +2602,21 @@ enum BreakType {
   CLEANING = 'CLEANING', // Nettoyage/désinfection
   ADMINISTRATIVE = 'ADMINISTRATIVE', // Tâches administratives
   TRAINING = 'TRAINING', // Formation personnel
-  MAINTENANCE = 'MAINTENANCE' // Maintenance équipements
+  MAINTENANCE = 'MAINTENANCE', // Maintenance équipements
 }
 
 enum BreakFrequency {
   DAILY = 'DAILY', // Tous les jours
   WEEKLY = 'WEEKLY', // Une fois par semaine
   MONTHLY = 'MONTHLY', // Une fois par mois
-  CUSTOM = 'CUSTOM' // Fréquence personnalisée
+  CUSTOM = 'CUSTOM', // Fréquence personnalisée
 }
 
 enum BreakPriority {
   LOW = 1, // Peut être supprimée en cas d'urgence
   MEDIUM = 2, // Peut être déplacée
   HIGH = 3, // Obligatoire, ne peut pas être modifiée
-  CRITICAL = 4 // Légale/sécurité - jamais modifiable
+  CRITICAL = 4, // Légale/sécurité - jamais modifiable
 }
 
 enum DayOfWeek {
@@ -1922,7 +2626,7 @@ enum DayOfWeek {
   THURSDAY = 3,
   FRIDAY = 4,
   SATURDAY = 5,
-  SUNDAY = 6
+  SUNDAY = 6,
 }
 ```
 
@@ -1970,7 +2674,7 @@ export class StaffWorkingPeriod {
   public readonly services: string[]; // Services que l'employé peut faire sur cette période
   public readonly maxAppointments?: number; // Limite RDV sur cette période
   public readonly priority: number; // Préférence de l'employé (1=préféré, 5=moins préféré)
-  
+
   // Business rules
   contains(time: Time): boolean;
   getDurationMinutes(): number;
@@ -2015,14 +2719,14 @@ enum PersonalBreakType {
   TRAVEL_BETWEEN_LOCATIONS = 'TRAVEL_BETWEEN_LOCATIONS', // Trajet inter-sites
   PERSONAL = 'PERSONAL', // Raison personnelle
   UNION_MEETING = 'UNION_MEETING', // Réunion syndicale
-  TEAM_MEETING = 'TEAM_MEETING' // Réunion équipe
+  TEAM_MEETING = 'TEAM_MEETING', // Réunion équipe
 }
 
 enum UrgencyLevel {
   LOW = 1,
   MEDIUM = 2,
   HIGH = 3,
-  EMERGENCY = 4
+  EMERGENCY = 4,
 }
 ```
 
@@ -2051,7 +2755,7 @@ enum SlotAlignment {
   FIVE_MINUTES = 5,
   QUARTER_HOUR = 15,
   HALF_HOUR = 30,
-  HOUR = 60
+  HOUR = 60,
 }
 
 export class DurationVariation {
@@ -2065,7 +2769,6 @@ export class DurationVariation {
 
 ```typescript
 export class SlotGenerator {
-  
   /**
    * Génère tous les créneaux disponibles pour un service et une date
    */
@@ -2073,30 +2776,33 @@ export class SlotGenerator {
     service: Service,
     staff: Staff,
     location: BusinessLocation,
-    date: Date
+    date: Date,
   ): TimeSlot[] {
     const businessHours = location.getBusinessHoursFor(date.getDay());
     const staffHours = staff.getWorkingHoursFor(date.getDay(), location.id);
     const serviceTiming = service.getTiming();
-    
+
     // Intersection des horaires business + staff
-    const workingPeriods = this.calculateWorkingPeriods(businessHours, staffHours);
-    
+    const workingPeriods = this.calculateWorkingPeriods(
+      businessHours,
+      staffHours,
+    );
+
     // Génération des slots selon l'alignement
     const slots: TimeSlot[] = [];
     for (const period of workingPeriods) {
       const periodSlots = this.generateSlotsForPeriod(
-        period, 
-        serviceTiming, 
-        service.slotAlignment
+        period,
+        serviceTiming,
+        service.slotAlignment,
       );
       slots.push(...periodSlots);
     }
-    
+
     // Filtrage des conflits existants
     return this.filterConflicts(slots, date, staff.id);
   }
-  
+
   /**
    * Optimise la capacité en gérant les RDV simultanés
    */
@@ -2104,18 +2810,26 @@ export class SlotGenerator {
     service: Service,
     location: BusinessLocation,
     requestedTime: Date,
-    groupSize: number
+    groupSize: number,
   ): SlotOptimization {
     const maxCapacity = Math.min(
       service.maxConcurrentCapacity,
       location.capacity.getServiceCapacity(service.id),
-      this.getAvailableStaffCount(service, location, requestedTime)
+      this.getAvailableStaffCount(service, location, requestedTime),
     );
-    
+
     return {
       canAccommodate: groupSize <= maxCapacity,
-      suggestedSlots: this.findAlternativeSlots(service, location, requestedTime, groupSize),
-      waitingListPosition: this.calculateWaitingListPosition(service, requestedTime)
+      suggestedSlots: this.findAlternativeSlots(
+        service,
+        location,
+        requestedTime,
+        groupSize,
+      ),
+      waitingListPosition: this.calculateWaitingListPosition(
+        service,
+        requestedTime,
+      ),
     };
   }
 }
@@ -2132,78 +2846,77 @@ export interface SlotOptimization {
 
 ```typescript
 export class MultiSiteTimeManager {
-  
   /**
    * Calcule les temps de trajet entre sites pour le personnel mobile
    */
   calculateTravelTime(
     fromLocation: BusinessLocation,
     toLocation: BusinessLocation,
-    transportMode: TransportMode = TransportMode.CAR
+    transportMode: TransportMode = TransportMode.CAR,
   ): number {
     const distance = this.geoService.calculateDistance(
       fromLocation.coordinates,
-      toLocation.coordinates
+      toLocation.coordinates,
     );
-    
+
     const speedMap = {
       [TransportMode.WALKING]: 5, // km/h
-      [TransportMode.CAR]: 40,    // km/h en ville
-      [TransportMode.PUBLIC_TRANSPORT]: 25 // km/h moyen
+      [TransportMode.CAR]: 40, // km/h en ville
+      [TransportMode.PUBLIC_TRANSPORT]: 25, // km/h moyen
     };
-    
+
     const travelTimeMinutes = (distance / speedMap[transportMode]) * 60;
     return Math.ceil(travelTimeMinutes) + 10; // +10min buffer
   }
-  
+
   /**
    * Optimise les plannings multi-sites pour le personnel
    */
   optimizeStaffSchedule(
     staff: Staff,
     appointments: Appointment[],
-    date: Date
+    date: Date,
   ): ScheduleOptimization {
     // Tri par heure de début
-    const sortedAppointments = appointments.sort((a, b) => 
-      a.scheduledAt.getTime() - b.scheduledAt.getTime()
+    const sortedAppointments = appointments.sort(
+      (a, b) => a.scheduledAt.getTime() - b.scheduledAt.getTime(),
     );
-    
+
     const optimized: OptimizedAppointment[] = [];
     let warnings: ScheduleWarning[] = [];
-    
+
     for (let i = 0; i < sortedAppointments.length; i++) {
       const current = sortedAppointments[i];
       const next = sortedAppointments[i + 1];
-      
+
       if (next) {
         const travelTime = this.calculateTravelTime(
           current.getLocation(),
-          next.getLocation()
+          next.getLocation(),
         );
-        
-        const availableTime = next.scheduledAt.getTime() - 
+
+        const availableTime =
+          next.scheduledAt.getTime() -
           (current.scheduledAt.getTime() + current.duration * 60000);
-        
+
         if (availableTime < travelTime * 60000) {
           warnings.push({
             type: 'INSUFFICIENT_TRAVEL_TIME',
             appointmentId: next.id,
             requiredMinutes: travelTime,
-            availableMinutes: availableTime / 60000
+            availableMinutes: availableTime / 60000,
           });
         }
       }
-      
+
       optimized.push({
         appointment: current,
-        travelTimeToNext: next ? this.calculateTravelTime(
-          current.getLocation(),
-          next.getLocation()
-        ) : 0
+        travelTimeToNext: next
+          ? this.calculateTravelTime(current.getLocation(), next.getLocation())
+          : 0,
       });
     }
-    
+
     return { optimizedAppointments: optimized, warnings };
   }
 }
@@ -2211,7 +2924,7 @@ export class MultiSiteTimeManager {
 enum TransportMode {
   WALKING = 'WALKING',
   CAR = 'CAR',
-  PUBLIC_TRANSPORT = 'PUBLIC_TRANSPORT'
+  PUBLIC_TRANSPORT = 'PUBLIC_TRANSPORT',
 }
 
 export interface ScheduleOptimization {
@@ -2266,64 +2979,64 @@ export interface ScheduleWarning {
 const businessHours: BusinessHours[] = [
   // Lundi - Fermé
   {
-    locationId: "salon-centre-ville",
+    locationId: 'salon-centre-ville',
     dayOfWeek: DayOfWeek.MONDAY,
     isClosed: true, // 🔥 Fermé ce jour
     workingPeriods: [],
-    breakIntervals: []
+    breakIntervals: [],
   },
-  
-  // Mardi - Fermé 
+
+  // Mardi - Fermé
   {
-    locationId: "salon-centre-ville", 
+    locationId: 'salon-centre-ville',
     dayOfWeek: DayOfWeek.TUESDAY,
     isClosed: true, // 🔥 Fermé ce jour
     workingPeriods: [],
-    breakIntervals: []
+    breakIntervals: [],
   },
-  
+
   // Mercredi - Horaires normaux avec pause déjeuner
   {
-    locationId: "salon-centre-ville",
+    locationId: 'salon-centre-ville',
     dayOfWeek: DayOfWeek.WEDNESDAY,
     isClosed: false,
     workingPeriods: [
-      { startTime: "09:00", endTime: "12:00", label: "Matinée" },
-      { startTime: "14:00", endTime: "18:00", label: "Après-midi" }
+      { startTime: '09:00', endTime: '12:00', label: 'Matinée' },
+      { startTime: '14:00', endTime: '18:00', label: 'Après-midi' },
     ],
     breakIntervals: [
       {
-        startTime: "12:00",
-        endTime: "14:00", 
-        label: "Pause déjeuner",
+        startTime: '12:00',
+        endTime: '14:00',
+        label: 'Pause déjeuner',
         breakType: BreakType.LUNCH,
         applicableDays: [DayOfWeek.WEDNESDAY],
         isFlexible: false,
-        priority: BreakPriority.HIGH
-      }
-    ]
+        priority: BreakPriority.HIGH,
+      },
+    ],
   },
-  
+
   // Samedi - Horaires étendus sans pause
   {
-    locationId: "salon-centre-ville",
+    locationId: 'salon-centre-ville',
     dayOfWeek: DayOfWeek.SATURDAY,
     isClosed: false,
     workingPeriods: [
-      { startTime: "08:00", endTime: "19:00", label: "Journée continue" }
+      { startTime: '08:00', endTime: '19:00', label: 'Journée continue' },
     ],
     breakIntervals: [
       {
-        startTime: "13:00",
-        endTime: "13:30",
-        label: "Pause courte équipe",
+        startTime: '13:00',
+        endTime: '13:30',
+        label: 'Pause courte équipe',
         breakType: BreakType.COFFEE,
         applicableDays: [DayOfWeek.SATURDAY],
         isFlexible: true, // 🔥 Peut être décalée
-        priority: BreakPriority.MEDIUM
-      }
-    ]
-  }
+        priority: BreakPriority.MEDIUM,
+      },
+    ],
+  },
 ];
 ```
 
@@ -2332,96 +3045,96 @@ const businessHours: BusinessHours[] = [
 ```typescript
 // Dr. Martin - Spécialiste, pauses courtes
 const drMartinSchedule: WorkingHours = {
-  staffId: "dr-martin",
+  staffId: 'dr-martin',
   dayOfWeek: DayOfWeek.THURSDAY,
   isWorkingDay: true,
   workingPeriods: [
-    { 
-      startTime: "08:00", 
-      endTime: "12:30", 
-      services: ["consultation-specialiste"],
-      maxAppointments: 8
+    {
+      startTime: '08:00',
+      endTime: '12:30',
+      services: ['consultation-specialiste'],
+      maxAppointments: 8,
     },
     {
-      startTime: "14:00",
-      endTime: "17:30",
-      services: ["consultation-specialiste", "urgences"],
-      maxAppointments: 6
-    }
+      startTime: '14:00',
+      endTime: '17:30',
+      services: ['consultation-specialiste', 'urgences'],
+      maxAppointments: 6,
+    },
   ],
   personalBreaks: [
     {
-      startTime: "10:30",
-      endTime: "10:45",
-      label: "Pause café matinale",
+      startTime: '10:30',
+      endTime: '10:45',
+      label: 'Pause café matinale',
       breakType: PersonalBreakType.COFFEE,
       applicableDays: [DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.THURSDAY],
       isFlexible: true,
-      flexibilityWindow: 15 // +/- 15 minutes
+      flexibilityWindow: 15, // +/- 15 minutes
     },
     {
-      startTime: "12:30", 
-      endTime: "14:00",
-      label: "Pause déjeuner + administratif",
+      startTime: '12:30',
+      endTime: '14:00',
+      label: 'Pause déjeuner + administratif',
       breakType: PersonalBreakType.LUNCH,
       applicableDays: [DayOfWeek.THURSDAY],
       isFlexible: false, // Fixe
-      canBeInterrupted: true // Peut être interrompue pour urgence
+      canBeInterrupted: true, // Peut être interrompue pour urgence
     },
     {
-      startTime: "16:00",
-      endTime: "16:15", 
-      label: "Appels patients",
+      startTime: '16:00',
+      endTime: '16:15',
+      label: 'Appels patients',
       breakType: PersonalBreakType.ADMINISTRATIVE,
       applicableDays: [DayOfWeek.THURSDAY],
       isFlexible: true,
-      flexibilityWindow: 30
-    }
-  ]
+      flexibilityWindow: 30,
+    },
+  ],
 };
 
 // Infirmière - Horaires continus, pauses réglementaires
 const nurseSchedule: WorkingHours = {
-  staffId: "nurse-sophie",
+  staffId: 'nurse-sophie',
   dayOfWeek: DayOfWeek.THURSDAY,
   isWorkingDay: true,
   workingPeriods: [
     {
-      startTime: "07:30",
-      endTime: "16:30", // 8h continues
-      services: ["soins-infirmiers", "prise-sang", "vaccinations"],
-      maxAppointments: 20
-    }
+      startTime: '07:30',
+      endTime: '16:30', // 8h continues
+      services: ['soins-infirmiers', 'prise-sang', 'vaccinations'],
+      maxAppointments: 20,
+    },
   ],
   personalBreaks: [
     {
-      startTime: "10:00",
-      endTime: "10:15",
-      label: "Pause réglementaire matin",
+      startTime: '10:00',
+      endTime: '10:15',
+      label: 'Pause réglementaire matin',
       breakType: PersonalBreakType.COFFEE,
       applicableDays: [DayOfWeek.THURSDAY],
       isFlexible: false, // Obligatoire légalement
-      priority: BreakPriority.CRITICAL
+      priority: BreakPriority.CRITICAL,
     },
     {
-      startTime: "12:00",
-      endTime: "12:45",
-      label: "Pause déjeuner",
+      startTime: '12:00',
+      endTime: '12:45',
+      label: 'Pause déjeuner',
       breakType: PersonalBreakType.LUNCH,
       applicableDays: [DayOfWeek.THURSDAY],
       isFlexible: true,
-      flexibilityWindow: 30
+      flexibilityWindow: 30,
     },
     {
-      startTime: "14:30",
-      endTime: "14:45", 
-      label: "Pause réglementaire après-midi",
+      startTime: '14:30',
+      endTime: '14:45',
+      label: 'Pause réglementaire après-midi',
       breakType: PersonalBreakType.COFFEE,
       applicableDays: [DayOfWeek.THURSDAY],
       isFlexible: false,
-      priority: BreakPriority.CRITICAL
-    }
-  ]
+      priority: BreakPriority.CRITICAL,
+    },
+  ],
 };
 ```
 
@@ -2430,48 +3143,48 @@ const nurseSchedule: WorkingHours = {
 ```typescript
 // Vendredi - Journée spéciale avec formation équipe
 const businessHoursFriday: BusinessHours = {
-  locationId: "centre-multi-services",
+  locationId: 'centre-multi-services',
   dayOfWeek: DayOfWeek.FRIDAY,
   isClosed: false,
   specialDayType: SpecialDayType.REDUCED_HOURS,
   workingPeriods: [
-    { 
-      startTime: "09:00", 
-      endTime: "17:00", 
-      label: "Journée formation + services",
-      services: ["services-urgents-uniquement"]
-    }
+    {
+      startTime: '09:00',
+      endTime: '17:00',
+      label: 'Journée formation + services',
+      services: ['services-urgents-uniquement'],
+    },
   ],
   breakIntervals: [
     {
-      startTime: "10:30",
-      endTime: "11:00",
-      label: "Formation équipe - Module 1",
+      startTime: '10:30',
+      endTime: '11:00',
+      label: 'Formation équipe - Module 1',
       breakType: BreakType.TRAINING,
       applicableDays: [DayOfWeek.FRIDAY],
       isFlexible: false,
-      priority: BreakPriority.HIGH
+      priority: BreakPriority.HIGH,
     },
     {
-      startTime: "12:00",
-      endTime: "13:30",
-      label: "Déjeuner + Formation Module 2", 
+      startTime: '12:00',
+      endTime: '13:30',
+      label: 'Déjeuner + Formation Module 2',
       breakType: BreakType.TRAINING,
       applicableDays: [DayOfWeek.FRIDAY],
       isFlexible: false,
-      priority: BreakPriority.HIGH
+      priority: BreakPriority.HIGH,
     },
     {
-      startTime: "15:30",
-      endTime: "16:00",
-      label: "Nettoyage approfondi hebdomadaire",
+      startTime: '15:30',
+      endTime: '16:00',
+      label: 'Nettoyage approfondi hebdomadaire',
       breakType: BreakType.CLEANING,
       applicableDays: [DayOfWeek.FRIDAY],
       isFlexible: true,
       flexibilityWindow: 60,
-      priority: BreakPriority.MEDIUM
-    }
-  ]
+      priority: BreakPriority.MEDIUM,
+    },
+  ],
 };
 ```
 
@@ -2481,7 +3194,6 @@ const businessHoursFriday: BusinessHours = {
 
 ```typescript
 export class ComplexScheduleManager {
-  
   /**
    * Détermine si un créneau est disponible en tenant compte de tous les facteurs
    */
@@ -2490,151 +3202,183 @@ export class ComplexScheduleManager {
     duration: number,
     serviceId: string,
     staffId: string,
-    locationId: string
+    locationId: string,
   ): SlotAvailabilityResult {
-    
     const dayOfWeek = requestedTime.getDay();
-    
+
     // 1. Vérifier si le site est ouvert ce jour
     const businessHours = this.getBusinessHours(locationId, dayOfWeek);
     if (businessHours.isClosed) {
       return {
         available: false,
-        reason: "LOCATION_CLOSED",
-        suggestedAlternatives: this.findAlternativeDays(locationId, serviceId)
+        reason: 'LOCATION_CLOSED',
+        suggestedAlternatives: this.findAlternativeDays(locationId, serviceId),
       };
     }
-    
+
     // 2. Vérifier si l'employé travaille ce jour
     const staffHours = this.getStaffWorkingHours(staffId, dayOfWeek);
     if (!staffHours.isWorkingDay) {
       return {
         available: false,
-        reason: "STAFF_NOT_WORKING",
-        suggestedAlternatives: this.findStaffAlternatives(staffId, serviceId, requestedTime)
+        reason: 'STAFF_NOT_WORKING',
+        suggestedAlternatives: this.findStaffAlternatives(
+          staffId,
+          serviceId,
+          requestedTime,
+        ),
       };
     }
-    
+
     // 3. Vérifier les périodes de travail du site
     const siteWorkingPeriods = businessHours.workingPeriods;
-    const isInSiteWorkingPeriod = siteWorkingPeriods.some(period => 
-      this.timeInPeriod(requestedTime, period) && 
-      this.canFitDuration(requestedTime, duration, period)
+    const isInSiteWorkingPeriod = siteWorkingPeriods.some(
+      (period) =>
+        this.timeInPeriod(requestedTime, period) &&
+        this.canFitDuration(requestedTime, duration, period),
     );
-    
+
     if (!isInSiteWorkingPeriod) {
       return {
         available: false,
-        reason: "OUTSIDE_WORKING_PERIODS",
-        suggestedAlternatives: this.findNearestWorkingPeriods(requestedTime, businessHours)
+        reason: 'OUTSIDE_WORKING_PERIODS',
+        suggestedAlternatives: this.findNearestWorkingPeriods(
+          requestedTime,
+          businessHours,
+        ),
       };
     }
-    
+
     // 4. Vérifier les périodes de travail du staff
     const staffWorkingPeriods = staffHours.workingPeriods;
-    const canStaffWork = staffWorkingPeriods.some(period =>
-      this.timeInPeriod(requestedTime, period) &&
-      period.canHandleService(serviceId) &&
-      this.canFitDuration(requestedTime, duration, period)
+    const canStaffWork = staffWorkingPeriods.some(
+      (period) =>
+        this.timeInPeriod(requestedTime, period) &&
+        period.canHandleService(serviceId) &&
+        this.canFitDuration(requestedTime, duration, period),
     );
-    
+
     if (!canStaffWork) {
       return {
         available: false,
-        reason: "STAFF_UNAVAILABLE",
-        suggestedAlternatives: this.findStaffAvailablePeriods(staffId, requestedTime)
+        reason: 'STAFF_UNAVAILABLE',
+        suggestedAlternatives: this.findStaffAvailablePeriods(
+          staffId,
+          requestedTime,
+        ),
       };
     }
-    
+
     // 5. Vérifier les pauses du site (formation, nettoyage, etc.)
     const siteBreaks = this.getEffectiveBreaks(businessHours, requestedTime);
-    const conflictsWithSiteBreak = siteBreaks.some(breakInterval =>
-      this.timeOverlaps(requestedTime, duration, breakInterval) &&
-      !this.canBreakBeMoved(breakInterval, UrgencyLevel.MEDIUM)
+    const conflictsWithSiteBreak = siteBreaks.some(
+      (breakInterval) =>
+        this.timeOverlaps(requestedTime, duration, breakInterval) &&
+        !this.canBreakBeMoved(breakInterval, UrgencyLevel.MEDIUM),
     );
-    
+
     if (conflictsWithSiteBreak) {
       return {
         available: false,
-        reason: "SITE_BREAK_CONFLICT",
+        reason: 'SITE_BREAK_CONFLICT',
         conflictingBreak: conflictsWithSiteBreak,
-        suggestedAlternatives: this.findSlotsAroundBreaks(requestedTime, siteBreaks)
+        suggestedAlternatives: this.findSlotsAroundBreaks(
+          requestedTime,
+          siteBreaks,
+        ),
       };
     }
-    
+
     // 6. Vérifier les pauses personnelles du staff
-    const personalBreaks = this.getEffectivePersonalBreaks(staffHours, requestedTime);
-    const conflictsWithPersonalBreak = personalBreaks.some(breakInterval =>
-      this.timeOverlaps(requestedTime, duration, breakInterval) &&
-      !breakInterval.canBeMoved(requestedTime, UrgencyLevel.MEDIUM)
+    const personalBreaks = this.getEffectivePersonalBreaks(
+      staffHours,
+      requestedTime,
     );
-    
+    const conflictsWithPersonalBreak = personalBreaks.some(
+      (breakInterval) =>
+        this.timeOverlaps(requestedTime, duration, breakInterval) &&
+        !breakInterval.canBeMoved(requestedTime, UrgencyLevel.MEDIUM),
+    );
+
     if (conflictsWithPersonalBreak) {
       return {
         available: false,
-        reason: "PERSONAL_BREAK_CONFLICT",
+        reason: 'PERSONAL_BREAK_CONFLICT',
         conflictingBreak: conflictsWithPersonalBreak,
         suggestedAlternatives: this.negotiateBreakFlexibility(
-          conflictsWithPersonalBreak, 
-          requestedTime, 
-          duration
-        )
+          conflictsWithPersonalBreak,
+          requestedTime,
+          duration,
+        ),
       };
     }
-    
+
     // 7. Vérifier les RDV existants et capacité
-    const existingAppointments = this.getExistingAppointments(staffId, requestedTime);
+    const existingAppointments = this.getExistingAppointments(
+      staffId,
+      requestedTime,
+    );
     const hasCapacity = this.checkCapacity(
-      requestedTime, 
-      duration, 
-      serviceId, 
+      requestedTime,
+      duration,
+      serviceId,
       existingAppointments,
       staffHours,
-      businessHours
+      businessHours,
     );
-    
+
     if (!hasCapacity.available) {
       return {
         available: false,
-        reason: "NO_CAPACITY",
+        reason: 'NO_CAPACITY',
         currentLoad: hasCapacity.currentLoad,
         maxCapacity: hasCapacity.maxCapacity,
-        suggestedAlternatives: this.findLowerLoadSlots(requestedTime, staffId, serviceId)
+        suggestedAlternatives: this.findLowerLoadSlots(
+          requestedTime,
+          staffId,
+          serviceId,
+        ),
       };
     }
-    
+
     return {
       available: true,
       confidence: this.calculateConfidence(requestedTime, staffId, serviceId),
-      flexibilityOptions: this.getFlexibilityOptions(requestedTime, duration, staffId)
+      flexibilityOptions: this.getFlexibilityOptions(
+        requestedTime,
+        duration,
+        staffId,
+      ),
     };
   }
-  
+
   /**
    * Trouve les meilleurs créneaux alternatifs en cas d'indisponibilité
    */
   findBestAlternatives(
     originalRequest: SlotRequest,
-    constraints: ScheduleConstraints
+    constraints: ScheduleConstraints,
   ): AlternativeSlot[] {
     const alternatives: AlternativeSlot[] = [];
-    
+
     // Recherche dans la même journée
     const sameDaySlots = this.findAlternativesInSameDay(originalRequest);
     alternatives.push(...sameDaySlots);
-    
+
     // Recherche dans les jours suivants
     const nextDaysSlots = this.findAlternativesInNextDays(originalRequest, 7);
     alternatives.push(...nextDaysSlots);
-    
+
     // Recherche avec d'autres membres du personnel
-    const alternativeStaffSlots = this.findAlternativesWithOtherStaff(originalRequest);
+    const alternativeStaffSlots =
+      this.findAlternativesWithOtherStaff(originalRequest);
     alternatives.push(...alternativeStaffSlots);
-    
+
     // Recherche dans d'autres sites
-    const otherLocationSlots = this.findAlternativesInOtherLocations(originalRequest);
+    const otherLocationSlots =
+      this.findAlternativesInOtherLocations(originalRequest);
     alternatives.push(...otherLocationSlots);
-    
+
     // Tri par pertinence
     return alternatives
       .sort((a, b) => b.score - a.score)
@@ -2743,6 +3487,17 @@ export interface AlternativeSlot {
 - **ROI** amélioration opérationnelle
 - **Revenus groupe** (+25% via bookings famille) 🔥 **NOUVEAU**
 - **Satisfaction famille** (>4.7/5) 🔥 **NOUVEAU**
+
+### 🎨 **Métriques Identité d'Entreprise** 🔥 **NOUVEAU**
+
+- **Taux de complétion profil** (>95% des champs renseignés)
+- **Qualité images** (>90% optimisées pour web)
+- **Engagement réseaux sociaux** (+40% via intégration)
+- **Visibilité SEO** (+60% trafic organique)
+- **Temps mise à jour profil** (<5 minutes)
+- **Cohérence identité** (100% conformité charte graphique)
+- **Mise à jour coordonnées** (>99% exactitude)
+- **Conformité légale** (100% documents à jour)
 
 ---
 
